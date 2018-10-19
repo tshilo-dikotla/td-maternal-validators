@@ -1,11 +1,28 @@
-from edc_constants.constants import YES
+from django.core.exceptions import ValidationError
+from edc_constants.constants import (YES, NO, RESTARTED, CONTINUOUS, STOPPED)
 from edc_form_validators import FormValidator
 
 
 class MaternalLifetimeArvHistoryFormValidator(FormValidator):
-    maternal_ob_history_cls = 'td_maternal.maternalobstericalhistory'
 
     def clean(self):
+        responses = [RESTARTED, CONTINUOUS]
+        for response in responses:
+            if self.cleaned_data.get('preg_on_haart') == NO \
+                    and response in self.cleaned_data.get('prior_preg'):
+                msg = {'prior_preg': 'You indicated that the mother was NOT on'
+                       ' triple ARV when she got pregnant. Please correct.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
+
+        if self.cleaned_data.get('preg_on_haart') == YES \
+                and self.cleaned_data.get('prior_preg') == STOPPED:
+            msg = {'prior_preg': 'You indicated that the mother was still on '
+                                 'triple ARV when she got pregnant, yet you '
+                                 'indicated that ARVs were interrupted and '
+                                 'never restarted. Please correct.'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
 
         self.required_if(
             YES,
@@ -19,7 +36,3 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
             field_required='is_date_estimated',
             required_msg='Please answer: Is the subject\'s date of triple'
                          ' antiretrovirals estimated?')
-
-        maternal_ob_history_cls = self.maternal_ob_history_cls.objects.filter(
-            maternal_visit__appointment__subject_identifier=self.cleaned_data.
-            get('maternal_visit').appointment.subject_identifier)

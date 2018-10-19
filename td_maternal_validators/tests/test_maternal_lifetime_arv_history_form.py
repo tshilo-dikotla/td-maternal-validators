@@ -27,7 +27,9 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
     def test_preg_on_haart_yes_preg_prior_invalid(self):
         cleaned_data = {
             'preg_on_haart': YES,
-            'prior_preg': STOPPED}
+            'prior_preg': STOPPED,
+            'haart_start_date': get_utcnow().date(),
+            'is_date_estimated': 'yes'}
         form_validator = MaternalLifetimeArvHistoryFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
@@ -57,7 +59,6 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
 
     def test_haart_start_date_valid_date_est_required(self):
         cleaned_data = {
-            'preg_on_haart': YES,
             'haart_start_date': get_utcnow().date(),
             'is_date_estimated': None}
         form_validator = MaternalLifetimeArvHistoryFormValidator(
@@ -67,7 +68,6 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
 
     def test_haart_start_date_valid_date_est_provided(self):
         cleaned_data = {
-            'preg_on_haart': YES,
             'haart_start_date': get_utcnow().date(),
             'is_date_estimated': 'yes'}
         form_validator = MaternalLifetimeArvHistoryFormValidator(
@@ -79,7 +79,6 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
 
     def test_haart_start_date_invalid_date_est_invalid(self):
         cleaned_data = {
-            'preg_on_haart': YES,
             'haart_start_date': None,
             'is_date_estimated': 'yes'}
         form_validator = MaternalLifetimeArvHistoryFormValidator(
@@ -89,7 +88,6 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
 
     def test_haart_start_date_invalid_date_est_valid(self):
         cleaned_data = {
-            'preg_on_haart': YES,
             'haart_start_date': None,
             'is_date_estimated': None}
         form_validator = MaternalLifetimeArvHistoryFormValidator(
