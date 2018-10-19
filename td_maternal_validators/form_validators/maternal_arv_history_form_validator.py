@@ -11,7 +11,7 @@ class MaternalArvHistoryFormValidator(FormValidator):
         condition = (
             self.cleaned_data.get('preg_on_haart') == NO and
             self.cleaned_data.get('prior_preg') == RESTARTED)
-        self.not_required_if_true(
+        self.not_required_if(
             condition=condition,
             field='prev_preg_azt',
             field_required='prior_preg')
