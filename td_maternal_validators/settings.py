@@ -17,11 +17,8 @@ SECRET_KEY = 'jwggbn11gw22h6&0n@q0t97e)&)pg^n_*$18xj350f0%w+ywba'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-<<<<<<< HEAD
-AUTO_CREATE_KEYS = True
-=======
 #AUTO_CREATE_KEYS = True
->>>>>>> def4186e47f065db1e7365ab0babad1c6a94a779
+
 
 ALLOWED_HOSTS = []
 
