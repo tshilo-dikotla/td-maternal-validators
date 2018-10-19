@@ -2,11 +2,11 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from edc_constants.constants import NO
 
-from ..form_validators import MaternalArvHistoryFormValidator
 from ..constants import RESTARTED
+from ..form_validators import MaternalArvHistoryFormValidator
 
 
-class TestFollowUpFormValidator(TestCase):
+class TestMaternalArvHistoryFormValidator(TestCase):
 
     def test_maternal_preg_on_haart_no_prior_restarted(self):
         cleaned_data = {'preg_on_haart': NO,
