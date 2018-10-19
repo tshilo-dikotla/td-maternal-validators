@@ -2,7 +2,6 @@ from django.db import models
 from django.db.models.deletion import PROTECT
 from edc_base.model_mixins import BaseUuidModel, ListModelMixin
 from edc_base.utils import get_utcnow
-
 from edc_appointment.models import Appointment
 from edc_registration.model_mixins import UpdatesOrCreatesRegistrationModelMixin
 
