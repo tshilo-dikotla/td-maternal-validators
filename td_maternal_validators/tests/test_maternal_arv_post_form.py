@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.forms import forms
-from django.test import TestCase
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from edc_constants.constants import NO
 
@@ -27,6 +27,7 @@ class MaternalArvPostFormValidator(TestCase):
         self.maternal_arv_post_adh = maternal_arv_post_adh.replace(
             'td_maternal', 'td_maternal_validators')
 
+    @tag('c')
     def test_blah(self):
         cleaned_data = {'on_arv_since': NO,
                         'arv_status': None}
