@@ -1,10 +1,12 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from edc_constants.constants import (RESTARTED, NO, YES, CONTINUOUS, STOPPED)
 from ..form_validators import MaternalLifetimeArvHistoryFormValidator
+from .model import MaternalObstericalHistory
 
 
+@tag('life')
 class TestMaternalLifetimeArvHistoryForm(TestCase):
     def test_preg_on_haart_no_preg_prior_invalid(self):
         cleaned_data = {
@@ -96,3 +98,6 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
             form_validator.validate()
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
+
+    def test_validate_prev_preg(self):
+        ob_history = MaternalObstericalHistory.objects.create()
