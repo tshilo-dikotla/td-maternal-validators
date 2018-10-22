@@ -1,10 +1,9 @@
 from dateutil.relativedelta import relativedelta
 from django.forms import forms
 from django.test import TestCase, tag
+from edc_appointment.models import Appointment
 from edc_base.utils import get_utcnow
 from edc_constants.constants import NO
-
-from edc_appointment.models import Appointment
 
 from ..constants import NEVER_STARTED
 from ..form_validators import MarternalArvPostFormValidator
@@ -28,7 +27,7 @@ class MaternalArvPostFormValidator(TestCase):
             'td_maternal', 'td_maternal_validators')
 
     @tag('c')
-    def test_blah(self):
+    def test_arv_status_no_invalid(self):
         cleaned_data = {'on_arv_since': NO,
                         'arv_status': None}
         self.maternal_arv_post_adh.objects.create(
