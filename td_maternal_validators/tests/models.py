@@ -4,6 +4,7 @@ from edc_base.model_mixins import BaseUuidModel, ListModelMixin
 from edc_base.utils import get_utcnow
 from edc_appointment.models import Appointment
 from edc_registration.model_mixins import UpdatesOrCreatesRegistrationModelMixin
+from edc_constants.choices import YES_NO
 
 
 class ListModel(ListModelMixin, BaseUuidModel):
@@ -43,3 +44,15 @@ class MaternalVisit(BaseUuidModel):
 class MaternalArvPostAdh(models.Model):
 
     maternal_visit = models.ForeignKey(MaternalVisit, on_delete=PROTECT)
+
+
+class MaternalArvPreg(models.Model):
+
+    took_arv = models.CharField(
+        choices=YES_NO,
+        max_length=10)
+
+
+class MaternalArv(models.Model):
+
+    maternal_arv_preg = models.ForeignKey(MaternalArvPreg, on_delete=PROTECT)

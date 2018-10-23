@@ -12,7 +12,7 @@ class TestMaternalArvPregForm(TestCase):
         cleaned_data = {
             "is_interrupt": YES,
             "interrupt": 'reason',
-            }
+        }
         form_validator = MaternalArvPregFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -27,7 +27,7 @@ class TestMaternalArvPregForm(TestCase):
         cleaned_data = {
             "is_interrupt": YES,
             "interrupt": NOT_APPLICABLE,
-            }
+        }
         form_validator = MaternalArvPregFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
@@ -40,7 +40,7 @@ class TestMaternalArvPregForm(TestCase):
         cleaned_data = {
             "is_interrupt": NO,
             "interrupt": NOT_APPLICABLE,
-            }
+        }
         form_validator = MaternalArvPregFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -55,7 +55,7 @@ class TestMaternalArvPregForm(TestCase):
         cleaned_data = {
             "is_interrupt": NO,
             "interrupt": 'reason',
-            }
+        }
         form_validator = MaternalArvPregFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)

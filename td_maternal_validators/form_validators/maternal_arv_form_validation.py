@@ -1,3 +1,4 @@
+from django import forms
 from edc_form_validators import FormValidator
 from django.core.exceptions import ValidationError
 from edc_constants.constants import YES
@@ -16,5 +17,11 @@ class MaternalArvFormValidator(FormValidator):
             self._errors.update(msg)
             raise ValidationError(msg)
 
-        #condition = cleaned_data.get('maternal_arv_preg').took_arv == YES
-       # self.required_if_true(condition, )
+        condition = (self.cleaned_data.get('maternal_arv_preg').took_arv == YES and
+                     not self.cleaned_data.get('arv_code'))
+        if condition:
+            msg = {'arv_code': 'You indicated that participant started ARV(s) during'
+                   'this pregnancy. Please list them on maternal_arv table.'
+                   }
+            self._errors.update(msg)
+            raise forms.ValidationError(msg)
