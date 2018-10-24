@@ -5,7 +5,7 @@ import sys
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APP_NAME = 'td_maternal_validators'
 SITE_ID = 40
-REVIEWER_SITE_ID = 40
+REVIEWER_SITE_ID = 10
 ETC_DIR = os.path.join(BASE_DIR, 'etc')
 
 # RANDOMIZATION_LIST_PATH = os.path.join(BASE_DIR, 'test_randomization_list.csv')
@@ -36,16 +36,17 @@ INSTALLED_APPS = [
     'django_revision.apps.AppConfig',
     'rest_framework',
     'rest_framework.authtoken',
-    'edc_timepoint.apps.AppConfig',
     'edc_appointment.apps.AppConfig',
     'edc_base.apps.AppConfig',
     'edc_device.apps.AppConfig',
     'edc_identifier.apps.AppConfig',
     'edc_protocol.apps.AppConfig',
     'edc_registration.apps.AppConfig',
+    'edc_timepoint.apps.AppConfig',
     'edc_form_validators.apps.AppConfig',
     'edc_visit_schedule.apps.AppConfig',
     'edc_metadata.apps.AppConfig',
+    #'edc_sync.apps.AppConfig',
     'td_maternal_validators.apps.AppConfig',
 ]
 
