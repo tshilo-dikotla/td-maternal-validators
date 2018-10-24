@@ -1,11 +1,11 @@
 from django.db import models
 from django.db.models.deletion import PROTECT
+from edc_appointment.models import Appointment
 from edc_base.model_mixins import BaseUuidModel, ListModelMixin
 from edc_base.utils import get_utcnow
-from edc_appointment.models import Appointment
 from edc_registration.models import RegisteredSubject
 from edc_registration.model_mixins import UpdatesOrCreatesRegistrationModelMixin
-#from td_maternal.models.enrollment_mixin import EnrollmentMixin
+from edc_constants.choices import YES_NO
 
 
 class ListModel(ListModelMixin, BaseUuidModel):
@@ -52,3 +52,25 @@ class MaternalUltraSoundInitial(models.Model):
     maternal_visit = models.OneToOneField(MaternalVisit, on_delete=PROTECT)
 
     ga_confirmed = models.IntegerField()
+
+
+class MaternalArvPreg(models.Model):
+
+    took_arv = models.CharField(
+        choices=YES_NO,
+        max_length=10)
+    maternal_visit = models.OneToOneField(MaternalVisit, on_delete=PROTECT)
+
+
+class MaternalArv(models.Model):
+
+    maternal_arv_preg = models.ForeignKey(MaternalArvPreg, on_delete=PROTECT)
+
+
+class MaternalLifetimeArvHistory(models.Model):
+
+    maternal_visit = models.ForeignKey(MaternalVisit, on_delete=PROTECT)
+
+    haart_start_date = models.DateField(
+        blank=True,
+        null=True)

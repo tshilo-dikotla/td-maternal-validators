@@ -12,7 +12,9 @@ class TestMaternalInterimIdccFormValidator(TestCase):
         cleaned_data = {
             "info_since_lastvisit": YES,
             "recent_cd4": 440.5,
-            "recent_cd4_date": get_utcnow()
+            "recent_cd4_date": get_utcnow(),
+            "value_vl": 440.5,
+            "recent_vl_date": get_utcnow()
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
@@ -70,28 +72,14 @@ class TestMaternalInterimIdccFormValidator(TestCase):
         cleaned_data = {
             "info_since_lastvisit": NO,
             "recent_cd4": None,
-            "recent_cd4_date": get_utcnow()
+            "recent_cd4_date": get_utcnow(),
+            "value_vl": 440,
+            "value_vl_size": get_utcnow()
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('recent_cd4_date', form_validator._errors)
-
-    def test_last_visit_is_yes_value_vl_recent_vl_date(self):
-        '''Assert raises exception if the last visit is yes, value_vl is given and
-        recent_vl_date has date.
-        '''
-        cleaned_data = {
-            "info_since_lastvisit": YES,
-            "value_vl": 440.5,
-            "recent_vl_date": get_utcnow()
-        }
-        form_validator = MaternalIterimIdccFormValidator(
-            cleaned_data=cleaned_data)
-        try:
-            form_validator.validate()
-        except ValidationError as e:
-            self.fail(f'ValidationError unexpectedly raises. Got{e}')
 
     def test_last_visit_is_yes_value_vl_none(self):
         '''Assert raises exception if the last visit is yes but recent_vl is
@@ -149,8 +137,8 @@ class TestMaternalInterimIdccFormValidator(TestCase):
         self.assertIn('recent_vl_date', form_validator._errors)
 
     def test_last_visit_is_yes_value_vl_size_less_than(self):
-        '''Assert raises exception if the last visit is yes, value_vl_size is less
-        but value_vl is invalid.
+        '''Assert raises exception if the last visit is yes, value_vl_size is invalid
+        but value_vl is valid.
         '''
         cleaned_data = {
             "info_since_lastvisit": YES,
@@ -159,7 +147,48 @@ class TestMaternalInterimIdccFormValidator(TestCase):
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
-        try:
-            form_validator.validate()
-        except ValidationError as e:
-            self.fail(f'ValidationError unexpectedly raises. Got{e}')
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('value_vl', form_validator._errors)
+
+    def test_last_visit_is_yes_value_vl_size_greater_than(self):
+        '''Assert raises exception if the last visit is yes, value_vl_size is invalid
+        but value_vl valid.
+        '''
+        cleaned_data = {
+            "info_since_lastvisit": YES,
+            "value_vl": 40,
+            "value_vl_size": 'greater_than'
+        }
+        form_validator = MaternalIterimIdccFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('value_vl', form_validator._errors)
+
+    def test_last_visit_is_yes_value_vl_size_equal(self):
+        '''Assert raises exception if the last visit is yes, value_vl_size is invalid
+        but value_vl is valid.
+        '''
+        cleaned_data = {
+            "info_since_lastvisit": YES,
+            "value_vl": 40,
+            "value_vl_size": 'equal'
+        }
+        form_validator = MaternalIterimIdccFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('value_vl', form_validator._errors)
+
+    def test_last_visit_is_no_invalid(self):
+        '''Invalid if info_since_lastvisit is no.
+        '''
+        cleaned_data = {
+            "info_since_lastvisit": NO,
+            "recent_cd4": 440.5,
+            "recent_cd4_date": get_utcnow(),
+            "value_vl": 440,
+            "value_vl_size": 'less_than'
+        }
+        form_validator = MaternalIterimIdccFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('recent_cd4', form_validator._errors)

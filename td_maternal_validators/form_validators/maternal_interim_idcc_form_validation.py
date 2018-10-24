@@ -25,7 +25,7 @@ class MaternalIterimIdccFormValidator(FormValidator):
 
         cleaned_data = self.cleaned_data
         if cleaned_data.get('value_vl') != 400 and cleaned_data.get('value_vl_size') \
-                == 'less than':
+                == 'less_than':
             msg = {'value_vl': 'You indicated that the value of the most recent VL is'
                    'less_than a number,therefore the value of VL should be 400'}
             self._errors.update(msg)
@@ -33,16 +33,19 @@ class MaternalIterimIdccFormValidator(FormValidator):
 
         cleaned_data = self.cleaned_data
         if cleaned_data.get('value_vl') != 750000 and cleaned_data.get('value_vl_size')\
-                == 'greater than':
+                == 'greater_than':
             msg = {'value_vl': 'You indicated that the value of the most recent VL is'
                    'less_than a number,therefore the value of VL should be 750000'}
             self._errors.update(msg)
             raise ValidationError(msg)
 
         cleaned_data = self.cleaned_data
-        if cleaned_data.get('value_vl') != 750000 or cleaned_data.get('value_vl') != 400\
+        if cleaned_data.get('value_vl') > 750000 or cleaned_data.get('value_vl') < 400\
                 and cleaned_data.get('value_vl_size') == 'equal':
-            msg = {'You indicated that the value of the most recent VL is equal to a'
+            msg = {'value_vl': 'You indicated that the value of the'
+                   'most recent VL is equal to a'
                    ' number, therefore the value of VL should be between 400 and 750000'
                    '(inclusive of 400 and 750,000)'
                    }
+            self._errors.update(msg)
+            raise ValidationError(msg)
