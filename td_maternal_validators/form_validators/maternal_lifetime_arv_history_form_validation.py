@@ -8,15 +8,15 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
     def clean(self):
         responses = [RESTARTED, CONTINUOUS]
         for response in responses:
-            if self.cleaned_data.get('preg_on_haart') == NO \
-                    and response in self.cleaned_data.get('prior_preg'):
+            if (self.cleaned_data.get('preg_on_haart') == NO
+                    and response in self.cleaned_data.get('prior_preg')):
                 msg = {'prior_preg': 'You indicated that the mother was NOT on'
                        ' triple ARV when she got pregnant. Please correct.'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
 
-        if self.cleaned_data.get('preg_on_haart') == YES \
-                and self.cleaned_data.get('prior_preg') == STOPPED:
+        if (self.cleaned_data.get('preg_on_haart') == YES
+                and self.cleaned_data.get('prior_preg') == STOPPED):
             msg = {'prior_preg': 'You indicated that the mother was still on '
                                  'triple ARV when she got pregnant, yet you '
                                  'indicated that ARVs were interrupted and '

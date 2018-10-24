@@ -3,7 +3,9 @@ from django.db.models.deletion import PROTECT
 from edc_base.model_mixins import BaseUuidModel, ListModelMixin
 from edc_base.utils import get_utcnow
 from edc_appointment.models import Appointment
+from edc_registration.models import RegisteredSubject
 from edc_registration.model_mixins import UpdatesOrCreatesRegistrationModelMixin
+#from td_maternal.models.enrollment_mixin import EnrollmentMixin
 
 
 class ListModel(ListModelMixin, BaseUuidModel):
@@ -43,3 +45,10 @@ class MaternalVisit(BaseUuidModel):
 class MaternalArvPostAdh(models.Model):
 
     maternal_visit = models.ForeignKey(MaternalVisit, on_delete=PROTECT)
+
+
+class MaternalUltraSoundInitial(models.Model):
+
+    maternal_visit = models.OneToOneField(MaternalVisit, on_delete=PROTECT)
+
+    ga_confirmed = models.IntegerField()
