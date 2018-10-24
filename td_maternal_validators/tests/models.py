@@ -52,8 +52,18 @@ class MaternalArvPreg(models.Model):
     took_arv = models.CharField(
         choices=YES_NO,
         max_length=10)
+    maternal_visit = models.OneToOneField(MaternalVisit, on_delete=PROTECT)
 
 
 class MaternalArv(models.Model):
 
     maternal_arv_preg = models.ForeignKey(MaternalArvPreg, on_delete=PROTECT)
+
+
+class MaternalLifetimeArvHistory(models.Model):
+
+    maternal_visit = models.ForeignKey(MaternalVisit, on_delete=PROTECT)
+
+    haart_start_date = models.DateField(
+        blank=True,
+        null=True)

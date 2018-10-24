@@ -5,10 +5,24 @@ from edc_base.utils import get_utcnow
 from datetime import timedelta
 from edc_constants.constants import YES, NO
 
-from .models import MaternalArvPreg, MaternalArv
+from .models import (MaternalArvPreg, MaternalArv,
+                     MaternalLifetimeArvHistory, MaternalConsent,
+                     MaternalVisit, Appointment)
+from dateutil.relativedelta import relativedelta
 
 
 class TestMaternalArvPregForm(TestCase):
+    def setUp(self):
+        self.subject_consent = MaternalConsent.objects.create(
+            subject_identifier='11111',
+            gender='M', dob=(get_utcnow() - relativedelta(years=25)).date())
+        appointment = Appointment.objects.create(
+            subject_identifier=self.subject_consent.subject_identifier,
+            appt_datetime=get_utcnow(),
+            visit_code='1000')
+        self.maternal_visit = MaternalVisit.objects.create(
+            appointment=appointment)
+
     def test_stop_date_invalid(self):
         '''Assert Raises if start_date is > stop_date.
         '''
@@ -24,9 +38,16 @@ class TestMaternalArvPregForm(TestCase):
     def test_stop_date_valid(self):
         '''True if start_date < stop_date.
         '''
+        maternal_arv_preg = MaternalArvPreg.objects.create(
+            took_arv=YES, maternal_visit=self.maternal_visit)
+        MaternalArv.objects.create(maternal_arv_preg=maternal_arv_preg)
+
         cleaned_data = {
+            "maternal_arv_preg": maternal_arv_preg,
             "stop_date": get_utcnow().date() + timedelta(days=30),
-            "start_date": get_utcnow().date()
+            "start_date": get_utcnow().date(),
+            "arv_code": 'Value',
+
         }
         form_validator = MaternalArvFormValidator(
             cleaned_data=cleaned_data)
@@ -36,11 +57,18 @@ class TestMaternalArvPregForm(TestCase):
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
     def test_stop_date_equals_invalid(self):
-        '''Invalid because we need stop_date > start_date.
+        '''Invalid if the stop_date > start_date.
         '''
+
+        maternal_arv_preg = MaternalArvPreg.objects.create(
+            took_arv=YES, maternal_visit=self.maternal_visit)
+        MaternalArv.objects.create(maternal_arv_preg=maternal_arv_preg)
+
         cleaned_data = {
+            "maternal_arv_preg": maternal_arv_preg,
             "stop_date": get_utcnow().date(),
             "start_date": get_utcnow().date(),
+            "arv_code": 'Value',
         }
         form_validator = MaternalArvFormValidator(
             cleaned_data=cleaned_data)
@@ -52,11 +80,12 @@ class TestMaternalArvPregForm(TestCase):
     def test_took_marternal_arv_yes_valid(self):
         '''True if subject took maternal arv and provides the arv_code
         '''
-        maternal_arv_preg = MaternalArvPreg.objects.create(took_arv=YES)
+        maternal_arv_preg = MaternalArvPreg.objects.create(
+            took_arv=YES, maternal_visit=self.maternal_visit)
         MaternalArv.objects.create(maternal_arv_preg=maternal_arv_preg)
 
         cleaned_data = {
-            'maternal_arv_preg': maternal_arv_preg,
+            "maternal_arv_preg": maternal_arv_preg,
             "stop_date": get_utcnow().date(),
             "start_date": get_utcnow().date(),
             "arv_code": 'Value',
@@ -71,11 +100,12 @@ class TestMaternalArvPregForm(TestCase):
     def test_took_maternal_arv_yes_invalid(self):
         '''Assert raises exception if the took_arv is yes but arv_code is not given
         '''
-        maternal_arv_preg = MaternalArvPreg.objects.create(took_arv=YES)
+        maternal_arv_preg = MaternalArvPreg.objects.create(
+            took_arv=YES, maternal_visit=self.maternal_visit)
         MaternalArv.objects.create(maternal_arv_preg=maternal_arv_preg)
 
         cleaned_data = {
-            'maternal_arv_preg': maternal_arv_preg,
+            "maternal_arv_preg": maternal_arv_preg,
             "stop_date": get_utcnow().date(),
             "start_date": get_utcnow().date(),
             "arv_code": None,
@@ -88,11 +118,12 @@ class TestMaternalArvPregForm(TestCase):
     def test_took_maternal_arv_no_valid(self):
         '''True if took_arv is no and arv_code is none
         '''
-        maternal_arv_preg = MaternalArvPreg.objects.create(took_arv=NO)
+        maternal_arv_preg = MaternalArvPreg.objects.create(
+            took_arv=NO, maternal_visit=self.maternal_visit)
         MaternalArv.objects.create(maternal_arv_preg=maternal_arv_preg)
 
         cleaned_data = {
-            'maternal_arv_preg': maternal_arv_preg,
+            "maternal_arv_preg": maternal_arv_preg,
             "stop_date": get_utcnow().date(),
             "start_date": get_utcnow().date(),
             "arv_code": None,
@@ -103,3 +134,67 @@ class TestMaternalArvPregForm(TestCase):
             form_validator.validate()
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
+
+    def test_historical_arv_date_invalid(self):
+        '''Assert raises exception if start date is less than arv_history.
+        '''
+
+        MaternalLifetimeArvHistory.objects.create(
+            haart_start_date=get_utcnow().date() + timedelta(days=30),
+            maternal_visit=self.maternal_visit)
+        maternal_arv_preg = MaternalArvPreg.objects.create(
+            took_arv=NO, maternal_visit=self.maternal_visit)
+
+        cleaned_data = {
+            "maternal_arv_preg": maternal_arv_preg,
+            "arv_history": MaternalLifetimeArvHistory.objects.get(
+                maternal_visit=maternal_arv_preg.maternal_visit),
+            "start_date": get_utcnow().date(),
+            "stop_date": get_utcnow().date()
+        }
+        form_validator = MaternalArvFormValidator(cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('start_date', form_validator._errors)
+
+    def test_historical_arv_date_valid(self):
+        '''True if the start date is greater than the arv_history.
+        '''
+
+        MaternalLifetimeArvHistory.objects.create(
+            haart_start_date=get_utcnow().date(),
+            maternal_visit=self.maternal_visit)
+        maternal_arv_preg = MaternalArvPreg.objects.create(
+            took_arv=NO, maternal_visit=self.maternal_visit)
+
+        cleaned_data = {
+            "maternal_arv_preg": maternal_arv_preg,
+            "arv_history": MaternalLifetimeArvHistory.objects.get(
+                maternal_visit=maternal_arv_preg.maternal_visit),
+            "start_date": get_utcnow().date(),
+            "stop_date": get_utcnow().date() + timedelta(days=30)
+        }
+        form_validator = MaternalArvFormValidator(cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raised. Got{e}')
+
+    def test_historical_arv_date_invalid_start_date(self):
+        '''Assert raises exception if start_date and arv_history have the same date.
+        '''
+        MaternalLifetimeArvHistory.objects.create(
+            haart_start_date=get_utcnow().date() + timedelta(days=30),
+            maternal_visit=self.maternal_visit)
+        maternal_arv_preg = MaternalArvPreg.objects.create(
+            took_arv=NO, maternal_visit=self.maternal_visit)
+
+        cleaned_data = {
+            "maternal_arv_preg": maternal_arv_preg,
+            "arv_history": MaternalLifetimeArvHistory.objects.get(
+                maternal_visit=maternal_arv_preg.maternal_visit),
+            "start_date": get_utcnow().date() + timedelta(days=30),
+            "stop_date": get_utcnow().date()
+        }
+        form_validator = MaternalArvFormValidator(cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('start_date', form_validator._errors)
