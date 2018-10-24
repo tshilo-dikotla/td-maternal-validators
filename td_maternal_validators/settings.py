@@ -5,7 +5,7 @@ import sys
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APP_NAME = 'td_maternal_validators'
 SITE_ID = 40
-REVIEWER_SITE_ID = 40
+REVIEWER_SITE_ID = 0
 ETC_DIR = os.path.join(BASE_DIR, 'etc')
 
 # RANDOMIZATION_LIST_PATH = os.path.join(BASE_DIR, 'test_randomization_list.csv')
