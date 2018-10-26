@@ -1,42 +1,45 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from .models import (
     MaternalConsent, Appointment, MaternalVisit, MaternalUltraSoundInitial)
 from ..form_validators import MaternalObstericalHistoryFormValidator
 
 
+@tag('o')
 class TestMaternalObstericalHistoryForm(TestCase):
     def setUp(self):
         self.subject_consent = MaternalConsent.objects.create(
             subject_identifier='11111111',
-            gender='M', dob=(get_utcnow() - relativedelta(years=25)).date())
+            gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
+            consent_datetime=get_utcnow())
         appointment = Appointment.objects.create(
             subject_identifier=self.subject_consent.subject_identifier,
             appt_datetime=get_utcnow(),
             visit_code='1000')
         self.maternal_visit = MaternalVisit.objects.create(
             appointment=appointment)
-        MaternalUltraSoundInitial.objects.create(
+        self.maternal_ultrasound = MaternalUltraSoundInitial.objects.create(
             maternal_visit=self.maternal_visit, ga_confirmed=20)
+        self.maternal_ultrasound_model = 'td_maternal_validators.maternalultrasoundinitial'
+        MaternalObstericalHistoryFormValidator.maternal_ultrasound_init_model = \
+            self.maternal_ultrasound_model
 
     def test_ultrasound_blank_invalid(self):
         '''Asserts raises exception if ultrasound form has been left blank.'''
-
         cleaned_data = {
-            'ultrasound': None, }
+            'maternal_visit': None}
         form_validator = MaternalObstericalHistoryFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('ultrasound', form_validator._errors)
+        self.assertIn('__all__', form_validator._errors)
 
     def test_ultrasound_not_blank_valid(self):
         '''Tests if cleaned data validates or fails tests if exception
         is raised unexpectedly.'''
-
         cleaned_data = {
-            'ultrasound': MaternalUltraSoundInitial.objects.all()}
+            'maternal_visit': self.maternal_visit}
         form_validator = MaternalObstericalHistoryFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -49,8 +52,7 @@ class TestMaternalObstericalHistoryForm(TestCase):
         and and the value of pregnancies 24 weeks or more is not 0.'''
 
         cleaned_data = {
-            'ultrasound': MaternalUltraSoundInitial.objects.filter(
-                maternal_visit=self.maternal_visit),
+            'maternal_visit': self.maternal_visit,
             'prev_pregnancies': 1,
             'pregs_24wks_or_more': 3}
         form_validator = MaternalObstericalHistoryFormValidator(
@@ -63,8 +65,7 @@ class TestMaternalObstericalHistoryForm(TestCase):
         and and the value of pregnancies lost before 24 weeks is not 0.'''
 
         cleaned_data = {
-            'ultrasound': MaternalUltraSoundInitial.objects.filter(
-                maternal_visit=self.maternal_visit),
+            'maternal_visit': self.maternal_visit,
             'prev_pregnancies': 1,
             'lost_before_24wks': 2}
         form_validator = MaternalObstericalHistoryFormValidator(
@@ -77,8 +78,7 @@ class TestMaternalObstericalHistoryForm(TestCase):
         and and the value of pregnancies lost after 24 weeks is not 0.'''
 
         cleaned_data = {
-            'ultrasound': MaternalUltraSoundInitial.objects.filter(
-                maternal_visit=self.maternal_visit),
+            'maternal_visit': self.maternal_visit,
             'prev_pregnancies': 1,
             'lost_after_24wks': 2}
         form_validator = MaternalObstericalHistoryFormValidator(
@@ -92,8 +92,7 @@ class TestMaternalObstericalHistoryForm(TestCase):
         previous pregnancies.'''
 
         cleaned_data = {
-            'ultrasound': MaternalUltraSoundInitial.objects.filter(
-                maternal_visit=self.maternal_visit),
+            'maternal_visit': self.maternal_visit,
             'prev_pregnancies': 2,
             'pregs_24wks_or_more': 1,
             'lost_before_24wks': 2,
@@ -107,8 +106,7 @@ class TestMaternalObstericalHistoryForm(TestCase):
         is raised unexpectedly.'''
 
         cleaned_data = {
-            'ultrasound': MaternalUltraSoundInitial.objects.filter(
-                maternal_visit=self.maternal_visit),
+            'maternal_visit': self.maternal_visit,
             'prev_pregnancies': 3,
             'pregs_24wks_or_more': 1,
             'lost_before_24wks': 2,
@@ -125,8 +123,7 @@ class TestMaternalObstericalHistoryForm(TestCase):
         is less than pregnancies lost before 24 weeks.'''
 
         cleaned_data = {
-            'ultrasound': MaternalUltraSoundInitial.objects.filter(
-                maternal_visit=self.maternal_visit),
+            'maternal_visit': self.maternal_visit,
             'prev_pregnancies': 3,
             'pregs_24wks_or_more': 1,
             'lost_before_24wks': 2,
@@ -141,8 +138,7 @@ class TestMaternalObstericalHistoryForm(TestCase):
         is raised unexpectedly.'''
 
         cleaned_data = {
-            'ultrasound': MaternalUltraSoundInitial.objects.filter(
-                maternal_visit=self.maternal_visit),
+            'maternal_visit': self.maternal_visit,
             'prev_pregnancies': 23,
             'pregs_24wks_or_more': 21,
             'lost_before_24wks': 2,
@@ -159,8 +155,7 @@ class TestMaternalObstericalHistoryForm(TestCase):
         '(Q2 -1) - (Q4 + Q5)'''
 
         cleaned_data = {
-            'ultrasound': MaternalUltraSoundInitial.objects.filter(
-                maternal_visit=self.maternal_visit),
+            'maternal_visit': self.maternal_visit,
             'children_deliv_before_37wks': 7,
             'children_deliv_aftr_37wks': 5,
             'lost_before_24wks': 1,
@@ -176,8 +171,7 @@ class TestMaternalObstericalHistoryForm(TestCase):
         is raised unexpectedly.'''
 
         cleaned_data = {
-            'ultrasound': MaternalUltraSoundInitial.objects.filter(
-                maternal_visit=self.maternal_visit),
+            'maternal_visit': self.maternal_visit,
             'children_deliv_before_37wks': 3,
             'children_deliv_aftr_37wks': 2,
             'lost_before_24wks': 1,
