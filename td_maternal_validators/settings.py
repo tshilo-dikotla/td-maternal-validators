@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'edc_form_validators.apps.AppConfig',
     'edc_visit_schedule.apps.AppConfig',
     'edc_metadata.apps.AppConfig',
-    #'edc_sync.apps.AppConfig',
+    # 'edc_sync.apps.AppConfig',
     'td_maternal_validators.apps.AppConfig',
 ]
 

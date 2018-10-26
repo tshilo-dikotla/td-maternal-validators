@@ -1,5 +1,5 @@
 from django.forms import forms
-from edc_constants.constants import NO
+from edc_constants.constants import NO, NOT_APPLICABLE, YES
 from edc_form_validators import FormValidator
 
 from ..constants import NEVER_STARTED
@@ -11,8 +11,8 @@ class MarternalArvPostFormValidator(FormValidator):
 
     def clean(self):
 
-        condition = (self.cleaned_data.get('on_arv_since') == NO or
-                     self.cleaned_data.get('arv_status') == NEVER_STARTED)
+        condition = (self.cleaned_data.get('on_arv_since') == NO
+                     or self.cleaned_data.get('arv_status') == NEVER_STARTED)
         if condition:
             if self.maternal_arv_post_adh_cls.objects.filter(maternal_visit=self.cleaned_data.get('maternal_visit')):
 
@@ -21,3 +21,20 @@ class MarternalArvPostFormValidator(FormValidator):
                        }
                 self._errors.update(msg)
                 raise forms.ValidationError(msg)
+
+        condition = (self.cleaned_data.get('on_arv_since') == NO
+                     and self.cleaned_data.get('on_arv_reason') != NOT_APPLICABLE)
+        if condition:
+            msg = {'You indicated that participant was not on HAART.'
+                   ' You CANNOT provide a reason. Please correct.'
+                   }
+            self._errors.update(msg)
+            raise forms.ValidationError(msg)
+
+        condition = (self.cleaned_data.get_data('on_arv_since') == YES
+                     and self.cleaned_data.get_data('on_arv_reason') != NOT_APPLICABLE)
+        if condition:
+            msg = {"You indicated that participant was on triple ARVs. "
+                   "Reason CANNOT be 'Not Applicable'. Please correct."}
+            self._errors.update(msg)
+            raise forms.ValidationError(msg)

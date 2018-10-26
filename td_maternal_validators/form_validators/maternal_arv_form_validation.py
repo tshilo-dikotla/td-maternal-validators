@@ -36,3 +36,9 @@ class MaternalArvFormValidator(FormValidator):
                        }
                 self._errors.update(msg)
                 raise ValidationError(msg)
+
+        if self.cleaned_data.get('stop_date'):
+            if not self.cleaned_data.get('reason_for_stop'):
+                msg = {'reason_for_stop': 'ARV stopped, please give reason for stop.'}
+                self._errors.update(msg)
+                raise forms.ValidationError(msg)
