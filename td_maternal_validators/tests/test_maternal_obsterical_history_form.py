@@ -1,13 +1,12 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
 from .models import (
     MaternalConsent, Appointment, MaternalVisit, MaternalUltraSoundInitial)
 from ..form_validators import MaternalObstericalHistoryFormValidator
 
 
-@tag('o')
 class TestMaternalObstericalHistoryForm(TestCase):
     def setUp(self):
         self.subject_consent = MaternalConsent.objects.create(
