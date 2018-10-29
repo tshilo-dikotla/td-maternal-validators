@@ -221,7 +221,9 @@ class TestMaternalPostPartumFuForm(TestCase):
         self.assertIn('diagnoses', form_validator._errors)
 
     def test_subject_status_neg_has_who_dx_is_na(self):
-        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
+        '''Asserts if an exception is raised if the subject's hiv status is
+        negative but new diagnoses listed in the WHO Adult/Adolescent HIV
+        clinical staging document is not N/A.'''
 
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
@@ -234,6 +236,9 @@ class TestMaternalPostPartumFuForm(TestCase):
         self.assertIn('has_who_dx', form_validator._errors)
 
     def test_subject_status_neg_has_who_dx_na(self):
+        '''Tests if the cleaned data validates or fails the tests if Validation
+        Error is raised unexpectedly.'''
+
         ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
@@ -249,6 +254,10 @@ class TestMaternalPostPartumFuForm(TestCase):
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
     def test_subject_status_pos_has_who_dx_applicable(self):
+        '''Asserts if an exception is raised if the subject's hiv status is
+        positive but new diagnoses listed in the WHO Adult/Adolescent HIV
+        clinical staging document is N/A.'''
+
         self.rapid_test_result.result = POS
         self.rapid_test_result.save()
         cleaned_data = {
@@ -261,6 +270,9 @@ class TestMaternalPostPartumFuForm(TestCase):
         self.assertIn('has_who_dx', form_validator._errors)
 
     def test_subject_status_pos_has_who_dx_provided(self):
+        '''Tests if the cleaned data validates or fails the tests if Validation
+        Error is raised unexpectedly.'''
+
         self.rapid_test_result.result = POS
         self.rapid_test_result.save()
         cleaned_data = {
@@ -275,6 +287,11 @@ class TestMaternalPostPartumFuForm(TestCase):
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
     def test_subject_status_pos_has_who_dx_yes_who_required(self):
+        '''Asserts if an exception is raised if the subject's hiv status is
+        positive and new diagnoses listed in the WHO Adult/Adolescent HIV
+        clinical staging document is YES but list of new WHO Stage III/IV
+        diagnoses is not provided.'''
+
         self.rapid_test_result.result = POS
         self.rapid_test_result.save()
         cleaned_data = {
@@ -288,6 +305,9 @@ class TestMaternalPostPartumFuForm(TestCase):
         self.assertIn('who', form_validator._errors)
 
     def test_subject_status_pos_has_who_dx_yes_who_provided(self):
+        '''Tests if the cleaned data validates or fails the tests if Validation
+        Error is raised unexpectedly.'''
+
         self.rapid_test_result.result = POS
         self.rapid_test_result.save()
         ListModel.objects.create(name='who', short_name='who')
@@ -304,6 +324,11 @@ class TestMaternalPostPartumFuForm(TestCase):
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
     def test_subject_status_pos_has_who_dx_no_who_invalid(self):
+        '''Asserts if an exception is raised if the subject's hiv status is
+        positive and new diagnoses listed in the WHO Adult/Adolescent HIV
+        clinical staging document is NO but list of new WHO Stage III/IV
+        diagnoses is provided.'''
+
         self.rapid_test_result.result = POS
         self.rapid_test_result.save()
         ListModel.objects.create(name='who', short_name='who')
@@ -318,6 +343,9 @@ class TestMaternalPostPartumFuForm(TestCase):
         self.assertIn('who', form_validator._errors)
 
     def test_subject_status_pos_has_who_dx_no_who_valid(self):
+        '''Tests if the cleaned data validates or fails the tests if Validation
+        Error is raised unexpectedly.'''
+
         self.rapid_test_result.result = POS
         self.rapid_test_result.save()
         cleaned_data = {
@@ -333,6 +361,9 @@ class TestMaternalPostPartumFuForm(TestCase):
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
     def test_rapid_testing_result_does_not_exist(self):
+        '''Asserts raises exception if rapid testing result model object
+        does not exist.'''
+
         self.rapid_test_result.delete()
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
