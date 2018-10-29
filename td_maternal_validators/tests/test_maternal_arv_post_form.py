@@ -15,7 +15,8 @@ class MaternalArvPostFormValidator(TestCase):
     def setUp(self):
         self.subject_consent = MaternalConsent.objects.create(
             subject_identifier='11111111',
-            gender='M', dob=(get_utcnow() - relativedelta(years=25)).date())
+            gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
+            consent_datetime=get_utcnow())
         appointment = Appointment.objects.create(
             subject_identifier=self.subject_consent.subject_identifier,
             appt_datetime=get_utcnow(),
