@@ -10,20 +10,26 @@ class MarternalArvPostFormValidator(FormValidator):
 
     maternal_arv_post_adh = 'td_maternal.maternalarvpostadh'
 
+    @property
+    def maternal_arv_post_adh_cls(self):
+        return django_apps.get_model(self.maternal_arv_post_adh)
+
     def clean(self):
 
         condition = (self.cleaned_data.get('on_arv_since') == NO
                      or self.cleaned_data.get('arv_status') == NEVER_STARTED)
         if condition:
-            if self.maternal_arv_post_adh_cls.objects.filter(
-                    maternal_visit=self.cleaned_data.get('maternal_visit')):
+            try:
+                self.maternal_arv_post_adh_cls.objects.filter(
+                    maternal_visit=self.cleaned_data.get('maternal_visit'))
 
-                msg = {"ARV history exists. You wrote mother did NOT receive ARVs "
-                       f"in this pregnancy. Please correct '\
-                       {self.maternal_arv_post_adh._meta.verbose_name}' first."
+                msg = {'ARV history exists. You wrote mother did NOT receive ARVs '
+                       'in this pregnancy. Please correct'
+                       f'{self.maternal_arv_post_adh_cls._meta.verbose_name} first'
                        }
-            self._errors.update(msg)
-            raise forms.ValidationError(msg)
+                raise forms.ValidationError(msg)
+            except self.maternal_arv_post_adh_cls.DoesNotExist:
+                pass
 
         condition = (self.cleaned_data.get('on_arv_since') == NO
                      and self.cleaned_data.get('on_arv_reason') != NOT_APPLICABLE)
@@ -41,7 +47,3 @@ class MarternalArvPostFormValidator(FormValidator):
                    "Reason CANNOT be 'Not Applicable'. Please correct."}
         self._errors.update(msg)
         raise forms.ValidationError(msg)
-
-    @property
-    def maternal_arv_post_adh_cls(self):
-        return django_apps.get_model(self.maternal_arv_post_adh)

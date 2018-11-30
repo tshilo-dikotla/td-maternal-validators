@@ -28,8 +28,9 @@ class TestMaternalMedicalHistoryForm(TestCase):
         self.rapid_test_result_model = 'td_maternal_validators.rapidtestresult'
         MaternalMedicalHistoryFormValidator.rapid_test_result_model = \
             self.rapid_test_result_model
+        self.subject_identifier = '12345ABC'
         self.enrollment_status = AntenatalEnrollment.objects.create(
-            registered_subject=self.registered_subject, enrollment_hiv_status=POS)
+            subject_identifier=self.subject_identifier, enrollment_hiv_status=POS)
         self.antenatal_enrollment_model = 'td_maternal_validators.antenatalenrollment'
         MaternalMedicalHistoryFormValidator.antenatal_enrollment_model = \
             self.antenatal_enrollment_model

@@ -96,14 +96,17 @@ class RapidTestResult(BaseUuidModel):
 
 class AntenatalEnrollment(BaseUuidModel):
 
-    registered_subject = models.OneToOneField(
-        RegisteredSubject, on_delete=PROTECT)
+    subject_identifier = models.CharField(max_length=50)
 
     enrollment_hiv_status = models.CharField(max_length=15)
 
     week32_result = models.CharField(max_length=15)
 
     rapid_test_result = models.CharField(max_length=15)
+
+    rapid_test_date = models.DateField(
+        null=True,
+        blank=True)
 
 
 class MaternalObstericalHistory(models.Model):

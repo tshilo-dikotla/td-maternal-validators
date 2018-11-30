@@ -45,7 +45,7 @@ class MaternalPostPartumFuFormValidator(FormValidator):
             raise ValidationError('rapid testing results does not exist.')
             try:
                 antenatal_enrollment = self.antenatal_enrollment_model_cls.objects.get(
-                    registered_subject=cleaned_data.get('registered_subject'))
+                    subject_identifier=cleaned_data.get('subject_identifier'))
 
                 condition = (antenatal_enrollment.enrollment_hiv_status == POS or
                              antenatal_enrollment.week32_result == POS or
