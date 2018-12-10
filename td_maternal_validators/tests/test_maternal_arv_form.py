@@ -14,7 +14,7 @@ from dateutil.relativedelta import relativedelta
 class TestMaternalArvPregForm(TestCase):
     def setUp(self):
         self.subject_consent = MaternalConsent.objects.create(
-            subject_identifier='11111',
+            subject_identifier='11111', consent_datetime=get_utcnow(),
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date())
         appointment = Appointment.objects.create(
             subject_identifier=self.subject_consent.subject_identifier,
