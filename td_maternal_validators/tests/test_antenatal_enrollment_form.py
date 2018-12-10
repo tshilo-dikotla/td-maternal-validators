@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
 from edc_constants.constants import POS, NEG
 from dateutil.relativedelta import relativedelta
@@ -7,7 +7,6 @@ from ..form_validators import AntenatalEnrollmentFormValidator
 from .models import AntenatalEnrollment
 
 
-@tag('ae')
 class TestAntenatalEnrollmentForm(TestCase):
 
     def setUp(self):

@@ -16,11 +16,17 @@ class MaternalConsent(UpdatesOrCreatesRegistrationModelMixin, BaseUuidModel):
 
     subject_identifier = models.CharField(max_length=25)
 
+    screening_identifier = models.CharField(max_length=50)
+
     gender = models.CharField(max_length=25)
 
     dob = models.DateField()
 
     consent_datetime = models.DateTimeField()
+
+    version = models.CharField(
+        max_length=10,
+        editable=False)
 
 
 class RegisteredSubject(BaseUuidModel):
@@ -114,3 +120,23 @@ class MaternalObstericalHistory(models.Model):
     maternal_visit = models.OneToOneField(MaternalVisit, on_delete=PROTECT)
 
     prev_pregnancies = models.IntegerField()
+
+
+class SubjectScreening(BaseUuidModel):
+
+    screening_identifier = models.CharField(
+        max_length=36,
+        unique=True,
+        editable=False)
+
+
+class TdConsentVersion(BaseUuidModel):
+
+    subjectscreening = models.ForeignKey(
+        SubjectScreening, null=True, on_delete=PROTECT)
+
+    version = models.CharField(max_length=3)
+
+    report_datetime = models.DateField(
+        null=True,
+        blank=True)
