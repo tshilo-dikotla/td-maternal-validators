@@ -3,7 +3,7 @@ from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from edc_constants.constants import (RESTARTED, NO, YES, CONTINUOUS, STOPPED)
 from ..form_validators import MaternalLifetimeArvHistoryFormValidator
-from .model import MaternalObstericalHistory
+from .models import Appointment, MaternalObstericalHistory, MaternalVisit
 
 
 @tag('life')
@@ -99,5 +99,10 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
-    def test_validate_prev_preg(self):
-        ob_history = MaternalObstericalHistory.objects.create()
+    @tag('vpp')
+    def test_validate_prev_preg_valid(self):
+        appointment = Appointment()
+        maternal_visit = MaternalVisit(appointment=appointment)
+        ob_history = MaternalObstericalHistory(
+            maternal_visit=maternal_visit, prev_pregnancies=0)
+        print(ob_history.prev_pregnancies)

@@ -42,4 +42,5 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
             field='prev_preg_haart',
             field_required='haart_start_date',
             required_msg='Please give date triple antiretrovirals '
-            'first started.')
+            'first started.'
+        )

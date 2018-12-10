@@ -17,7 +17,8 @@ SECRET_KEY = 'jwggbn11gw22h6&0n@q0t97e)&)pg^n_*$18xj350f0%w+ywba'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-AUTO_CREATE_KEYS = True
+# AUTO_CREATE_KEYS = True
+
 
 ALLOWED_HOSTS = []
 
@@ -46,7 +47,6 @@ INSTALLED_APPS = [
     'edc_visit_schedule.apps.AppConfig',
     'edc_metadata.apps.AppConfig',
     'td_maternal_validators.apps.AppConfig',
-    'td_maternal.apps.AppConfig',
 ]
 
 MIDDLEWARE = [
