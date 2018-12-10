@@ -15,8 +15,7 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
 
     @property
     def antenatal_enrollment_model_cls(self):
-        return django_apps.get_model(self.antenatal_enrollment_model)\
-
+        return django_apps.get_model(self.antenatal_enrollment_model)
 
     def clean(self):
         self.required_if(
