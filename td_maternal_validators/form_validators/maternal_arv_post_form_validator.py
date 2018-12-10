@@ -41,7 +41,8 @@ class MarternalArvPostFormValidator(FormValidator):
         raise forms.ValidationError(msg)
 
         condition = (self.cleaned_data.get_data('on_arv_since') == YES
-                     and self.cleaned_data.get_data('on_arv_reason') != NOT_APPLICABLE)
+                     and self.cleaned_data.get_data('on_arv_reason')
+                     != NOT_APPLICABLE)
         if condition:
             msg = {"You indicated that participant was on triple ARVs. "
                    "Reason CANNOT be 'Not Applicable'. Please correct."}
