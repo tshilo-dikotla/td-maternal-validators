@@ -1,10 +1,9 @@
 from dateutil.relativedelta import relativedelta
 from django.forms import forms
 from django.test import TestCase, tag
+from edc_appointment.models import Appointment
 from edc_base.utils import get_utcnow
 from edc_constants.constants import NO
-
-from edc_appointment.models import Appointment
 
 from ..constants import NEVER_STARTED
 from ..form_validators import MarternalArvPostFormValidator
@@ -16,7 +15,8 @@ class MaternalArvPostFormValidator(TestCase):
     def setUp(self):
         self.subject_consent = MaternalConsent.objects.create(
             subject_identifier='11111111',
-            gender='M', dob=(get_utcnow() - relativedelta(years=25)).date())
+            gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
+            consent_datetime=get_utcnow())
         appointment = Appointment.objects.create(
             subject_identifier=self.subject_consent.subject_identifier,
             appt_datetime=get_utcnow(),
@@ -24,14 +24,15 @@ class MaternalArvPostFormValidator(TestCase):
         self.maternal_visit = MaternalVisit.objects.create(
             appointment=appointment)
         maternal_arv_post_adh = MarternalArvPostFormValidator.maternal_arv_post_adh
-        self.maternal_arv_post_adh = maternal_arv_post_adh.replace(
+        maternal_arv_post_adh = maternal_arv_post_adh.replace(
             'td_maternal', 'td_maternal_validators')
+        MarternalArvPostFormValidator.maternal_arv_post_adh = maternal_arv_post_adh
 
     @tag('c')
-    def test_blah(self):
+    def test_arv_status_no_invalid(self):
         cleaned_data = {'on_arv_since': NO,
-                        'arv_status': None}
-        self.maternal_arv_post_adh.objects.create(
+                        'arv_status': NEVER_STARTED}
+        MaternalArvPostAdh.objects.create(
             maternal_visit=self.maternal_visit)
         form_validator = MarternalArvPostFormValidator(
             cleaned_data=cleaned_data)
