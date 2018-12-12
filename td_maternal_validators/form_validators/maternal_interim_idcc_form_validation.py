@@ -22,30 +22,29 @@ class MaternalIterimIdccFormValidator(FormValidator):
                     field='info_since_lastvisit',
                     field_required=required,
                 )
+        self.validate_viral_load_value()
 
+    def validate_viral_load_value(self):
         cleaned_data = self.cleaned_data
-        if cleaned_data.get('value_vl') != 400 and cleaned_data.get('value_vl_size') \
-                == 'less_than':
+        vl_value = cleaned_data.get('value_vl')
+        if (vl_value != 400
+                and cleaned_data.get('value_vl_size') == 'less_than'):
             msg = {'value_vl': 'You indicated that the value of the most recent VL is'
-                   'less_than a number,therefore the value of VL should be 400'}
+                   f'less_than a {vl_value},therefore the value of VL should be 400'}
             self._errors.update(msg)
             raise ValidationError(msg)
 
-        cleaned_data = self.cleaned_data
-        if cleaned_data.get('value_vl') != 750000 and cleaned_data.get('value_vl_size')\
-                == 'greater_than':
+        if (vl_value != 750000
+                and cleaned_data.get('value_vl_size') == 'greater_than'):
             msg = {'value_vl': 'You indicated that the value of the most recent VL is'
-                   'less_than a number,therefore the value of VL should be 750000'}
+                   f'less_than a {vl_value},therefore the value of VL should be 750000'}
             self._errors.update(msg)
             raise ValidationError(msg)
 
-        cleaned_data = self.cleaned_data
-        if cleaned_data.get('value_vl') > 750000 or cleaned_data.get('value_vl') < 400\
-                and cleaned_data.get('value_vl_size') == 'equal':
-            msg = {'value_vl': 'You indicated that the value of the'
-                   'most recent VL is equal to a'
-                   ' number, therefore the value of VL should be between 400 and 750000'
-                   '(inclusive of 400 and 750,000)'
-                   }
+        if (vl_value > 750000 or vl_value < 400
+                and cleaned_data.get('value_vl_size') == 'equal'):
+            msg = {'value_vl': 'You indicated that the value of the '
+                   f'most recent VL is equal to a {vl_value}, therefore the value of VL '
+                   'should be between 400 and 750000 (inclusive of 400 and 750,000)'}
             self._errors.update(msg)
             raise ValidationError(msg)
