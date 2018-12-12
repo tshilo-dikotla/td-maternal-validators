@@ -1,4 +1,4 @@
-from django.test import TestCase, tag
+from django.test import TestCase
 from django.core.exceptions import ValidationError
 from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import YES, NO, POS, NEG, NOT_APPLICABLE
@@ -9,7 +9,6 @@ from .models import (MaternalArv, MaternalVisit,
 from ..form_validators import MaternalLabDelFormValidator
 
 
-@tag('lab_del')
 class TestMaternalLabDelForm(TestCase):
 
     def setUp(self):
