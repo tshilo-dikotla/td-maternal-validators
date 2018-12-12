@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_appointment.models import Appointment
 from edc_base.utils import get_utcnow
 from edc_constants.constants import (YES, NO, NOT_APPLICABLE, NEG, POS, FEMALE)
@@ -9,7 +9,6 @@ from .models import (MaternalConsent, MaternalVisit, ListModel,
 from ..form_validators import MaternalPostPartumFuFormValidator
 
 
-@tag('pp')
 class TestMaternalPostPartumFuForm(TestCase):
     def setUp(self):
         self.subject_consent = MaternalConsent.objects.create(
@@ -29,8 +28,9 @@ class TestMaternalPostPartumFuForm(TestCase):
         self.rapid_test_result_model = 'td_maternal_validators.rapidtestresult'
         MaternalPostPartumFuFormValidator.rapid_test_result_model = \
             self.rapid_test_result_model
+        self.subject_identifier = '12345ABC'
         self.enrollment_status = AntenatalEnrollment.objects.create(
-            registered_subject=self.registered_subject, enrollment_hiv_status=POS)
+            subject_identifier=self.subject_identifier, enrollment_hiv_status=POS)
         self.antenatal_enrollment_model = 'td_maternal_validators.antenatalenrollment'
         MaternalPostPartumFuFormValidator.antenatal_enrollment_model = \
             self.antenatal_enrollment_model

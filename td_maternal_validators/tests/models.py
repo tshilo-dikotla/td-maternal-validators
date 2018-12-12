@@ -16,11 +16,17 @@ class MaternalConsent(UpdatesOrCreatesRegistrationModelMixin, BaseUuidModel):
 
     subject_identifier = models.CharField(max_length=25)
 
+    screening_identifier = models.CharField(max_length=50)
+
     gender = models.CharField(max_length=25)
 
     dob = models.DateField()
 
     consent_datetime = models.DateTimeField()
+
+    version = models.CharField(
+        max_length=10,
+        editable=False)
 
 
 class RegisteredSubject(BaseUuidModel):
@@ -77,6 +83,14 @@ class MaternalArv(models.Model):
 
     maternal_arv_preg = models.ForeignKey(MaternalArvPreg, on_delete=PROTECT)
 
+    start_date = models.DateField(
+        null=True,
+        blank=False)
+
+    stop_date = models.DateField(
+        null=True,
+        blank=True)
+
 
 class MaternalLifetimeArvHistory(models.Model):
 
@@ -96,8 +110,7 @@ class RapidTestResult(BaseUuidModel):
 
 class AntenatalEnrollment(BaseUuidModel):
 
-    registered_subject = models.OneToOneField(
-        RegisteredSubject, on_delete=PROTECT)
+    subject_identifier = models.CharField(max_length=50)
 
     enrollment_hiv_status = models.CharField(max_length=15)
 
@@ -105,9 +118,33 @@ class AntenatalEnrollment(BaseUuidModel):
 
     rapid_test_result = models.CharField(max_length=15)
 
+    rapid_test_date = models.DateField(
+        null=True,
+        blank=True)
+
 
 class MaternalObstericalHistory(models.Model):
 
     maternal_visit = models.OneToOneField(MaternalVisit, on_delete=PROTECT)
 
     prev_pregnancies = models.IntegerField()
+
+
+class SubjectScreening(BaseUuidModel):
+
+    screening_identifier = models.CharField(
+        max_length=36,
+        unique=True,
+        editable=False)
+
+
+class TdConsentVersion(BaseUuidModel):
+
+    subjectscreening = models.ForeignKey(
+        SubjectScreening, null=True, on_delete=PROTECT)
+
+    version = models.CharField(max_length=3)
+
+    report_datetime = models.DateField(
+        null=True,
+        blank=True)
