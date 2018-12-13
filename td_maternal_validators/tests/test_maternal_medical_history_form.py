@@ -1,14 +1,15 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
-from edc_constants.constants import POS, NEG, NOT_APPLICABLE, MALE, YES, NO
+from edc_constants.constants import POS, NOT_APPLICABLE, MALE, YES, NO
 from .models import (
     MaternalConsent, Appointment, MaternalVisit, RapidTestResult, AntenatalEnrollment,
     RegisteredSubject, ListModel)
 from ..form_validators import MaternalMedicalHistoryFormValidator
 
 
+@tag('hist')
 class TestMaternalMedicalHistoryForm(TestCase):
     def setUp(self):
         self.subject_consent = MaternalConsent.objects.create(
@@ -22,7 +23,7 @@ class TestMaternalMedicalHistoryForm(TestCase):
         self.maternal_visit = MaternalVisit.objects.create(
             appointment=appointment)
         self.rapid_test_result = RapidTestResult.objects.create(
-            maternal_visit=self.maternal_visit, result=NEG)
+            maternal_visit=self.maternal_visit, result=POS)
         self.registered_subject = RegisteredSubject.objects.create(
             first_name='First_Name', last_name='Last_Name', gender=MALE)
         self.rapid_test_result_model = 'td_maternal_validators.rapidtestresult'
@@ -53,10 +54,12 @@ class TestMaternalMedicalHistoryForm(TestCase):
     def test_subject_status_neg_valid(self):
         '''True if chronic_since is no and who_diagnosis is Not_applicable.
         '''
+        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
             'chronic_since': NO,
-            'who_diagnoses': NOT_APPLICABLE,
+            'who_diagnosis': NOT_APPLICABLE,
+            'who': ListModel.objects.all()
         }
         form_validator = MaternalMedicalHistoryFormValidator(
             cleaned_data=cleaned_data)
@@ -76,15 +79,18 @@ class TestMaternalMedicalHistoryForm(TestCase):
         form_validator = MaternalMedicalHistoryFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('who_diagnosis', form_validator._errors)
+        self.assertIn('chronic_since', form_validator._errors)
 
     def test_subject_status_neg_na_valid(self):
         '''True if chronic_since is none and who_diagnosis is Not_applicable.
         '''
+        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
+
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
             'chronic_since': None,
             'who_diagnosis': NOT_APPLICABLE,
+            'who': ListModel.objects.all()
         }
         form_validator = MaternalMedicalHistoryFormValidator(
             cleaned_data=cleaned_data)
@@ -96,11 +102,13 @@ class TestMaternalMedicalHistoryForm(TestCase):
     def test_subject_status_pos_valid(self):
         '''True if chronic_since is none and who_diagnosis is Not_applicable.
         '''
+        ListModel.objects.create(name='NOT_APPLICABLE', short_name='N/A')
         self.rapid_test_result.result = POS
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
             'chronic_since': None,
             'who_diagnosis': NOT_APPLICABLE,
+            'who': ListModel.objects.all()
         }
         form_validator = MaternalMedicalHistoryFormValidator(
             cleaned_data=cleaned_data)
@@ -112,11 +120,13 @@ class TestMaternalMedicalHistoryForm(TestCase):
     def test_subject_status_pos_invalid(self):
         '''Assert raises exception if the result is positive and who_diagnosis is none.
         '''
+        ListModel.objects.create(name='NOT_APPLICABLE', short_name='N/A')
         self.rapid_test_result.result = POS
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
             'chronic_since': YES,
             'who_diagnosis': None,
+            'who': ListModel.objects.all()
         }
         form_validator = MaternalMedicalHistoryFormValidator(
             cleaned_data=cleaned_data)
@@ -126,11 +136,13 @@ class TestMaternalMedicalHistoryForm(TestCase):
     def test_subject_status_pos_no_valid(self):
         '''True if chronic_since is none and who_diagnosis is Not_applicable.
         '''
+        ListModel.objects.create(name='NOT_APPLICABLE', short_name='N/A')
         self.rapid_test_result.result = POS
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
             'chronic_since': NO,
-            'who_diagnosis': NOT_APPLICABLE,
+            'who_diagnosis': NO,
+            'who': ListModel.objects.all()
         }
         form_validator = MaternalMedicalHistoryFormValidator(
             cleaned_data=cleaned_data)
