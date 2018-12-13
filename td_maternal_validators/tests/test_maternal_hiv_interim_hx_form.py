@@ -1,11 +1,10 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
 from edc_constants.constants import YES, NO, NOT_APPLICABLE
 from ..form_validators import MaternalHivInterimHxFormValidator
 
 
-@tag('interim')
 class TestMaternalHivInterimHxForm(TestCase):
 
     def test_has_cd4_YES_cd4_date_required(self):
