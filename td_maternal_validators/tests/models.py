@@ -99,6 +99,14 @@ class MaternalArv(models.Model):
 
     maternal_arv_preg = models.ForeignKey(MaternalArvPreg, on_delete=PROTECT)
 
+    start_date = models.DateField(
+        null=True,
+        blank=False)
+
+    stop_date = models.DateField(
+        null=True,
+        blank=True)
+
 
 class MaternalLifetimeArvHistory(models.Model):
 

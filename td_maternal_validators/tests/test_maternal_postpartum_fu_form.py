@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_appointment.models import Appointment
 from edc_base.utils import get_utcnow
 <<<<<<< HEAD
@@ -24,7 +24,6 @@ from .models import (MaternalConsent, MaternalVisit, ListModel,
 from ..form_validators import MaternalPostPartumFuFormValidator
 
 
-@tag('pp')
 class TestMaternalPostPartumFuForm(TestCase):
     def setUp(self):
         self.subject_consent = MaternalConsent.objects.create(

@@ -1,5 +1,5 @@
 from edc_form_validators import FormValidator
-from edc_constants.constants import YES, NO
+from edc_constants.constants import NO
 
 from ..constants import RESTARTED
 

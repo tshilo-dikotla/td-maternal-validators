@@ -10,7 +10,7 @@ class TestMaternalClinicalTestOneForm(TestCase):
         cleaned_data = {
             "systolic_bp": 30,
             "diastolic_bp": 20,
-            }
+        }
         form_validator = MaternalClinicalMeasurememtsOneFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -24,7 +24,7 @@ class TestMaternalClinicalTestOneForm(TestCase):
         '''
         cleaned_data = {
             "systolic_bp": None,
-            }
+        }
         form_validator = MaternalClinicalMeasurememtsOneFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
@@ -36,7 +36,7 @@ class TestMaternalClinicalTestOneForm(TestCase):
         cleaned_data = {
             "systolic_bp": 50,
             "diastolic_bp": 40,
-            }
+        }
         form_validator = MaternalClinicalMeasurememtsOneFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -50,7 +50,7 @@ class TestMaternalClinicalTestOneForm(TestCase):
         '''
         cleaned_data = {
             "diastolic_bp": None,
-            }
+        }
         form_validator = MaternalClinicalMeasurememtsOneFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
@@ -63,7 +63,7 @@ class TestMaternalClinicalTestOneForm(TestCase):
         cleaned_data = {
             "systolic_bp": 20,
             "diastolic_bp": 40,
-            }
+        }
         form_validator = MaternalClinicalMeasurememtsOneFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
@@ -75,7 +75,7 @@ class TestMaternalClinicalTestOneForm(TestCase):
         cleaned_data = {
             "systolic_bp": 50,
             "diastolic_bp": 40,
-            }
+        }
         form_validator = MaternalClinicalMeasurememtsOneFormValidator(
             cleaned_data=cleaned_data)
         try:

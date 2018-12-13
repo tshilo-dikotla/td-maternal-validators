@@ -1,12 +1,16 @@
+# from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_constants.constants import YES, POS, NEG, NO, NOT_APPLICABLE
+from edc_constants.constants import YES, NO, NOT_APPLICABLE
 from edc_form_validators import FormValidator
+from .maternal_form_validation_mixin import MaternalFormMixin
+# from django.views.decorators.http import condition
+# from builtins import None
 
 from td_maternal.models import MaternalMedicalHistory, AntenatalEnrollment
 
 
-class MaternalMedicalHistoryFormValidator(FormValidator):
+class MaternalMedicalHistoryFormValidator(MaternalFormMixin, FormValidator):
 
     rapid_test_result_model = 'td_maternal.rapidtestresult'
     antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
@@ -17,8 +21,7 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
 
     @property
     def antenatal_enrollment_model_cls(self):
-        return django_apps.get_model(self.antenatal_enrollment_model)\
-
+        return django_apps.get_model(self.antenatal_enrollment_model)
 
     def clean(self):
         cleaned_data = super(MaternalMedicalHistoryForm, self).clean()
