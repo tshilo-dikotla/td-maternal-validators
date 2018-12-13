@@ -4,14 +4,9 @@ from django.db.models.deletion import PROTECT
 from edc_appointment.models import Appointment
 from edc_base.model_mixins import BaseUuidModel, ListModelMixin
 from edc_base.utils import get_utcnow
-<<<<<<< HEAD
-from edc_registration.model_mixins import (
-    UpdatesOrCreatesRegistrationModelMixin)
-=======
 from django_crypto_fields.fields import FirstnameField, LastnameField
 from edc_registration.model_mixins import UpdatesOrCreatesRegistrationModelMixin
 from edc_constants.choices import YES_NO, GENDER
->>>>>>> e585469a334e3523fea3cb1230f535ac7fd95ce4
 
 
 class ListModel(ListModelMixin, BaseUuidModel):
@@ -77,7 +72,6 @@ class MaternalArvPostAdh(models.Model):
     maternal_visit = models.ForeignKey(MaternalVisit, on_delete=PROTECT)
 
 
-<<<<<<< HEAD
 class MaternalCrfModel(BaseUuidModel):
 
     """ Base model for all scheduled models (adds key to :class:`MaternalVisit`).
@@ -86,22 +80,6 @@ class MaternalCrfModel(BaseUuidModel):
     maternal_visit = models.OneToOneField(MaternalVisit, on_delete=PROTECT)
 
 
-class MaternalObstericalHistory(MaternalCrfModel):
-
-    """ A model completed by the user on Obsterical History for all mothers.
-    """
-
-    prev_pregnancies = models.IntegerField(
-        verbose_name="Including this pregnancy, how many previous pregnancies "
-        "for this participant?",
-        validators=[MinValueValidator(0), MaxValueValidator(20), ],
-        help_text="")
-
-    class Meta:
-        app_label = 'td_maternal'
-        verbose_name = "Maternal Obsterical History"
-        verbose_name_plural = "Maternal Obsterical History"
-=======
 class MaternalUltraSoundInitial(models.Model):
 
     maternal_visit = models.OneToOneField(MaternalVisit, on_delete=PROTECT)
@@ -178,4 +156,3 @@ class TdConsentVersion(BaseUuidModel):
     report_datetime = models.DateField(
         null=True,
         blank=True)
->>>>>>> e585469a334e3523fea3cb1230f535ac7fd95ce4

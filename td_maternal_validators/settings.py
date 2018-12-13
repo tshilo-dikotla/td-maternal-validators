@@ -19,7 +19,7 @@ SECRET_KEY = 'jwggbn11gw22h6&0n@q0t97e)&)pg^n_*$18xj350f0%w+ywba'
 DEBUG = True
 # AUTO_CREATE_KEYS = True
 
-
+DEFAULT_STUDY_SITE = 40
 ALLOWED_HOSTS = []
 
 # Application definition
@@ -47,7 +47,10 @@ INSTALLED_APPS = [
     'edc_visit_schedule.apps.AppConfig',
     'edc_metadata.apps.AppConfig',
     # 'edc_sync.apps.AppConfig',
+    'edc_lab.apps.AppConfig',
+    'td_maternal.apps.AppConfig',
     'td_maternal_validators.apps.AppConfig',
+    'td_maternal_validators.apps.EdcVisitTrackingAppConfig'
 ]
 
 MIDDLEWARE = [

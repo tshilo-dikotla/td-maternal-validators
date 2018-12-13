@@ -1,10 +1,7 @@
-<<<<<<< HEAD
 from edc_constants.constants import YES, NEG
-=======
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_constants.constants import YES, POS
->>>>>>> e585469a334e3523fea3cb1230f535ac7fd95ce4
 from edc_form_validators import FormValidator
 
 
