@@ -1,16 +1,14 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
 from edc_constants.constants import (
     RESTARTED, NO, YES, CONTINUOUS, STOPPED, NOT_APPLICABLE)
 from .models import (MaternalConsent, Appointment, MaternalVisit,
                      MaternalObstericalHistory)
 from ..form_validators import MaternalLifetimeArvHistoryFormValidator
-from .models import Appointment, MaternalObstericalHistory, MaternalVisit
 
 
-@tag('life')
 class TestMaternalLifetimeArvHistoryForm(TestCase):
     def setUp(self):
         self.subject_consent = MaternalConsent.objects.create(
@@ -165,15 +163,6 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
-<<<<<<< HEAD
-    @tag('vpp')
-    def test_validate_prev_preg_valid(self):
-        appointment = Appointment()
-        maternal_visit = MaternalVisit(appointment=appointment)
-        ob_history = MaternalObstericalHistory(
-            maternal_visit=maternal_visit, prev_pregnancies=0)
-        print(ob_history.prev_pregnancies)
-=======
     def test_consent_date_less_than_report_date_valid(self):
         '''Tests validates cleaned data given or fails the tests if validation
         error raised unexpectedly.'''
@@ -345,4 +334,3 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         form_validator = MaternalLifetimeArvHistoryFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
->>>>>>> e585469a334e3523fea3cb1230f535ac7fd95ce4

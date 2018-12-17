@@ -148,10 +148,17 @@ class MaternalObstericalHistory(models.Model):
 
 class SubjectScreening(BaseUuidModel):
 
+    subject_identifier = models.CharField(
+        max_length=50)
+
     screening_identifier = models.CharField(
         max_length=36,
         unique=True,
         editable=False)
+
+    has_omang = models.CharField(max_length=3)
+
+    age_in_years = age_in_years = models.IntegerField()
 
 
 class TdConsentVersion(BaseUuidModel):

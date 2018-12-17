@@ -9,6 +9,8 @@ class AntenatalVisitMembershipFormValidator(FormValidator):
 
     maternal_consent_model = 'td_maternal.subjectconsent'
 
+    subject_screening_model = 'td_maternal.subjectscreening'
+
     @property
     def consent_version_cls(self):
         return django_apps.get_model(self.consent_version_model)
@@ -17,23 +19,35 @@ class AntenatalVisitMembershipFormValidator(FormValidator):
     def maternal_consent_cls(self):
         return django_apps.get_model(self.maternal_consent_model)
 
-    def clean(self):
-        self.validate_current_consent_version(cleaned_data=self.cleaned_data)
+    @property
+    def maternal_eligibility_cls(self):
+        return django_apps.get_model(self.subject_screening_model)
 
-    def validate_current_consent_version(self, cleaned_data=None):
+    def clean(self):
+        self.validate_current_consent_version()
+
+    def validate_current_consent_version(self):
         try:
             td_consent_version = self.consent_version_cls.objects.get(
-                subjectscreening=cleaned_data.get('subjectscreening'))
+                subjectscreening=self.maternal_eligibility)
         except self.consent_version_cls.DoesNotExist:
             raise ValidationError(
                 'Complete mother\'s consent version form before proceeding')
         else:
             try:
                 self.maternal_consent_cls.objects.get(
-                    screening_identifier=cleaned_data.get(
-                        'subjectscreening').screening_identifier,
+                    screening_identifier=self.maternal_eligibility.screening_identifier,
                     version=td_consent_version.version)
             except self.maternal_consent_cls.DoesNotExist:
                 raise ValidationError(
                     'Maternal Consent form for version {} before '
                     'proceeding'.format(td_consent_version.version))
+
+    @property
+    def maternal_eligibility(self):
+        cleaned_data = self.cleaned_data
+        try:
+            return self.maternal_eligibility_cls.objects.get(
+                subject_identifier=cleaned_data.get('subject_identifier'))
+        except self.maternal_eligibility_cls.DoesNotExist:
+            return None
