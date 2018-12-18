@@ -1,7 +1,6 @@
-from edc_constants.constants import YES, NEG
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_constants.constants import YES, POS
+from edc_constants.constants import YES, POS, NOT_APPLICABLE
 from edc_form_validators import FormValidator
 
 
@@ -19,31 +18,17 @@ class MaternalPostPartumFuFormValidator(FormValidator):
         return django_apps.get_model(self.antenatal_enrollment_model)
 
     def clean(self):
-        required_fields = {'hospitalized': 'hospitalization_reason',
-                           'new_diagnoses': 'diagnoses'}
-        for field, required_field in required_fields.items():
-            self.m2m_required_if(
-                response=YES,
-                field=field,
-                m2m_field=required_field)
+        required_fields = ('hospitalization_reason', 'diagnoses')
+        for required_field in required_fields:
+            self.m2m_required(
+                m2m_field=required_field
+            )
 
         self.required_if(
             YES,
             field='hospitalized',
             field_required='hospitalization_days')
-
-        m2m_fields = {'hospitalized': 'hospitalization_reason',
-                      'new_diagnoses': 'diagnoses'}
-        for k, v in m2m_fields.items():
-            self.m2m_validate_not_applicable(
-                YES,
-                field=k,
-                m2m_field=v)
-
-        self.not_applicable(
-            NEG,
-            field='subject_status',
-            field_applicable='has_who_dx')
+        self.validate_m2m_not_applicable(cleaned_data=self.cleaned_data)
         self.validate_hiv_result(cleaned_data=self.cleaned_data)
 
     def validate_hiv_result(self, cleaned_data=None):

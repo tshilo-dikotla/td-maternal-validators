@@ -1,16 +1,11 @@
-# from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_constants.constants import YES, NO, NOT_APPLICABLE
 from edc_form_validators import FormValidator
 from .maternal_form_validation_mixin import MaternalFormMixin
-# from django.views.decorators.http import condition
-# from builtins import None
-
-from td_maternal.models import MaternalMedicalHistory, AntenatalEnrollment
 
 
-class MaternalMedicalHistoryFormValidator(MaternalFormMixin, FormValidator):
+class MaternalMedicalHistoryFormValidator(FormValidator):
 
     rapid_test_result_model = 'td_maternal.rapidtestresult'
     antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
@@ -24,133 +19,110 @@ class MaternalMedicalHistoryFormValidator(MaternalFormMixin, FormValidator):
         return django_apps.get_model(self.antenatal_enrollment_model)
 
     def clean(self):
-        cleaned_data = super(MaternalMedicalHistoryForm, self).clean()
+        status = MaternalFormMixin()
+        condition = status.validate_hiv_result(cleaned_data=self.cleaned_data)
+        self.validate_chronic_since_who_diagnosis_neg(
+            cleaned_data=self.cleaned_data, condition=condition)
+        self.validate_chronic_since_who_diagnosis_pos(
+            cleaned_data=self.cleaned_data, condition=condition)
+        self.validate_who_diagnosis_who_chronic_list(
+            cleaned_data=self.cleaned_data, condition=condition)
+        self.validate_mother_father_chronic_illness_multiple_selection()
+        self.validate_mother_medications_multiple_selections()
 
+    def validate_chronic_since_who_diagnosis_neg(self, cleaned_data=None, condition=False):
+        if not condition and cleaned_data.get('chronic_since') == YES:
+            if cleaned_data.get('who_diagnosis') != NOT_APPLICABLE:
+                msg = {'who_diagnosis':
+                       'The mother is HIV negative. Chronic_since should be NO '
+                       'and Who Diagnosis should be Not Applicable'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
 
-#         self.required_if(
-#             YES,
-#             field='chronic_since',
-#             field_required='who_diagnosis'
-#         )
-#         self.validate_hiv_result(cleaned_data=self.cleaned_data)
-#
-#     def validate_hiv_result(self, cleaned_data=None):
-#         rapid_test_result = self.rapid_testing_model_cls.objects.filter().\
-#             order_by('created').last()
-#         if rapid_test_result:
-#             condition = rapid_test_result.result == NEG
-#
-#         else:
-#             raise ValidationError('rapid testing results does not exist.')
-#             try:
-#                 antenatal_enrollment = self.antenatal_enrollment_model_cls.objects.get(
-#                     subject_identifier=cleaned_data.get('subject_identifier'))
-#
-#                 condition = (antenatal_enrollment.enrollment_hiv_status == POS or
-#                              antenatal_enrollment.week32_result == POS or
-#                              antenatal_enrollment.rapid_test_result == POS)
-#
-#                 self.validate_chronic_since_who_diagnosis_neg(condition)
-#
-#             except self.antenatal_enrollment_model_cls.DoesNotExist:
-#                 raise ValidationError('Fill out Antenatal Enrollment Form.')
-#
-#     def validate_chronic_since_who_diagnosis_neg(self):
-#
-#         if('chronic_since') == YES:
-#             if (('who_diagnosis') == NO or
-#                 ('who_diagnosis') == YES or
-#                     ('who_diagnosis') == NOT_APPLICABLE):
-#                 msg = {'The mother is HIV negative. Chronic_since should be NO'
-#                        'and Who Diagnosis should be Not Applicable'}
-#                 self._errors.update(msg)
-#                 raise ValidationError(msg)
-#             else:
-#                 if ('chronic_since') == NO:
-#                     if ('who_diagnosis') != NOT_APPLICABLE:
-#                         msg = {
-#                             'The mother is HIV negative.'
-#                             'Who Diagnosis should be Not Applicable'}
-#
-#         self._errors.update(msg)
-#         raise ValidationError(msg)
-#
-#     def validate_chronic_since_who_diagnosis_pos(self):
-#
-#         if ('chronic_since') == NO:
-#             if ('who_diagnosis') != NO:
-#                 msg = {'The mother is HIV positive, because Chronic_since is NO'
-#                        'and Who Diagnosis should also be NO'}
-#         self._errors.update(msg)
-#         raise ValidationError(msg)
-#
-#     def validate_who_diagnosis_who_chronic_list(self):
-#
-#         if not ('who'):
-#             msg = {'Question5: Mother has prior chronic illness, they should be listed'}
-#
-#         if ('who_diagnosis') == NOT_APPLICABLE:
-#             if self.validate_not_applicable_not_there('who'):
-#                 msg = {
-#                     'Question5: Participant is HIV Negative,'
-#                     'do not give a listing, rather give N/A'}
-#
-#             if self.validate_not_applicable_and_other_options('who'):
-#                 msg = {'Question5: Participant is HIV Negative,'
-#                        'do not give a listing, only give N/A'}
-#
-#         if ('who_diagnosis') == YES:
-#             if self.validate_not_applicable_in_there('who'):
-#                 msg = {'Question5: Participant indicated that they had'
-#                        'WHO stage III and IV, list of diagnosis cannot be N/A'}
-#
-#         if ('who_diagnosis') == NO:
-#             if self.validate_not_applicable_not_there('who'):
-#                 msg = {'Question5: The mother does not have prior who'
-#                        'stage III and IV illnesses. Should provide N/A'}
-#
-#             if self.validate_not_applicable_and_other_options('who'):
-#                 msg = {'Question5: The mother does not have prior who'
-#                        'stage III and IV illnesses. Should only provide N/A'}
-#         self._errors.update(msg)
-#         raise ValidationError(msg)
-#
-#     def validate_mother_medications_multiple_selections(self):
-#
-#         if self.validate_many_to_many_not_blank('mother_medications'):
-#             msg = {'Question10: The field for the mothers'
-#                    'medications should not be left blank'}
-#
-#         if self.validate_not_applicable_and_other_options('mother_medications'):
-#             msg = {'Question10: You cannot select options that have N/A in them'}
-#         self._errors.update(msg)
-#         raise ValidationError(msg)
-#
-#     def validate_positive_mother_seropositive_yes(self):
-#         required_fields = ['perinataly_infected', 'know_hiv_status',
-#                            'lowest_cd4_known']
-#         for required in required_fields:
-#             if required in self.cleaned_data:
-#                 self.required_if(
-#                     YES,
-#                     field='sero_posetive',
-#                     field_required=required
-#                 )
-#
-#     def validate_negative_mother_seropositive_no_cd4_not(self):
-#         required_fields = ['lowest_cd4_known', 'cd4_count',
-#                            'cd4_date', 'is_date_estimated']
-#         for required in required_fields:
-#             if required in self.cleaned_data:
-#                 self.required_if(
-#                     YES,
-#                     field='sero_posetive',
-#                     field_required=required
-#                 )
-#
-#     def validate_haart_start_date(self, cleaned_data=None):
-#         if cleaned_data.get('haart_start_date'):
-#             if cleaned_data('haart_start_date') < cleaned_data.get('date_hiv_diagnosis'):
-#                 msg = {'Haart start date cannot be before HIV diagnosis date.'}
-#                 self._errors.update(msg)
-#                 raise ValidationError(msg)
+            self.not_applicable_if(
+                NO,
+                field='chronic_since',
+                field_applicable='who_diagnosis'
+            )
+
+    def validate_chronic_since_who_diagnosis_pos(self, cleaned_data=None, condition=False):
+        if condition and cleaned_data.get('chronic_since') == NO:
+            if cleaned_data.get('who_diagnosis') != NO:
+                msg = {'who_diagnosis':
+                       'The mother is HIV positive, because Chronic_since is '
+                       'NO and Who Diagnosis should also be NO'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
+
+    def validate_who_diagnosis_who_chronic_list(self, cleaned_data=None, condition=False):
+        self.m2m_required(
+            m2m_field='who')
+
+        if not condition and cleaned_data.get('who_diagnosis') == NOT_APPLICABLE:
+            self.m2m_single_selection_if(
+                NOT_APPLICABLE,
+                m2m_field='who')
+        elif condition:
+            if cleaned_data.get('who_diagnosis') == YES:
+                qs = self.cleaned_data.get('who')
+                if qs and qs.count() > 0:
+                    selected = {obj.short_name: obj.name for obj in qs}
+                if NOT_APPLICABLE in selected:
+                    msg = {'who':
+                           'Participant indicated that they had WHO stage III '
+                           'and IV, list of diagnosis cannot be N/A'}
+                    self._errors.update(msg)
+                    raise ValidationError(msg)
+
+    def validate_mother_father_chronic_illness_multiple_selection(self):
+        m2m_fields = ('mother_chronic', 'father_chronic')
+        for m2m_field in m2m_fields:
+            self.m2m_required(
+                m2m_field=m2m_field)
+
+            self.m2m_single_selection_if(
+                NOT_APPLICABLE,
+                m2m_field=m2m_field)
+
+    def validate_mother_medications_multiple_selections(self):
+        self.m2m_required(
+            m2m_field='mother_medications')
+        self.m2m_single_selection_if(
+            NOT_APPLICABLE,
+            m2m_field='mother_medications')
+
+    def validate_positive_mother_seropositive_yes(self, cleaned_data=None, condition=False):
+        if condition:
+            self.required_if(
+                YES,
+                field='sero_posetive',
+                field_required='date_hiv_diagnosis')
+            fields_applicable = ('perinataly_infected', 'know_hiv_status',
+                                 'lowest_cd4_known')
+            for field_applicable in fields_applicable:
+                self.applicable_if(
+                    YES,
+                    field='sero_posetive',
+                    field_applicable=field_applicable)
+
+            if cleaned_data.get('sero_posetive') == YES:
+                required_fields = ('cd4_count', 'cd4_date',
+                                   'is_date_estimated')
+                for required in required_fields:
+                    self.required_if(
+                        YES,
+                        field='lowest_cd4_known',
+                        field_required=required)
+            if cleaned_data.get('sero_posetive') == NO:
+                msg = {'sero_posetive':
+                       'The mother is HIV Positive, The field for whether she is sero'
+                       'positive should not be NO'}
+                raise ValidationError(msg)
+
+    def validate_negative_mother_seropositive_no(self, cleaned_data=None, condition=False):
+        if not condition:
+            if cleaned_data.get('sero_posetive') == YES:
+                msg = {'sero_posetive':
+                       'The Mother is HIV Negative she cannot be Sero Positive'}
+                self._errors.update(msg)
+                raise ValidationError(msg)

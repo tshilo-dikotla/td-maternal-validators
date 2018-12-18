@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, tag
 from django.core.exceptions import ValidationError
 from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import YES, NO, POS, NEG, NOT_APPLICABLE
@@ -9,11 +9,10 @@ from .models import (MaternalArv, MaternalVisit,
 from ..form_validators import MaternalLabDelFormValidator
 
 
+@tag('lab')
 class TestMaternalLabDelForm(TestCase):
 
     def setUp(self):
-        self.subjectscreening = SubjectScreening.objects.create(
-            screening_identifier='ABC12345')
         self.subject_consent = MaternalConsent.objects.create(
             subject_identifier='11111111', screening_identifier='ABC12345',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
@@ -21,6 +20,12 @@ class TestMaternalLabDelForm(TestCase):
         self.subject_consent_model = 'td_maternal_validators.maternalconsent'
         MaternalLabDelFormValidator.maternal_consent_model =\
             self.subject_consent_model
+        self.subjectscreening = SubjectScreening.objects.create(
+            subject_identifier=self.subject_consent.subject_identifier,
+            screening_identifier='ABC12345', age_in_years=22)
+        self.subject_screening_model = 'td_maternal_validators.subjectscreening'
+        MaternalLabDelFormValidator.subject_screening_model =\
+            self.subject_screening_model
         appointment = Appointment.objects.create(
             subject_identifier=self.subject_consent.subject_identifier,
             appt_datetime=get_utcnow(),
@@ -52,7 +57,6 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_arv_init_date_match_start_date(self):
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'arv_initiation_date': get_utcnow().date(),
             'delivery_datetime': get_utcnow() + relativedelta(weeks=5),
@@ -66,7 +70,6 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_arv_init_date_does_not_match_start_date(self):
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'arv_initiation_date': (get_utcnow() - relativedelta(days=2)).date(),
             'delivery_datetime': get_utcnow() + relativedelta(weeks=5),
@@ -77,7 +80,6 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_hiv_status_POS_valid_regiment_duration_invalid(self):
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': NO,
             'delivery_datetime': get_utcnow(),
@@ -88,7 +90,6 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_hiv_status_POS_valid_regiment_duration_YES(self):
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': YES,
             'delivery_datetime': get_utcnow() + relativedelta(weeks=5),
@@ -102,7 +103,6 @@ class TestMaternalLabDelForm(TestCase):
     def test_valid_regiment_duration_YES_arv_init_date_required(self):
         self.maternal_arv.delete()
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': YES,
             'arv_initiation_date': None}
@@ -112,7 +112,6 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_valid_regiment_duration_YES_arv_init_date_provided(self):
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': YES,
             'arv_initiation_date': get_utcnow().date(),
@@ -125,7 +124,6 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_delivery_date_within_4wks_arv_init_date_invalid(self):
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': YES,
             'arv_initiation_date': get_utcnow().date(),
@@ -136,7 +134,6 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_delivery_date_more_than_4wks_arv_init_date_valid(self):
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': YES,
             'arv_initiation_date': get_utcnow().date(),
@@ -154,7 +151,6 @@ class TestMaternalLabDelForm(TestCase):
         self.rapid_test_result.result = NEG
         self.rapid_test_result.save()
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': NO, }
         form_validator = MaternalLabDelFormValidator(cleaned_data=cleaned_data)
@@ -168,7 +164,6 @@ class TestMaternalLabDelForm(TestCase):
         self.rapid_test_result.result = NEG
         self.rapid_test_result.save()
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': YES, }
         form_validator = MaternalLabDelFormValidator(cleaned_data=cleaned_data)
@@ -182,7 +177,6 @@ class TestMaternalLabDelForm(TestCase):
         self.rapid_test_result.result = NEG
         self.rapid_test_result.save()
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': NOT_APPLICABLE, }
         form_validator = MaternalLabDelFormValidator(cleaned_data=cleaned_data)
@@ -197,7 +191,6 @@ class TestMaternalLabDelForm(TestCase):
         self.rapid_test_result.result = NEG
         self.rapid_test_result.save()
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': NOT_APPLICABLE,
             'arv_initiation_date': get_utcnow().date()
@@ -213,7 +206,6 @@ class TestMaternalLabDelForm(TestCase):
         self.rapid_test_result.result = NEG
         self.rapid_test_result.save()
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': NOT_APPLICABLE,
             'arv_initiation_date': None
@@ -226,7 +218,6 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_still_births_zero_live_births_one_valid(self):
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'arv_initiation_date': get_utcnow().date(),
             'valid_regiment_duration': YES,
@@ -242,7 +233,6 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_still_births_one_live_births_zero_valid(self):
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'arv_initiation_date': get_utcnow().date(),
             'valid_regiment_duration': YES,
@@ -258,7 +248,6 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_live_births_one_still_births_invalid(self):
         cleaned_data = {
-            'subjectscreening': self.subjectscreening,
             'subject_identifier': self.subject_consent.subject_identifier,
             'arv_initiation_date': get_utcnow().date(),
             'valid_regiment_duration': YES,

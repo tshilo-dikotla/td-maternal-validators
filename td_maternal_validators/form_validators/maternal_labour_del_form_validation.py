@@ -12,6 +12,7 @@ class MaternalLabDelFormValidator(FormValidator):
     antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
     consent_version_model = 'td_maternal.tdconsentversion'
     maternal_consent_model = 'td_maternal.subjectconsent'
+    subject_screening_model = 'td_maternal.subjectscreening'
 
     @property
     def consent_version_cls(self):
@@ -34,22 +35,27 @@ class MaternalLabDelFormValidator(FormValidator):
         return django_apps.get_model(self.maternal_arv_model)
 
     @property
+    def maternal_eligibility_cls(self):
+        return django_apps.get_model(self.subject_screening_model)
+
+    @property
     def status_result(self):
         status = None
-        try:
-            antenatal_enrollment = self.antenatal_enrollment_model_cls.objects.get(
-                subject_identifier=self.cleaned_data.get('subject_identifier'))
-            condition = (antenatal_enrollment.enrollment_hiv_status == POS or
-                         antenatal_enrollment.week32_result == POS or
-                         antenatal_enrollment.rapid_test_result == POS)
-            if condition:
-                status = POS
-            else:
-                rapid_test_result = self.rapid_testing_model_cls.objects.\
-                    filter().order_by('created').last()
-                status = rapid_test_result.result
-        except self.antenatal_enrollment_model_cls.DoesNotExist:
-            raise ValidationError('Fill out Antenatal Enrollment Form.')
+        rapid_test_result = self.rapid_testing_model_cls.objects.\
+            filter().order_by('created').last()
+        if rapid_test_result:
+            status = rapid_test_result.result
+        else:
+            try:
+                antenatal_enrollment = self.antenatal_enrollment_model_cls.objects.get(
+                    subject_identifier=self.cleaned_data.get('subject_identifier'))
+                condition = (antenatal_enrollment.enrollment_hiv_status == POS or
+                             antenatal_enrollment.week32_result == POS or
+                             antenatal_enrollment.rapid_test_result == POS)
+                if condition:
+                    status = POS
+            except self.antenatal_enrollment_model_cls.DoesNotExist:
+                raise ValidationError('Fill out Antenatal Enrollment Form.')
 
         return status
 
@@ -57,7 +63,7 @@ class MaternalLabDelFormValidator(FormValidator):
         self.validate_initiation_date(cleaned_data=self.cleaned_data)
         self.validate_valid_regime_hiv_pos_only(cleaned_data=self.cleaned_data)
         self.validate_live_births_still_birth(cleaned_data=self.cleaned_data)
-        self.validate_current_consent_version(cleaned_data=self.cleaned_data)
+        self.validate_current_consent_version()
 
     def validate_initiation_date(self, cleaned_data=None):
         subject_identifier = cleaned_data.get('subject_identifier')
@@ -128,20 +134,28 @@ class MaternalLabDelFormValidator(FormValidator):
             self._errors.update(message)
             raise ValidationError(message)
 
-    def validate_current_consent_version(self, cleaned_data=None):
+    def validate_current_consent_version(self):
         try:
             td_consent_version = self.consent_version_cls.objects.get(
-                subjectscreening=cleaned_data.get('subjectscreening'))
+                subjectscreening=self.maternal_eligibility)
         except self.consent_version_cls.DoesNotExist:
             raise ValidationError(
                 'Complete mother\'s consent version form before proceeding')
         else:
             try:
                 self.maternal_consent_cls.objects.get(
-                    screening_identifier=cleaned_data.get(
-                        'subjectscreening').screening_identifier,
+                    screening_identifier=self.maternal_eligibility.screening_identifier,
                     version=td_consent_version.version)
             except self.maternal_consent_cls.DoesNotExist:
                 raise ValidationError(
                     'Maternal Consent form for version {} before '
                     'proceeding'.format(td_consent_version.version))
+
+    @property
+    def maternal_eligibility(self):
+        cleaned_data = self.cleaned_data
+        try:
+            return self.maternal_eligibility_cls.objects.get(
+                subject_identifier=cleaned_data.get('subject_identifier'))
+        except self.maternal_eligibility_cls.DoesNotExist:
+            return None
