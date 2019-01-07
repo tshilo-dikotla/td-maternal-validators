@@ -42,7 +42,9 @@ class TestMaternalPostPartumFuForm(TestCase):
         cleaned_data = {
             'hospitalized': YES,
             'hospitalization_reason': None,
-            'hospitalization_days': 10}
+            'hospitalization_days': 10,
+            'diagnoses': ListModel.objects.create(
+                name=NOT_APPLICABLE, short_name=NOT_APPLICABLE)}
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
@@ -60,25 +62,9 @@ class TestMaternalPostPartumFuForm(TestCase):
             'hospitalized': YES,
             'hospitalization_reason': ListModel.objects.filter(
                 name='hypertension'),
-            'hospitalization_days': 10, }
-        form_validator = MaternalPostPartumFuFormValidator(
-            cleaned_data=cleaned_data)
-        try:
-            form_validator.validate()
-        except ValidationError as e:
-            self.fail(f'ValidationError unexpectedly raised. Got{e}')
-
-    def test_hospitalized_no_reason_valid(self):
-        '''Tests if the cleaned data validates or fails the tests if Validation
-        Error is raised unexpectedly.'''
-
-        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
-
-        cleaned_data = {
-            'hospitalized': NO,
-            'hospitalization_reason': None,
-            'hospitalization_days': None, }
-
+            'hospitalization_days': 10,
+            'diagnoses': ListModel.objects.filter(
+                name=NOT_APPLICABLE)}
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -130,7 +116,9 @@ class TestMaternalPostPartumFuForm(TestCase):
         cleaned_data = {
             'hospitalized': NO,
             'hospitalization_reason': ListModel.objects.all(),
-            'hospitalization_days': None, }
+            'hospitalization_days': None,
+            'diagnoses': ListModel.objects.filter(
+                name=NOT_APPLICABLE)}
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
@@ -149,7 +137,9 @@ class TestMaternalPostPartumFuForm(TestCase):
             'hospitalized': YES,
             'hospitalization_reason': ListModel.objects.filter(
                 name='hypertension'),
-            'hospitalization_days': None, }
+            'hospitalization_days': None,
+            'diagnoses': ListModel.objects.filter(
+                name=NOT_APPLICABLE)}
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
@@ -168,7 +158,9 @@ class TestMaternalPostPartumFuForm(TestCase):
             'hospitalized': YES,
             'hospitalization_reason': ListModel.objects.filter(
                 name='hypertension'),
-            'hospitalization_days': get_utcnow().date(), }
+            'hospitalization_days': get_utcnow().date(),
+            'diagnoses': ListModel.objects.filter(
+                name=NOT_APPLICABLE)}
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -277,7 +269,7 @@ class TestMaternalPostPartumFuForm(TestCase):
         ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
             'hospitalization_reason': ListModel.objects.filter(
-                name=NOT_APPLICABLE),
+                name=NOT_APPLICABLE, short_name='N/A'),
             'new_diagnoses': NO,
             'diagnoses': ListModel.objects.all()}
         form_validator = MaternalPostPartumFuFormValidator(
@@ -292,7 +284,8 @@ class TestMaternalPostPartumFuForm(TestCase):
         ListModel.objects.create(name='cancer', short_name='cancer')
 
         cleaned_data = {
-
+            'hospitalization_reason': ListModel.objects.create(
+                name=NOT_APPLICABLE, short_name='N/A'),
             'new_diagnoses': NO,
             'diagnoses': ListModel.objects.all()}
         form_validator = MaternalPostPartumFuFormValidator(
@@ -304,9 +297,12 @@ class TestMaternalPostPartumFuForm(TestCase):
         '''Asserts if an exception is raised if the subject's hiv status is
         negative but new diagnoses listed in the WHO Adult/Adolescent HIV
         clinical staging document is not N/A.'''
+        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
 
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
+            'hospitalization_reason': ListModel.objects.all(),
+            'diagnoses': ListModel.objects.all(),
             'has_who_dx': YES,
             'who': None
         }
@@ -322,6 +318,8 @@ class TestMaternalPostPartumFuForm(TestCase):
         ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
+            'hospitalization_reason': ListModel.objects.all(),
+            'diagnoses': ListModel.objects.all(),
             'has_who_dx': NOT_APPLICABLE,
             'who': None
         }
@@ -337,11 +335,14 @@ class TestMaternalPostPartumFuForm(TestCase):
         '''Asserts if an exception is raised if the subject's hiv status is
         positive but new diagnoses listed in the WHO Adult/Adolescent HIV
         clinical staging document is N/A.'''
+        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
 
         self.rapid_test_result.result = POS
         self.rapid_test_result.save()
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
+            'hospitalization_reason': ListModel.objects.all(),
+            'diagnoses': ListModel.objects.all(),
             'has_who_dx': NOT_APPLICABLE
         }
         form_validator = MaternalPostPartumFuFormValidator(
@@ -352,12 +353,16 @@ class TestMaternalPostPartumFuForm(TestCase):
     def test_subject_status_pos_has_who_dx_provided(self):
         '''Tests if the cleaned data validates or fails the tests if Validation
         Error is raised unexpectedly.'''
+        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
 
         self.rapid_test_result.result = POS
         self.rapid_test_result.save()
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
-            'has_who_dx': NO
+            'hospitalization_reason': ListModel.objects.all(),
+            'diagnoses': ListModel.objects.all(),
+            'has_who_dx': NO,
+            'who': ListModel.objects.all()
         }
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
@@ -371,13 +376,16 @@ class TestMaternalPostPartumFuForm(TestCase):
         positive and new diagnoses listed in the WHO Adult/Adolescent HIV
         clinical staging document is YES but list of new WHO Stage III/IV
         diagnoses is not provided.'''
+        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
 
         self.rapid_test_result.result = POS
         self.rapid_test_result.save()
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
+            'hospitalization_reason': ListModel.objects.all(),
+            'diagnoses': ListModel.objects.all(),
             'has_who_dx': YES,
-            'who': None
+            'who': ListModel.objects.all()
         }
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
@@ -391,10 +399,13 @@ class TestMaternalPostPartumFuForm(TestCase):
         self.rapid_test_result.result = POS
         self.rapid_test_result.save()
         ListModel.objects.create(name='who', short_name='who')
+        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
+            'hospitalization_reason': ListModel.objects.filter(name=NOT_APPLICABLE),
+            'diagnoses': ListModel.objects.filter(name=NOT_APPLICABLE),
             'has_who_dx': YES,
-            'who': ListModel.objects.all()
+            'who': ListModel.objects.filter(name='who')
         }
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
@@ -412,8 +423,11 @@ class TestMaternalPostPartumFuForm(TestCase):
         self.rapid_test_result.result = POS
         self.rapid_test_result.save()
         ListModel.objects.create(name='who', short_name='who')
+        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
+            'hospitalization_reason': ListModel.objects.filter(name=NOT_APPLICABLE),
+            'diagnoses': ListModel.objects.filter(name=NOT_APPLICABLE),
             'has_who_dx': NO,
             'who': ListModel.objects.all()
         }
@@ -425,13 +439,16 @@ class TestMaternalPostPartumFuForm(TestCase):
     def test_subject_status_pos_has_who_dx_no_who_valid(self):
         '''Tests if the cleaned data validates or fails the tests if Validation
         Error is raised unexpectedly.'''
+        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
 
         self.rapid_test_result.result = POS
         self.rapid_test_result.save()
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
+            'hospitalization_reason': ListModel.objects.all(),
+            'diagnoses': ListModel.objects.all(),
             'has_who_dx': NO,
-            'who': None
+            'who': ListModel.objects.all()
         }
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
@@ -443,10 +460,13 @@ class TestMaternalPostPartumFuForm(TestCase):
     def test_rapid_testing_result_does_not_exist(self):
         '''Asserts raises exception if rapid testing result model object
         does not exist.'''
+        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
 
         self.rapid_test_result.delete()
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
+            'hospitalization_reason': ListModel.objects.all(),
+            'diagnoses': ListModel.objects.all(),
         }
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
