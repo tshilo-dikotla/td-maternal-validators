@@ -16,7 +16,7 @@ setup(
     author_email='se-dmc@bhp.org.bw',
     packages=find_packages(),
     include_package_data=True,
-    url='https://github.com/tshilo-dikotla/td-maternal',
+    url='https://github.com/tshilo-dikotla/td-maternal-validators',
     license='GPL license, see LICENSE',
     description='Tshilo Dikotla.',
     long_description=README,
