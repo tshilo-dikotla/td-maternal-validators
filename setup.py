@@ -12,8 +12,8 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 setup(
     name='tshilo-dikotla maternal validators',
     version='0.1.0',
-    author=u'lkepaletswe',
-    author_email='leslie.kep@gmail.com',
+    author=u'Software Engineering & Data Management',
+    author_email='se-dmc@bhp.org.bw',
     packages=find_packages(),
     include_package_data=True,
     url='https://github.com/tshilo-dikotla/td-maternal',
