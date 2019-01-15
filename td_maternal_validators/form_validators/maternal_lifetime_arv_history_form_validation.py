@@ -5,7 +5,7 @@ from edc_form_validators import FormValidator
 
 
 class MaternalLifetimeArvHistoryFormValidator(FormValidator):
-    maternal_consent_model = 'td_maternal.maternalconsent'
+    maternal_consent_model = 'td_maternal.subjectconsent'
     ob_history_model = 'td_maternal.maternalobstericalhistory'
 
     @property
@@ -37,14 +37,13 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
         self.validate_prev_preg(cleaned_data=self.cleaned_data)
 
     def validate_prior_preg(self, cleaned_data=None):
-        responses = [RESTARTED, CONTINUOUS]
-        for response in responses:
-            if (cleaned_data.get('preg_on_haart') == NO
-                    and response in self.cleaned_data.get('prior_preg')):
-                msg = {'prior_preg': 'You indicated that the mother was NOT on'
-                       ' triple ARV when she got pregnant. Please correct.'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
+        responses = (CONTINUOUS, RESTARTED)
+        if (cleaned_data.get('preg_on_haart') == NO
+                and self.cleaned_data.get('prior_preg') in responses):
+            msg = {'prior_preg': 'You indicated that the mother was NOT on'
+                   ' triple ARV when she got pregnant. Please correct.'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
 
         if (cleaned_data.get('preg_on_haart') == YES
                 and self.cleaned_data.get('prior_preg') == STOPPED):

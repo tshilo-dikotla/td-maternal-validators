@@ -25,13 +25,19 @@ class MaternalObstericalHistoryFormValidator(FormValidator):
                                cleaned_data.get('lost_after_24wks'))
             if sum_deliv_37_wks != ((cleaned_data.get('prev_pregnancies') - 1)
                                     - sum_lost_24_wks):
-                raise ValidationError('The sum of Q8 and Q9 must be equal to '
-                                      '(Q2 -1) - (Q4 + Q5). Please correct.')
+                raise ValidationError('The sum of Q9 and Q10 must be equal to '
+                                      '(Q3 -1) - (Q5 + Q6). Please correct.')
 
     def validate_prev_pregnancies(self, cleaned_data=None):
+        ultrasound = self.maternal_ultrasound_init_cls.objects.filter(
+            maternal_visit=cleaned_data.get('maternal_visit'))
+        if not ultrasound:
+            message = 'Please complete ultrasound form first'
+            raise ValidationError(message)
 
-        if ('prev_pregnancies' in cleaned_data and
-                cleaned_data.get('prev_pregnancies') > 0):
+        if (('prev_pregnancies' in cleaned_data and
+                cleaned_data.get('prev_pregnancies') > 1)
+                or ultrasound[0].ga_confirmed >= 24):
             sum_pregs = (cleaned_data.get('pregs_24wks_or_more') +
                          (cleaned_data.get('lost_before_24wks')))
 
@@ -45,8 +51,7 @@ class MaternalObstericalHistoryFormValidator(FormValidator):
             if (cleaned_data.get('pregs_24wks_or_more') <
                     cleaned_data.get('lost_after_24wks')):
                 message = {'pregs_24wks_or_more':
-                           'Sum of Pregnancies more than'
-                           '24 weekss should be '
+                           'Sum of Pregnancies more than 24 weeks should be '
                            'less than those lost'}
                 self._errors.update(message)
                 raise ValidationError(message)
