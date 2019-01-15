@@ -85,6 +85,18 @@ class TestMaternalObstericalHistoryForm(TestCase):
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('lost_after_24wks', form_validator._errors)
 
+    def test_prev_preg_one(self):
+        cleaned_data = {
+            'maternal_visit': self.maternal_visit,
+            'prev_pregnancies': 1,
+            'lost_after_24wks': 0,
+            'lost_before_24wks': 0,
+            'pregs_24wks_or_more': 0
+        }
+        form_validator = MaternalObstericalHistoryFormValidator(
+            cleaned_data=cleaned_data)
+        form_validator.validate()
+
     def test_sum_pregs_lost_before_and_current_preg_sum_not_equal(self):
         '''Asserts raises exception if the sum of pregnancies 24 weeks or more
         and pregnancies lost before 24 weeks is not equals to the value of

@@ -11,9 +11,8 @@ class MaternalUltrasoundInitialFormValidator(FormValidator):
                 cleaned_data.get('est_edd_ultrasound') >
                 cleaned_data.get('report_datetime').date() +
                 relativedelta(weeks=40)):
-            msg = {'est_edd_ultrasound': 'Estimated edd by ultrasound {} cannot be'
-                   'greater than 40 weeks from today'
-                   .format('est_edd_ultrasound')}
+            msg = {'est_edd_ultrasound': 'Estimated edd by ultrasound cannot be'
+                   ' greater than 40 weeks from today'}
             self._errors.update(msg)
             raise ValidationError(msg)
 
