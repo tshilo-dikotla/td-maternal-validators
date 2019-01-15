@@ -72,8 +72,8 @@ class MaternalConsentFormValidator(FormValidator):
 
     def validate_td_consent(self, model_obj=None):
         try:
-            consent_version = self.td_consent_version_cls.objects.get(
-                subjectscreening=model_obj)
+            self.td_consent_version_cls.objects.get(
+                screening_identifier=model_obj.screening_identifier)
         except self.td_consent_version_cls.DoesNotExist:
             raise ValidationError(
                 'Complete mother\'s consent version form before proceeding')
