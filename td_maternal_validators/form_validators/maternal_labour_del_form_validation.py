@@ -1,8 +1,8 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_form_validators import FormValidator
 from edc_base.utils import relativedelta
 from edc_constants.constants import POS, YES, NOT_APPLICABLE
+from edc_form_validators import FormValidator
 
 
 class MaternalLabDelFormValidator(FormValidator):
@@ -35,7 +35,7 @@ class MaternalLabDelFormValidator(FormValidator):
         return django_apps.get_model(self.maternal_arv_model)
 
     @property
-    def maternal_eligibility_cls(self):
+    def subject_screening_cls(self):
         return django_apps.get_model(self.subject_screening_model)
 
     @property
@@ -137,14 +137,14 @@ class MaternalLabDelFormValidator(FormValidator):
     def validate_current_consent_version(self):
         try:
             td_consent_version = self.consent_version_cls.objects.get(
-                subjectscreening=self.maternal_eligibility)
+                screening_identifier=self.subject_screening.screening_identifier)
         except self.consent_version_cls.DoesNotExist:
             raise ValidationError(
                 'Complete mother\'s consent version form before proceeding')
         else:
             try:
                 self.maternal_consent_cls.objects.get(
-                    screening_identifier=self.maternal_eligibility.screening_identifier,
+                    screening_identifier=self.subject_screening.screening_identifier,
                     version=td_consent_version.version)
             except self.maternal_consent_cls.DoesNotExist:
                 raise ValidationError(
@@ -152,10 +152,10 @@ class MaternalLabDelFormValidator(FormValidator):
                     'proceeding'.format(td_consent_version.version))
 
     @property
-    def maternal_eligibility(self):
+    def subject_screening(self):
         cleaned_data = self.cleaned_data
         try:
-            return self.maternal_eligibility_cls.objects.get(
+            return self.subject_screening_cls.objects.get(
                 subject_identifier=cleaned_data.get('subject_identifier'))
-        except self.maternal_eligibility_cls.DoesNotExist:
+        except self.subject_screening_cls.DoesNotExist:
             return None

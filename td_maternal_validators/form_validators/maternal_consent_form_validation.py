@@ -39,7 +39,7 @@ class MaternalConsentFormValidator(FormValidator):
                           model_obj=subject_screening)
         self.validate_recruit_source()
         self.validate_recruitment_clinic()
-#         self.validate_td_consent(model_obj=subject_screening)
+        self.validate_td_consent(model_obj=subject_screening)
 
     def validate_dob(self, cleaned_data=None, model_obj=None):
         consent_age = relativedelta(

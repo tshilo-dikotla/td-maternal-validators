@@ -23,8 +23,8 @@ class AntenatalVisitMembershipFormValidator(FormValidator):
     def subject_screening_cls(self):
         return django_apps.get_model(self.subject_screening_model)
 
-#     def clean(self):
-#         self.validate_current_consent_version()
+    def clean(self):
+        self.validate_current_consent_version()
 
     def validate_current_consent_version(self):
         try:

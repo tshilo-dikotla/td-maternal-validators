@@ -73,7 +73,7 @@ class AntenatalEnrollmentFormValidator(FormValidator):
     def validate_current_consent_version(self):
         try:
             td_consent_version = self.consent_version_cls.objects.get(
-                subject_screening=self.subject_screening)
+                screening_identifier=self.subject_screening.screening_identifier)
         except self.consent_version_cls.DoesNotExist:
             raise ValidationError(
                 'Complete mother\'s consent version form before proceeding')
