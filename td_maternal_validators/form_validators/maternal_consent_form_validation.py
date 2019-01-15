@@ -8,7 +8,7 @@ class MaternalConsentFormValidator(FormValidator):
 
     screening_model = 'td_maternal.subjectscreening'
 
-    consent_model = 'td_maternal.tdconsentversion'
+#     consent_model = 'td_maternal.tdconsentversion'
 
     @property
     def subject_screening_cls(self):
@@ -16,7 +16,7 @@ class MaternalConsentFormValidator(FormValidator):
 
     @property
     def td_consent_version_cls(self):
-        return django_apps.get_model(self.consent_model)
+        return django_apps.get_model('td_maternal.tdconsentversion')
 
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -39,7 +39,7 @@ class MaternalConsentFormValidator(FormValidator):
                           model_obj=subject_screening)
         self.validate_recruit_source()
         self.validate_recruitment_clinic()
-        self.validate_td_consent(model_obj=subject_screening)
+#         self.validate_td_consent(model_obj=subject_screening)
 
     def validate_dob(self, cleaned_data=None, model_obj=None):
         consent_age = relativedelta(

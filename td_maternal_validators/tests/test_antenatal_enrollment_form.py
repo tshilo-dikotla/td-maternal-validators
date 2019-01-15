@@ -1,8 +1,9 @@
+from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
 from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from edc_constants.constants import POS, NEG
-from dateutil.relativedelta import relativedelta
+
 from ..form_validators import AntenatalEnrollmentFormValidator
 from .models import (AntenatalEnrollment, SubjectScreening,
                      MaternalConsent, TdConsentVersion)
@@ -20,7 +21,7 @@ class TestAntenatalEnrollmentForm(TestCase):
         self.antenatal_enrollment_model = 'td_maternal_validators.antenatalenrollment'
         AntenatalEnrollmentFormValidator.antenatal_enrollment_model =\
             self.antenatal_enrollment_model
-        self.maternal_eligibility = SubjectScreening.objects.create(
+        self.subject_screening = SubjectScreening.objects.create(
             subject_identifier=self.subject_identifier,
             screening_identifier='ABC12345',
             age_in_years=22)
@@ -35,7 +36,7 @@ class TestAntenatalEnrollmentForm(TestCase):
         AntenatalEnrollmentFormValidator.maternal_consent_model =\
             self.subject_consent_model
         self.td_consent_version = TdConsentVersion.objects.create(
-            subjectscreening=self.maternal_eligibility, version='3',
+            subject_screening=self.subject_screening, version='3',
             report_datetime=get_utcnow())
         self.td_consent_version_model = 'td_maternal_validators.tdconsentversion'
         AntenatalEnrollmentFormValidator.consent_version_model =\
