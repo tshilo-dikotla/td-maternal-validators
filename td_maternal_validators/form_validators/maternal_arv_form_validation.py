@@ -39,11 +39,12 @@ class MaternalArvFormValidator(FormValidator):
                 self._errors.update(msg)
                 raise ValidationError(msg)
         else:
-            msg = {'arv_code':
-                   'You indicated that ARV(s) were NOT started during this '
-                   'pregnancy. You cannot provide a list. Please Correct.'}
-            self._errors.update(msg)
-            raise ValidationError(msg)
+            if cleaned_data.get('arv_code'):
+                msg = {'arv_code':
+                       'You indicated that ARV(s) were NOT started during this '
+                       'pregnancy. You cannot provide a list. Please Correct.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
 
     def validate_historical_and_present_arv_start_dates(self, cleaned_data=None):
         try:

@@ -163,8 +163,7 @@ class SubjectScreening(BaseUuidModel):
 
 class TdConsentVersion(BaseUuidModel):
 
-    subjectscreening = models.ForeignKey(
-        SubjectScreening, null=True, on_delete=PROTECT)
+    screening_identifier = models.CharField(max_length=50)
 
     version = models.CharField(max_length=3)
 

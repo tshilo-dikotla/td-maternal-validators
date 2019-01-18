@@ -64,7 +64,9 @@ class TestMaternalPostPartumFuForm(TestCase):
                 name='hypertension'),
             'hospitalization_days': 10,
             'diagnoses': ListModel.objects.filter(
-                name=NOT_APPLICABLE)}
+                name=NOT_APPLICABLE),
+            'has_who_dx': NOT_APPLICABLE,
+            'who': ListModel.objects.filter(name=NOT_APPLICABLE)}
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -96,7 +98,9 @@ class TestMaternalPostPartumFuForm(TestCase):
             'hospitalized': NO,
             'hospitalization_reason': ListModel.objects.all(),
             'hospitalization_days': None,
-            'diagnoses': ListModel.objects.all()}
+            'diagnoses': ListModel.objects.all(),
+            'has_who_dx': NOT_APPLICABLE,
+            'who': ListModel.objects.filter(name=NOT_APPLICABLE)}
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -160,7 +164,9 @@ class TestMaternalPostPartumFuForm(TestCase):
                 name='hypertension'),
             'hospitalization_days': get_utcnow().date(),
             'diagnoses': ListModel.objects.filter(
-                name=NOT_APPLICABLE)}
+                name=NOT_APPLICABLE),
+            'has_who_dx': NOT_APPLICABLE,
+            'who': ListModel.objects.filter(name=NOT_APPLICABLE)}
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -183,7 +189,7 @@ class TestMaternalPostPartumFuForm(TestCase):
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('hospitalization_days', form_validator._errors)
 
-    def test_hospitalized_no_number_of_days_valid(self):
+    def test_hospitalized_no_number_of_days_none_valid(self):
         '''Tests if the cleaned data validates or fails the tests if Validation
         Error is raised unexpectedly.'''
         ListModel.objects.create(
@@ -192,7 +198,9 @@ class TestMaternalPostPartumFuForm(TestCase):
             'hospitalized': NO,
             'hospitalization_reason': ListModel.objects.all(),
             'hospitalization_days': None,
-            'diagnoses': ListModel.objects.all()}
+            'diagnoses': ListModel.objects.all(),
+            'has_who_dx': NOT_APPLICABLE,
+            'who': ListModel.objects.filter(name=NOT_APPLICABLE)}
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -217,12 +225,16 @@ class TestMaternalPostPartumFuForm(TestCase):
         Error is raised unexpectedly.'''
         ListModel.objects.create(name='cancer', short_name='cancer')
         ListModel.objects.create(name='sick', short_name='sick')
+        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
             'hospitalized': YES,
             'hospitalization_reason': ListModel.objects.filter(name='sick'),
             'hospitalization_days': get_utcnow().date(),
             'new_diagnoses': YES,
-            'diagnoses': ListModel.objects.filter(name='cancer')}
+            'diagnoses': ListModel.objects.filter(name='cancer'),
+            'has_who_dx': NOT_APPLICABLE,
+            'who': ListModel.objects.filter(name=NOT_APPLICABLE)
+        }
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -240,7 +252,9 @@ class TestMaternalPostPartumFuForm(TestCase):
             'hospitalization_reason': ListModel.objects.filter(name='sick'),
             'hospitalization_days': get_utcnow().date(),
             'new_diagnoses': YES,
-            'diagnoses': ListModel.objects.filter(name=NOT_APPLICABLE)}
+            'diagnoses': ListModel.objects.filter(name=NOT_APPLICABLE),
+            'has_who_dx': NOT_APPLICABLE,
+            'who': ListModel.objects.filter(name=NOT_APPLICABLE)}
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
@@ -250,11 +264,13 @@ class TestMaternalPostPartumFuForm(TestCase):
         '''Tests if the cleaned data validates or fails the tests if Validation
         Error is raised unexpectedly.'''
 
-        ListModel.objects.create(name='Not Applicable', short_name='N/A')
+        ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
             'hospitalization_reason': ListModel.objects.all(),
             'new_diagnoses': NO,
-            'diagnoses': ListModel.objects.all()}
+            'diagnoses': ListModel.objects.all(),
+            'has_who_dx': NOT_APPLICABLE,
+            'who': ListModel.objects.all()}
         form_validator = MaternalPostPartumFuFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -321,7 +337,7 @@ class TestMaternalPostPartumFuForm(TestCase):
             'hospitalization_reason': ListModel.objects.all(),
             'diagnoses': ListModel.objects.all(),
             'has_who_dx': NOT_APPLICABLE,
-            'who': None
+            'who': ListModel.objects.all()
         }
 
         form_validator = MaternalPostPartumFuFormValidator(

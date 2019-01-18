@@ -49,8 +49,8 @@ class TestMaternalLabDelForm(TestCase):
         MaternalLabDelFormValidator.antenatal_enrollment_model =\
             self.antenatal_enrollment_model
         self.td_consent_version = TdConsentVersion.objects.create(
-            subjectscreening=self.subjectscreening, version='3',
-            report_datetime=get_utcnow())
+            screening_identifier=self.subjectscreening.screening_identifier,
+            version='3', report_datetime=get_utcnow())
         self.td_consent_version_model = 'td_maternal_validators.tdconsentversion'
         MaternalLabDelFormValidator.consent_version_model =\
             self.td_consent_version_model

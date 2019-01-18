@@ -11,7 +11,7 @@ from .models import (MaternalArvPreg, MaternalArv,
 from dateutil.relativedelta import relativedelta
 
 
-class TestMaternalArvPregForm(TestCase):
+class TestMaternalArvForm(TestCase):
     def setUp(self):
         self.subject_consent = MaternalConsent.objects.create(
             subject_identifier='11111', consent_datetime=get_utcnow(),
@@ -22,6 +22,8 @@ class TestMaternalArvPregForm(TestCase):
             visit_code='1000')
         self.maternal_visit = MaternalVisit.objects.create(
             appointment=appointment)
+        arv_history_model = 'td_maternal_validators.maternallifetimearvhistory'
+        MaternalArvFormValidator.arv_history_model = arv_history_model
 
     def test_stop_date_invalid(self):
         '''Assert Raises if start_date is > stop_date.
@@ -47,8 +49,7 @@ class TestMaternalArvPregForm(TestCase):
 
         cleaned_data = {
             "maternal_arv_preg": maternal_arv_preg,
-            "stop_date": get_utcnow().date() + timedelta(days=30),
-            "start_date": get_utcnow().date(),
+            "start_date": get_utcnow().date() + timedelta(days=30),
             "stop_date": get_utcnow().date() + timedelta(days=30),
             "reason_for_stop": 'reason',
             "arv_code": 'Value',
@@ -62,7 +63,7 @@ class TestMaternalArvPregForm(TestCase):
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
     def test_stop_date_equals_invalid(self):
-        '''Invalid if the stop_date > start_date.
+        '''Invalid if the stop_date < start_date.
         '''
         MaternalLifetimeArvHistory.objects.create(
             haart_start_date=get_utcnow().date() + timedelta(days=30),
@@ -74,8 +75,8 @@ class TestMaternalArvPregForm(TestCase):
         cleaned_data = {
             "maternal_arv_preg": maternal_arv_preg,
             "stop_date": get_utcnow().date(),
-            "start_date": get_utcnow().date(),
-            "stop_date": get_utcnow().date() + timedelta(days=30),
+            "start_date": get_utcnow().date() + timedelta(days=31),
+            "stop_date": get_utcnow().date() + timedelta(days=33),
             "reason_for_stop": 'reason',
             "arv_code": 'Value',
         }
@@ -99,8 +100,8 @@ class TestMaternalArvPregForm(TestCase):
         cleaned_data = {
             "maternal_arv_preg": maternal_arv_preg,
             "stop_date": get_utcnow().date(),
-            "start_date": get_utcnow().date(),
-            "stop_date": get_utcnow().date() + timedelta(days=30),
+            "start_date": get_utcnow().date() + timedelta(days=31),
+            "stop_date": get_utcnow().date() + timedelta(days=32),
             "reason_for_stop": 'reason',
             "arv_code": 'Value',
         }
@@ -142,8 +143,8 @@ class TestMaternalArvPregForm(TestCase):
         cleaned_data = {
             "maternal_arv_preg": maternal_arv_preg,
             "stop_date": get_utcnow().date(),
-            "start_date": get_utcnow().date(),
-            "stop_date": get_utcnow().date() + timedelta(days=30),
+            "start_date": get_utcnow().date() + timedelta(days=31),
+            "stop_date": get_utcnow().date() + timedelta(days=32),
             "reason_for_stop": 'reason',
             "arv_code": None,
         }

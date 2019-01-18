@@ -8,7 +8,7 @@ class MaternalConsentFormValidator(FormValidator):
 
     screening_model = 'td_maternal.subjectscreening'
 
-    consent_model = 'td_maternal.tdconsentversion'
+    td_consent_version_model = 'td_maternal.tdconsentversion'
 
     @property
     def subject_screening_cls(self):
@@ -16,7 +16,7 @@ class MaternalConsentFormValidator(FormValidator):
 
     @property
     def td_consent_version_cls(self):
-        return django_apps.get_model('td_maternal.tdconsentversion')
+        return django_apps.get_model(self.td_consent_version_model)
 
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -43,13 +43,19 @@ class MaternalConsentFormValidator(FormValidator):
         self.validate_td_consent(model_obj=subject_screening)
 
     def validate_identity_number(self, cleaned_data=None):
-        if (cleaned_data.get('identity_type') == 'country_id' and
-                cleaned_data.get('identity')[4] != '2'):
-            msg = {'identity':
-                   'Identity provided indicates participant is Male. Please '
-                   'correct.'}
-            self._errors.update(msg)
-            raise ValidationError(msg)
+        if cleaned_data.get('identity_type') == 'country_id':
+            if len(cleaned_data.get('identity')) != 9:
+                msg = {'identity':
+                       'Country identity provided should contain 9 values. '
+                       'Please correct.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
+            if cleaned_data.get('identity')[4] != '2':
+                msg = {'identity':
+                       'Identity provided indicates participant is Male. Please '
+                       'correct.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
 
     def validate_dob(self, cleaned_data=None, model_obj=None):
         consent_datetime = cleaned_data.get(
