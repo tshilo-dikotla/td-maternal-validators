@@ -19,7 +19,7 @@ class MaternalPostPartumFuFormValidator(FormValidator):
             msg=('Question4: Participant has new diagnoses, '
                  'list of diagnosis cannot be N/A'),
             na_msg=('Question4: Participant has no new diagnoses, '
-                    'who listing should be N/A')
+                    'diagnosis should be N/A')
         )
 
         self.m2m_na_validation(
