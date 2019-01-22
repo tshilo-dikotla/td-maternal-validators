@@ -1,21 +1,10 @@
-from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_constants.constants import YES, POS, NOT_APPLICABLE, NO
 from edc_form_validators import FormValidator
+from td_maternal.helper_classes import MaternalStatusHelper
 
 
 class MaternalPostPartumFuFormValidator(FormValidator):
-
-    rapid_test_result_model = 'td_maternal.rapidtestresult'
-    antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
-
-    @property
-    def rapid_testing_model_cls(self):
-        return django_apps.get_model(self.rapid_test_result_model)
-
-    @property
-    def antenatal_enrollment_model_cls(self):
-        return django_apps.get_model(self.antenatal_enrollment_model)
 
     def clean(self):
         required_fields = ('hospitalization_reason', 'diagnoses')
@@ -61,34 +50,12 @@ class MaternalPostPartumFuFormValidator(FormValidator):
                 NOT_APPLICABLE,
                 m2m_field='hospitalization_reason')
 
-        self.validate_hiv_result(cleaned_data=self.cleaned_data)
+        self.validate_who_diagnoses(cleaned_data=self.cleaned_data)
 
-    def validate_hiv_result(self, cleaned_data=None):
-        rapid_test_result = self.rapid_testing_model_cls.objects.filter().\
-            order_by('created').last()
-        if rapid_test_result:
-            condition = rapid_test_result.result == POS
-
-            self.validate_who_diagnoses(cleaned_data, condition)
-
-        else:
-            raise ValidationError('rapid testing results does not exist.')
-            try:
-                antenatal_enrollment = self.antenatal_enrollment_model_cls.objects.get(
-                    subject_identifier=cleaned_data.get('subject_identifier'))
-
-                condition = (antenatal_enrollment.enrollment_hiv_status == POS or
-                             antenatal_enrollment.week32_result == POS or
-                             antenatal_enrollment.rapid_test_result == POS)
-
-                self.validate_who_diagnoses(cleaned_data, condition)
-
-            except self.antenatal_enrollment_model_cls.DoesNotExist:
-                raise ValidationError('Fill out Antenatal Enrollment Form.')
-
-    def validate_who_diagnoses(self, cleaned_data=None, condition=None):
+    def validate_who_diagnoses(self, cleaned_data=None):
+        condition = self.maternal_status_helper.hiv_status == POS
         self.applicable_if_true(
-            condition=condition,
+            condition,
             field_applicable='has_who_dx',
             applicable_msg='The mother is positive, question 10 for WHO '
                            'Stage III/IV should not be N/A',
@@ -96,21 +63,37 @@ class MaternalPostPartumFuFormValidator(FormValidator):
                                'WHO Stage III/IV should be N/A'
         )
         self.m2m_required(m2m_field='who')
+        qs = self.cleaned_data.get('who').values_list(
+            'short_name', flat=True)
+        selection = list(qs.all())
         if not condition:
+            if NOT_APPLICABLE not in selection:
+                msg = {'who':
+                       'The mother is Negative, WHO Stage III/IV listing '
+                       'should be N/A'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
             self.m2m_single_selection_if(
                 NOT_APPLICABLE,
                 m2m_field='who')
         if condition:
             if cleaned_data.get('has_who_dx') == YES:
-                qs = self.cleaned_data.get('who').values_list(
-                    'short_name', flat=True)
-                selection = list(qs.all())
                 if NOT_APPLICABLE in selection:
                     msg = {'who':
                            'Question 10 is indicated as YES, who listing cannot be N/A'}
                     self._errors.update(msg)
                     raise ValidationError(msg)
             else:
+                if NOT_APPLICABLE not in selection:
+                    msg = {'who':
+                           'Question 10 is indicated as NO, who listing should be N/A'}
+                    self._errors.update(msg)
+                    raise ValidationError(msg)
                 self.m2m_single_selection_if(
                     NOT_APPLICABLE,
                     m2m_field='who')
+
+    @property
+    def maternal_status_helper(self):
+        cleaned_data = self.cleaned_data
+        return MaternalStatusHelper(cleaned_data.get('maternal_visit'))
