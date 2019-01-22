@@ -362,8 +362,8 @@ class TestMaternalPostPartumFuForm(TestCase):
 
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
-            'hospitalization_reason': ListModel.objects.all(),
-            'diagnoses': ListModel.objects.all(),
+            'hospitalization_reason': ListModel.objects.filter(name=NOT_APPLICABLE),
+            'diagnoses': ListModel.objects.filter(name=NOT_APPLICABLE),
             'has_who_dx': NOT_APPLICABLE,
             'who': ListModel.objects.all()
         }

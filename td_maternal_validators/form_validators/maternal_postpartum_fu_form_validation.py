@@ -13,32 +13,22 @@ class MaternalPostPartumFuFormValidator(FormValidator):
                 m2m_field=required_field
             )
 
-        if self.cleaned_data.get('new_diagnoses') == NO:
-            self.m2m_single_selection_if(
-                NOT_APPLICABLE,
-                m2m_field='diagnoses'
-            )
+        self.m2m_na_validation(
+            field='new_diagnoses',
+            m2m_field='diagnoses',
+            msg=('Question4: Participant has new diagnoses, '
+                 'list of diagnosis cannot be N/A'),
+            na_msg=('Question4: Participant has no new diagnoses, '
+                    'who listing should be N/A')
+        )
 
-        if self.cleaned_data.get('new_diagnoses') == YES:
-            qs = self.cleaned_data.get('diagnoses').values_list(
-                'short_name', flat=True)
-            selection = list(qs.all())
-            if NOT_APPLICABLE in selection:
-                msg = {'diagnoses':
-                       'Question4: Participant has new diagnoses, '
-                       'list of diagnosis cannot be N/A'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
-
-        if self.cleaned_data.get('hospitalized') == YES:
-            qs = self.cleaned_data.get('hospitalization_reason').values_list(
-                'short_name', flat=True)
-            selection = list(qs.all())
-            if NOT_APPLICABLE in selection:
-                msg = {'hospitalization_reason':
-                       'Question7: Participant was hospitalized, reasons cannot be N/A'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
+        self.m2m_na_validation(
+            field='hospitalized',
+            m2m_field='hospitalization_reason',
+            msg=('Question7: Participant was hospitalized, reasons cannot be N/A'),
+            na_msg=('Question7: Participant was not hospitalized, '
+                    'reasons should be N/A')
+        )
 
         self.required_if(
             YES,
@@ -50,9 +40,9 @@ class MaternalPostPartumFuFormValidator(FormValidator):
                 NOT_APPLICABLE,
                 m2m_field='hospitalization_reason')
 
-        self.validate_who_diagnoses(cleaned_data=self.cleaned_data)
+        self.validate_who_diagnoses()
 
-    def validate_who_diagnoses(self, cleaned_data=None):
+    def validate_who_diagnoses(self):
         condition = self.maternal_status_helper.hiv_status == POS
         self.applicable_if_true(
             condition,
@@ -77,21 +67,32 @@ class MaternalPostPartumFuFormValidator(FormValidator):
                 NOT_APPLICABLE,
                 m2m_field='who')
         if condition:
-            if cleaned_data.get('has_who_dx') == YES:
-                if NOT_APPLICABLE in selection:
-                    msg = {'who':
-                           'Question 10 is indicated as YES, who listing cannot be N/A'}
-                    self._errors.update(msg)
-                    raise ValidationError(msg)
-            else:
-                if NOT_APPLICABLE not in selection:
-                    msg = {'who':
-                           'Question 10 is indicated as NO, who listing should be N/A'}
-                    self._errors.update(msg)
-                    raise ValidationError(msg)
-                self.m2m_single_selection_if(
-                    NOT_APPLICABLE,
-                    m2m_field='who')
+            self.m2m_na_validation(
+                field='has_who_dx',
+                m2m_field='who',
+                msg='Question 11 is indicated as YES, who listing cannot be N/A',
+                na_msg='Question 11 is indicated as NO, who listing should be N/A')
+
+    def m2m_na_validation(self, field=None, m2m_field=None, msg=None,
+                          na_msg=None):
+        qs = self.cleaned_data.get(m2m_field).values_list(
+            'short_name', flat=True)
+        selection = list(qs.all())
+        if self.cleaned_data.get(field) == YES:
+            if NOT_APPLICABLE in selection:
+                message = {m2m_field: msg}
+                self._errors.update(message)
+                raise ValidationError(message)
+        else:
+            if NOT_APPLICABLE not in selection:
+                message = {m2m_field: na_msg}
+                self._errors.update(message)
+                raise ValidationError(message)
+
+            self.m2m_single_selection_if(
+                NOT_APPLICABLE,
+                m2m_field=m2m_field
+            )
 
     @property
     def maternal_status_helper(self):
