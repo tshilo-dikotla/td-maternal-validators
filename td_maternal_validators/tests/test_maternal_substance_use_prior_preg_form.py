@@ -6,11 +6,11 @@ from ..form_validators import MaternalSubstanceUsePriorPregFormValidator
 
 class TestMaternalSubstanceUsePriorPregForm(TestCase):
     def test_smoked_prior_to_preg_valid(self):
-        '''True if smoked_prior_to_preg is Yes and smoking_prior_to_preg_freq is True
-        '''
+        '''True if smoked_prior_to_preg is Yes and smoking_prior_to_preg_freq
+        is provided'''
         cleaned_data = {
             "smoked_prior_to_preg": YES,
-            "smoking_prior_to_preg_freq": True
+            "smoking_prior_preg_freq": 'daily'
         }
         form_validator = MaternalSubstanceUsePriorPregFormValidator(
             cleaned_data=cleaned_data)
@@ -20,24 +20,24 @@ class TestMaternalSubstanceUsePriorPregForm(TestCase):
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
     def test_smoked_prior_to_preg_invalid(self):
-        '''Assert raises exception if smoked_prior_to_preg is Yes but smoking_prior_to_
-        preg_freq is false.
+        '''Assert raises exception if smoked_prior_to_preg is Yes but
+        smoking_prior_to_preg_freq is omitted.
         '''
         cleaned_data = {
             "smoked_prior_to_preg": YES,
-            "smoking_prior_to_preg_freq": False
+            "smoking_prior_preg_freq": None
         }
         form_validator = MaternalSubstanceUsePriorPregFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('smoking_prior_to_preg_freq', form_validator._errors)
+        self.assertIn('smoking_prior_preg_freq', form_validator._errors)
 
     def test_smoked_prior_to_preg_valid_no(self):
-        '''True if smoked_prior_to_preg is NO and smoking_prior_to_preg_freq is False
-        '''
+        '''True if smoked_prior_to_preg is NO and smoking_prior_to_preg_freq
+        is omitted'''
         cleaned_data = {
             "smoked_prior_to_preg": NO,
-            "smoking_prior_to_preg_freq": False
+            "smoking_prior_preg_freq": None
         }
         form_validator = MaternalSubstanceUsePriorPregFormValidator(
             cleaned_data=cleaned_data)
@@ -48,23 +48,25 @@ class TestMaternalSubstanceUsePriorPregForm(TestCase):
 
     def test_smoked_prior_to_preg_invalid_no(self):
         '''Assert raises exception if smoked_prior_to_preg is NO but smoking_prior_to_
-        preg_freq is True.
+        preg_freq is provided.
         '''
         cleaned_data = {
             "smoked_prior_to_preg": NO,
-            "smoking_prior_to_preg_freq": True
+            "smoking_prior_preg_freq": 'daily'
         }
         form_validator = MaternalSubstanceUsePriorPregFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('smoking_prior_to_preg_freq', form_validator._errors)
+        self.assertIn('smoking_prior_preg_freq', form_validator._errors)
 
     def test_alcohol_prior_preg_valid(self):
         '''True if alcohol_prior_pregnancy is Yes and alcohol_prior_preg_freq is True
         '''
         cleaned_data = {
+            "smoked_prior_to_preg": NO,
+            "smoking_prior_preg_freq": None,
             "alcohol_prior_pregnancy": YES,
-            "alcohol_prior_preg_freq": True
+            "alcohol_prior_preg_freq": 'weekly'
         }
         form_validator = MaternalSubstanceUsePriorPregFormValidator(
             cleaned_data=cleaned_data)
@@ -78,8 +80,10 @@ class TestMaternalSubstanceUsePriorPregForm(TestCase):
         alcohol_prior_preg_freq is false.
         '''
         cleaned_data = {
+            "smoked_prior_to_preg": NO,
+            "smoking_prior_preg_freq": None,
             "alcohol_prior_pregnancy": YES,
-            "alcohol_prior_preg_freq": False
+            "alcohol_prior_preg_freq": None
         }
         form_validator = MaternalSubstanceUsePriorPregFormValidator(
             cleaned_data=cleaned_data)
@@ -90,8 +94,10 @@ class TestMaternalSubstanceUsePriorPregForm(TestCase):
         '''True if alcohol_prior_pregnancy is NO and alcohol_prior_preg_freq is False
         '''
         cleaned_data = {
+            "smoked_prior_to_preg": NO,
+            "smoking_prior_preg_freq": None,
             "alcohol_prior_pregnancy": NO,
-            "alcohol_prior_preg_freq": False
+            "alcohol_prior_preg_freq": None
         }
         form_validator = MaternalSubstanceUsePriorPregFormValidator(
             cleaned_data=cleaned_data)
@@ -105,8 +111,10 @@ class TestMaternalSubstanceUsePriorPregForm(TestCase):
         alcohol_prior_preg_freq is True.
         '''
         cleaned_data = {
+            "smoked_prior_to_preg": NO,
+            "smoking_prior_preg_freq": None,
             "alcohol_prior_pregnancy": NO,
-            "alcohol_prior_preg_freq": True
+            "alcohol_prior_preg_freq": 'weekly'
         }
         form_validator = MaternalSubstanceUsePriorPregFormValidator(
             cleaned_data=cleaned_data)
@@ -117,8 +125,12 @@ class TestMaternalSubstanceUsePriorPregForm(TestCase):
         '''True if marijuana_prior_preg is Yes and marijuana_prior_preg_freq is True
         '''
         cleaned_data = {
+            "smoked_prior_to_preg": NO,
+            "smoking_prior_preg_freq": None,
+            "alcohol_prior_pregnancy": NO,
+            "alcohol_prior_preg_freq": None,
             "marijuana_prior_preg": YES,
-            "marijuana_prior_preg_freq": True
+            "marijuana_prior_preg_freq": 'daily'
         }
         form_validator = MaternalSubstanceUsePriorPregFormValidator(
             cleaned_data=cleaned_data)
@@ -132,8 +144,12 @@ class TestMaternalSubstanceUsePriorPregForm(TestCase):
         marijuana_prior_preg_freq is false.
         '''
         cleaned_data = {
+            "smoked_prior_to_preg": NO,
+            "smoking_prior_preg_freq": None,
+            "alcohol_prior_pregnancy": NO,
+            "alcohol_prior_preg_freq": None,
             "marijuana_prior_preg": YES,
-            "marijuana_prior_preg_freq": False
+            "marijuana_prior_preg_freq": None
         }
         form_validator = MaternalSubstanceUsePriorPregFormValidator(
             cleaned_data=cleaned_data)
@@ -144,8 +160,12 @@ class TestMaternalSubstanceUsePriorPregForm(TestCase):
         '''True if marijuana_prior_preg is NO and marijuana_prior_preg_freq is False
         '''
         cleaned_data = {
+            "smoked_prior_to_preg": NO,
+            "smoking_prior_preg_freq": None,
+            "alcohol_prior_pregnancy": NO,
+            "alcohol_prior_preg_freq": None,
             "marijuana_prior_preg": NO,
-            "marijuana_prior_preg_freq": False
+            "marijuana_prior_preg_freq": None
         }
         form_validator = MaternalSubstanceUsePriorPregFormValidator(
             cleaned_data=cleaned_data)
@@ -159,8 +179,12 @@ class TestMaternalSubstanceUsePriorPregForm(TestCase):
         marijuana_prior_preg_freq is True.
         '''
         cleaned_data = {
+            "smoked_prior_to_preg": NO,
+            "smoking_prior_preg_freq": None,
+            "alcohol_prior_pregnancy": NO,
+            "alcohol_prior_preg_freq": None,
             "marijuana_prior_preg": NO,
-            "marijuana_prior_preg_freq": True
+            "marijuana_prior_preg_freq": 'weekly'
         }
         form_validator = MaternalSubstanceUsePriorPregFormValidator(
             cleaned_data=cleaned_data)
