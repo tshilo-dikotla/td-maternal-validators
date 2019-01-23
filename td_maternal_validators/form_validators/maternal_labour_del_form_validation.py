@@ -1,7 +1,7 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_base.utils import relativedelta
-from edc_constants.constants import POS, YES, NOT_APPLICABLE
+from edc_constants.constants import POS, YES, NOT_APPLICABLE, OTHER, NONE
 from edc_form_validators import FormValidator
 from td_maternal.helper_classes import MaternalStatusHelper
 
@@ -37,6 +37,7 @@ class MaternalLabDelFormValidator(FormValidator):
         self.validate_initiation_date(cleaned_data=self.cleaned_data)
         self.validate_valid_regime_hiv_pos_only(cleaned_data=self.cleaned_data)
         self.validate_live_births_still_birth(cleaned_data=self.cleaned_data)
+        self.validate_other()
         self.validate_current_consent_version()
 
     def validate_initiation_date(self, cleaned_data=None):
@@ -125,6 +126,24 @@ class MaternalLabDelFormValidator(FormValidator):
                 raise ValidationError(
                     'Maternal Consent form for version {} before '
                     'proceeding'.format(td_consent_version.version))
+
+    def validate_other(self):
+        fields = {'delivery_hospital': 'delivery_hospital_other',
+                  'mode_delivery': 'mode_delivery_other',
+                  'csection_reason': 'csection_reason_other'}
+        for field, other in fields.items():
+            self.validate_other_specify(
+                field=field,
+                other_specify_field=other
+            )
+        selections = [OTHER, NONE]
+        self.m2m_single_selection_if(
+            *selections,
+            m2m_field='delivery_complications')
+        self.m2m_other_specify(
+            OTHER,
+            m2m_field='delivery_complications',
+            field_other='delivery_complications_other')
 
     @property
     def subject_screening(self):
