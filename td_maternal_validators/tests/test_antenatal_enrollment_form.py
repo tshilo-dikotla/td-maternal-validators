@@ -1,12 +1,15 @@
+from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from edc_constants.constants import POS, NEG
-from dateutil.relativedelta import relativedelta
+
 from ..form_validators import AntenatalEnrollmentFormValidator
-from .models import AntenatalEnrollment
+from .models import (AntenatalEnrollment, SubjectScreening,
+                     MaternalConsent, TdConsentVersion)
 
 
+@tag('enrol')
 class TestAntenatalEnrollmentForm(TestCase):
 
     def setUp(self):
@@ -18,12 +21,33 @@ class TestAntenatalEnrollmentForm(TestCase):
         self.antenatal_enrollment_model = 'td_maternal_validators.antenatalenrollment'
         AntenatalEnrollmentFormValidator.antenatal_enrollment_model =\
             self.antenatal_enrollment_model
+        self.subject_screening = SubjectScreening.objects.create(
+            subject_identifier=self.subject_identifier,
+            screening_identifier='ABC12345',
+            age_in_years=22)
+        self.subject_screening_model = 'td_maternal_validators.subjectscreening'
+        AntenatalEnrollmentFormValidator.subject_screening_model =\
+            self.subject_screening_model
+        self.subject_consent = MaternalConsent.objects.create(
+            subject_identifier='11111111', screening_identifier='ABC12345',
+            gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
+            consent_datetime=get_utcnow(), version='3')
+        self.subject_consent_model = 'td_maternal_validators.maternalconsent'
+        AntenatalEnrollmentFormValidator.maternal_consent_model =\
+            self.subject_consent_model
+        self.td_consent_version = TdConsentVersion.objects.create(
+            screening_identifier=self.subject_screening.screening_identifier,
+            version='3', report_datetime=get_utcnow())
+        self.td_consent_version_model = 'td_maternal_validators.tdconsentversion'
+        AntenatalEnrollmentFormValidator.consent_version_model =\
+            self.td_consent_version_model
 
     def test_LMP_within_16wks_of_report_datetime_invalid(self):
         '''Asserts if an exception is raised if last period date is within
         16 weeks of the report datetime.'''
 
         cleaned_data = {
+            'subject_identifier': self.subject_identifier,
             'report_datetime': get_utcnow(),
             'last_period_date': get_utcnow().date() - relativedelta(weeks=2)
         }
@@ -37,6 +61,7 @@ class TestAntenatalEnrollmentForm(TestCase):
         or fails the tests if Validation Error is raised unexpectedly.'''
 
         cleaned_data = {
+            'subject_identifier': self.subject_identifier,
             'report_datetime': get_utcnow(),
             'last_period_date': get_utcnow().date() - relativedelta(weeks=16)
         }
@@ -52,6 +77,7 @@ class TestAntenatalEnrollmentForm(TestCase):
         36 weeks of the report datetime.'''
 
         cleaned_data = {
+            'subject_identifier': self.subject_identifier,
             'report_datetime': get_utcnow(),
             'last_period_date': get_utcnow().date() - relativedelta(weeks=37)
         }
@@ -66,6 +92,7 @@ class TestAntenatalEnrollmentForm(TestCase):
         raised unexpectedly.'''
 
         cleaned_data = {
+            'subject_identifier': self.subject_identifier,
             'report_datetime': get_utcnow(),
             'last_period_date': get_utcnow().date() - relativedelta(weeks=20)
         }
@@ -81,6 +108,7 @@ class TestAntenatalEnrollmentForm(TestCase):
         match that of the antenatal enrollment object.'''
 
         cleaned_data = {
+            'subject_identifier': self.subject_identifier,
             'rapid_test_date': get_utcnow().date() - relativedelta(days=5),
             'subject_identifier': self.subject_identifier
         }
@@ -93,6 +121,7 @@ class TestAntenatalEnrollmentForm(TestCase):
         or fails the tests if Validation Error is raised unexpectedly.'''
 
         cleaned_data = {
+            'subject_identifier': self.subject_identifier,
             'rapid_test_date': get_utcnow().date(),
             'subject_identifier': self.subject_identifier
         }
@@ -109,6 +138,7 @@ class TestAntenatalEnrollmentForm(TestCase):
 
         self.antenatal_enrollment.delete()
         cleaned_data = {
+            'subject_identifier': self.subject_identifier,
             'rapid_test_date': get_utcnow().date() - relativedelta(days=3),
             'subject_identifier': self.subject_identifier}
         form_validator = AntenatalEnrollmentFormValidator(

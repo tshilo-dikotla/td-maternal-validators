@@ -8,7 +8,7 @@ class SpecimenConsentForm(BaseSpecimenConsentForm):
     STUDY_CONSENT = MaternalConsent
 
     def clean(self):
-        cleaned_data = super(SpecimenConsentForm, self).clean()
+        cleaned_data = super().clean()
         return cleaned_data
 
     def study_consent_or_raise(self):

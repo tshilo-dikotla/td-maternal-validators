@@ -14,12 +14,13 @@ class TestMaternalConsentForm(TestCase):
         self.subjectscreening = SubjectScreening.objects.create(
             screening_identifier=self.screening_identifier, has_omang=YES,
             age_in_years=22)
-        self.subject_screening_model = 'td_maternal_validators.subjectscreening'
-        MaternalConsentFormValidator.screening_model = self.subject_screening_model
+        subject_screening_model = 'td_maternal_validators.subjectscreening'
+        MaternalConsentFormValidator.screening_model = subject_screening_model
         self.td_consent_version = TdConsentVersion.objects.create(
-            subjectscreening=self.subjectscreening, version='1')
-        self.consent_model = 'td_maternal_validators.tdconsentversion'
-        MaternalConsentFormValidator.consent_model = self.consent_model
+            screening_identifier=self.screening_identifier, version='1')
+        td_consent_version_model = 'td_maternal_validators.tdconsentversion'
+        MaternalConsentFormValidator.td_consent_version_model =\
+            td_consent_version_model
 
     def test_citizen_matches_has_omang(self):
         # N.B : has_omang in subject screening is set to YES

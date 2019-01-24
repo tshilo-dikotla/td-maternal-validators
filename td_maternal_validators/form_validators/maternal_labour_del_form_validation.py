@@ -1,17 +1,17 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_form_validators import FormValidator
 from edc_base.utils import relativedelta
-from edc_constants.constants import POS, YES, NOT_APPLICABLE
+from edc_constants.constants import POS, YES, NOT_APPLICABLE, OTHER, NONE
+from edc_form_validators import FormValidator
+from td_maternal.helper_classes import MaternalStatusHelper
 
 
 class MaternalLabDelFormValidator(FormValidator):
-
     maternal_arv_model = 'td_maternal.maternalarv'
-    rapid_test_result_model = 'td_maternal.rapidtestresult'
-    antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
     consent_version_model = 'td_maternal.tdconsentversion'
     maternal_consent_model = 'td_maternal.subjectconsent'
+    maternal_visit_model = 'td_maternal.maternalvisit'
+    subject_screening_model = 'td_maternal.subjectscreening'
 
     @property
     def consent_version_cls(self):
@@ -22,42 +22,23 @@ class MaternalLabDelFormValidator(FormValidator):
         return django_apps.get_model(self.maternal_consent_model)
 
     @property
-    def rapid_testing_model_cls(self):
-        return django_apps.get_model(self.rapid_test_result_model)
-
-    @property
-    def antenatal_enrollment_model_cls(self):
-        return django_apps.get_model(self.antenatal_enrollment_model)
+    def maternal_visit_cls(self):
+        return django_apps.get_model(self.maternal_visit_model)
 
     @property
     def maternal_arv_cls(self):
         return django_apps.get_model(self.maternal_arv_model)
 
     @property
-    def status_result(self):
-        status = None
-        try:
-            antenatal_enrollment = self.antenatal_enrollment_model_cls.objects.get(
-                subject_identifier=self.cleaned_data.get('subject_identifier'))
-            condition = (antenatal_enrollment.enrollment_hiv_status == POS or
-                         antenatal_enrollment.week32_result == POS or
-                         antenatal_enrollment.rapid_test_result == POS)
-            if condition:
-                status = POS
-            else:
-                rapid_test_result = self.rapid_testing_model_cls.objects.\
-                    filter().order_by('created').last()
-                status = rapid_test_result.result
-        except self.antenatal_enrollment_model_cls.DoesNotExist:
-            raise ValidationError('Fill out Antenatal Enrollment Form.')
-
-        return status
+    def subject_screening_cls(self):
+        return django_apps.get_model(self.subject_screening_model)
 
     def clean(self):
         self.validate_initiation_date(cleaned_data=self.cleaned_data)
         self.validate_valid_regime_hiv_pos_only(cleaned_data=self.cleaned_data)
         self.validate_live_births_still_birth(cleaned_data=self.cleaned_data)
-        self.validate_current_consent_version(cleaned_data=self.cleaned_data)
+        self.validate_other()
+        self.validate_current_consent_version()
 
     def validate_initiation_date(self, cleaned_data=None):
         subject_identifier = cleaned_data.get('subject_identifier')
@@ -76,7 +57,7 @@ class MaternalLabDelFormValidator(FormValidator):
                 raise ValidationError(message)
 
     def validate_valid_regime_hiv_pos_only(self, cleaned_data=None):
-        if self.status_result == POS:
+        if self.maternal_status_helper.hiv_status == POS:
             if cleaned_data.get('valid_regiment_duration') != YES:
                 message = {'valid_regiment_duration':
                            'Participant is HIV+ valid regimen duration '
@@ -100,16 +81,17 @@ class MaternalLabDelFormValidator(FormValidator):
                 self._errors.update(message)
                 raise ValidationError(message)
         else:
+            status = self.maternal_status_helper.hiv_status
             if cleaned_data.get('valid_regiment_duration') not in [NOT_APPLICABLE]:
                 message = {'valid_regiment_duration':
-                           f'Participant\'s HIV status is {self.status_result}, '
+                           f'Participant\'s HIV status is {status}, '
                            'valid regimen duration should be Not Applicable.'}
                 self._errors.update(message)
                 raise ValidationError(message)
 
             if cleaned_data.get('arv_initiation_date'):
                 message = {'arv_initiation_date':
-                           f'Participant\'s HIV status is {self.status_result}, '
+                           f'Participant\'s HIV status is {status}, '
                            'arv initiation date should not filled.'}
                 self._errors.update(message)
                 raise ValidationError(message)
@@ -128,20 +110,57 @@ class MaternalLabDelFormValidator(FormValidator):
             self._errors.update(message)
             raise ValidationError(message)
 
-    def validate_current_consent_version(self, cleaned_data=None):
+    def validate_current_consent_version(self):
         try:
             td_consent_version = self.consent_version_cls.objects.get(
-                subjectscreening=cleaned_data.get('subjectscreening'))
+                screening_identifier=self.subject_screening.screening_identifier)
         except self.consent_version_cls.DoesNotExist:
             raise ValidationError(
                 'Complete mother\'s consent version form before proceeding')
         else:
             try:
                 self.maternal_consent_cls.objects.get(
-                    screening_identifier=cleaned_data.get(
-                        'subjectscreening').screening_identifier,
+                    screening_identifier=self.subject_screening.screening_identifier,
                     version=td_consent_version.version)
             except self.maternal_consent_cls.DoesNotExist:
                 raise ValidationError(
                     'Maternal Consent form for version {} before '
                     'proceeding'.format(td_consent_version.version))
+
+    def validate_other(self):
+        fields = {'delivery_hospital': 'delivery_hospital_other',
+                  'mode_delivery': 'mode_delivery_other',
+                  'csection_reason': 'csection_reason_other'}
+        for field, other in fields.items():
+            self.validate_other_specify(
+                field=field,
+                other_specify_field=other
+            )
+        selections = [OTHER, NONE]
+        self.m2m_single_selection_if(
+            *selections,
+            m2m_field='delivery_complications')
+        self.m2m_other_specify(
+            OTHER,
+            m2m_field='delivery_complications',
+            field_other='delivery_complications_other')
+
+    @property
+    def subject_screening(self):
+        cleaned_data = self.cleaned_data
+        try:
+            return self.subject_screening_cls.objects.get(
+                subject_identifier=cleaned_data.get('subject_identifier'))
+        except self.subject_screening_cls.DoesNotExist:
+            return None
+
+    @property
+    def maternal_status_helper(self):
+        cleaned_data = self.cleaned_data
+        latest_visit = self.maternal_visit_cls.objects.filter(
+            subject_identifier=cleaned_data.get(
+                'subject_identifier')).order_by('-created').first()
+        if latest_visit:
+            return MaternalStatusHelper(latest_visit)
+        else:
+            return None

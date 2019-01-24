@@ -8,7 +8,7 @@ class MaternalConsentFormValidator(FormValidator):
 
     screening_model = 'td_maternal.subjectscreening'
 
-    consent_model = 'td_maternal.tdconsentversion'
+    td_consent_version_model = 'td_maternal.tdconsentversion'
 
     @property
     def subject_screening_cls(self):
@@ -16,7 +16,7 @@ class MaternalConsentFormValidator(FormValidator):
 
     @property
     def td_consent_version_cls(self):
-        return django_apps.get_model(self.consent_model)
+        return django_apps.get_model(self.td_consent_version_model)
 
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -37,13 +37,31 @@ class MaternalConsentFormValidator(FormValidator):
 
         self.validate_dob(cleaned_data=self.cleaned_data,
                           model_obj=subject_screening)
+        self.validate_identity_number(cleaned_data=self.cleaned_data)
         self.validate_recruit_source()
         self.validate_recruitment_clinic()
         self.validate_td_consent(model_obj=subject_screening)
 
+    def validate_identity_number(self, cleaned_data=None):
+        if cleaned_data.get('identity_type') == 'country_id':
+            if len(cleaned_data.get('identity')) != 9:
+                msg = {'identity':
+                       'Country identity provided should contain 9 values. '
+                       'Please correct.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
+            if cleaned_data.get('identity')[4] != '2':
+                msg = {'identity':
+                       'Identity provided indicates participant is Male. Please '
+                       'correct.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
+
     def validate_dob(self, cleaned_data=None, model_obj=None):
+        consent_datetime = cleaned_data.get(
+            'consent_datetime') or self.instance.consent_datetime
         consent_age = relativedelta(
-            cleaned_data.get('consent_datetime').date(), cleaned_data.get('dob')).years
+            consent_datetime.date(), cleaned_data.get('dob')).years
         if consent_age != model_obj.age_in_years:
             message = {'dob':
                        'In Subject Screening you indicated the participant is {}, '
@@ -72,8 +90,8 @@ class MaternalConsentFormValidator(FormValidator):
 
     def validate_td_consent(self, model_obj=None):
         try:
-            consent_version = self.td_consent_version_cls.objects.get(
-                subjectscreening=model_obj)
+            self.td_consent_version_cls.objects.get(
+                screening_identifier=model_obj.screening_identifier)
         except self.td_consent_version_cls.DoesNotExist:
             raise ValidationError(
                 'Complete mother\'s consent version form before proceeding')

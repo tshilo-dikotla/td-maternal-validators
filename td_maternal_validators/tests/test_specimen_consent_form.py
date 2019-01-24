@@ -1,5 +1,4 @@
 from django.test import TestCase
-from ..form_validators import SpecimenConsentForm
 
 
 class TestSpecimenConsentFormValidator(TestCase):

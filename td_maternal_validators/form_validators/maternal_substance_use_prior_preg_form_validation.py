@@ -7,7 +7,7 @@ class MaternalSubstanceUsePriorPregFormValidator(FormValidator):
         self.required_if(
             YES,
             field='smoked_prior_to_preg',
-            field_required='smoking_prior_to_preg_freq'
+            field_required='smoking_prior_preg_freq'
         )
 
         self.required_if(

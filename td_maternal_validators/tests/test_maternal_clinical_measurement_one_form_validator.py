@@ -18,18 +18,6 @@ class TestMaternalClinicalTestOneForm(TestCase):
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
-    def test_systolic_bp_yes_invalid(self):
-        '''Assert raises exception if systolic_bp
-        is not selected.
-        '''
-        cleaned_data = {
-            "systolic_bp": None,
-        }
-        form_validator = MaternalClinicalMeasurememtsOneFormValidator(
-            cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('systolic_bp', form_validator._errors)
-
     def test_diastolic_bp_yes_valid(self):
         '''True if diastolic_bp is selected
         '''
@@ -43,18 +31,6 @@ class TestMaternalClinicalTestOneForm(TestCase):
             form_validator.validate()
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
-
-    def test_diastolic_bp_yes_invalid(self):
-        '''Assert raises exception if diastolic_bp
-        is not selected.
-        '''
-        cleaned_data = {
-            "diastolic_bp": None,
-        }
-        form_validator = MaternalClinicalMeasurememtsOneFormValidator(
-            cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('diastolic_bp', form_validator._errors)
 
     def test_systolic_bp_less_invalid(self):
         '''Assert raises exception if systolic_bp
