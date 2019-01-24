@@ -10,17 +10,17 @@ class MaternalTuberculosisHistoryFormValidator(FormValidator):
         self.required_if(
             YES,
             field='coughing',
-            field_required='coughing_relation'
+            field_required='coughing_rel'
         ),
 
         self.required_if(
             YES,
             field='diagnosis',
-            field_required='diagnosis_relation'
+            field_required='diagnosis_rel'
         ),
 
         self.required_if(
             YES,
-            field='tuberculosis_treatment',
-            field_required='tuberculosis_treatment_relation'
+            field='tb_treatment',
+            field_required='tb_treatment_rel'
         )
