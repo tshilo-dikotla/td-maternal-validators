@@ -499,3 +499,31 @@ class TestMaternalMedicalHistoryForm(TestCase):
             form_validator.validate()
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
+
+    def test_validate_lowest_cd4_known_valid(self):
+        '''True if the lowest_cd4 is NOT applicable when the status is POS
+        '''
+        maternal_status = MaternalStatusHelper(status=POS)
+        MaternalMedicalHistoryFormValidator.maternal_status_helper = maternal_status
+        self.cleaned_data.update(
+            lowest_cd4_known=NOT_APPLICABLE
+        )
+        form_validator = MaternalMedicalHistoryFormValidator(
+            cleaned_data=self.cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('lowest_cd4_known', form_validator._errors)
+
+    def test_validate_lowest_cd4_known_invalid(self):
+        '''Assert raises exception if the status is NEG and lowest_cd4 is not Applicable
+        '''
+        maternal_status = MaternalStatusHelper(status=NEG)
+        MaternalMedicalHistoryFormValidator.maternal_status_helper = maternal_status
+        self.cleaned_data.update(
+            lowest_cd4_known=NOT_APPLICABLE
+        )
+        form_validator = MaternalMedicalHistoryFormValidator(
+            cleaned_data=self.cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'VallidationError unexpectedly raised. Got{e}')

@@ -1,6 +1,6 @@
 from django.apps import apps as django_apps
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from edc_constants.constants import YES, NO, NOT_APPLICABLE, NEG, POS
+from django.core.exceptions import ValidationError
+from edc_constants.constants import YES, NO, NOT_APPLICABLE, NEG, POS, OTHER
 from edc_form_validators import FormValidator
 from td_maternal.helper_classes import MaternalStatusHelper
 
@@ -33,6 +33,9 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
         self.validate_negative_mother_seropositive_no_cd4_not(
             cleaned_data=self.cleaned_data)
         self.validate_hiv_diagnosis_date(cleaned_data=self.cleaned_data)
+        self.validate_other_mother()
+        self.validate_other_father()
+        self.validate_other_mother_medications()
 
     def validate_chronic_since_who_diagnosis_neg(self, cleaned_data=None):
         #                 print(self.maternal_status_helper.hiv_status)
@@ -101,13 +104,39 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
                 NOT_APPLICABLE,
                 m2m_field=m2m_field)
 
+    def validate_other_mother(self):
+        selections = [OTHER, NOT_APPLICABLE]
+        self.m2m_single_selection_if(
+            *selections,
+            m2m_field='mother_chronic')
+        self.m2m_other_specify(
+            OTHER,
+            m2m_field='mother_chronic',
+            field_other='mother_chronic_other')
+
+    def validate_other_father(self):
+        selections = [OTHER, NOT_APPLICABLE]
+        self.m2m_single_selection_if(
+            *selections,
+            m2m_field='father_chronic')
+        self.m2m_other_specify(
+            OTHER,
+            m2m_field='father_chronic',
+            field_other='father_chronic_other')
+
     def validate_mother_medications_multiple_selections(self):
         self.m2m_required(
             m2m_field='mother_medications')
 
+    def validate_other_mother_medications(self):
+        selections = [OTHER, NOT_APPLICABLE]
         self.m2m_single_selection_if(
-            NOT_APPLICABLE,
+            *selections,
             m2m_field='mother_medications')
+        self.m2m_other_specify(
+            OTHER,
+            m2m_field='mother_medications',
+            field_other='mother_medications_other')
 
     def validate_positive_mother_seropositive_yes(self, cleaned_data=None):
         status_helper = MaternalStatusHelper(
@@ -205,7 +234,8 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
                 subject_identifier=cleaned_data.get('maternal_visit').appointment.subject_identifier)
             if antenatal_enrollment.week32_test_date != cleaned_data.get('date_hiv_diagnosis'):
                 msg = {'date_hiv_diagnosis':
-                       'HIV diagnosis date should match date at Antenatal Enrollment'}
+                       'HIV diagnosis date should match date {} at Antenatal '
+                       'Enrollment'.format(antenatal_enrollment.week32_test_date)}
                 self._errors.update(msg)
                 raise ValidationError(msg)
 
