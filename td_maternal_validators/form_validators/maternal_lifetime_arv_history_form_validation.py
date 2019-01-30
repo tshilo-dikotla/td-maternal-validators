@@ -1,6 +1,6 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_constants.constants import (YES, NO, RESTARTED, CONTINUOUS, STOPPED)
+from edc_constants.constants import YES, NO, RESTARTED, CONTINUOUS, STOPPED, OTHER
 from edc_form_validators import FormValidator
 
 
@@ -35,6 +35,7 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
         self.validate_maternal_consent(cleaned_data=self.cleaned_data)
 
         self.validate_prev_preg(cleaned_data=self.cleaned_data)
+        self.validate_other_mother()
 
     def validate_prior_preg(self, cleaned_data=None):
         responses = (CONTINUOUS, RESTARTED)
@@ -53,6 +54,16 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
                                  'never restarted. Please correct.'}
             self._errors.update(msg)
             raise ValidationError(msg)
+
+    def validate_other_mother(self):
+        selections = [OTHER]
+        self.m2m_single_selection_if(
+            *selections,
+            m2m_field='prior_arv')
+        self.m2m_other_specify(
+            OTHER,
+            m2m_field='prior_arv',
+            field_other='prior_arv_other')
 
     def validate_maternal_consent(self, cleaned_data=None):
         if cleaned_data.get('haart_start_date'):
