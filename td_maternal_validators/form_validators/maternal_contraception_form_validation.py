@@ -1,4 +1,4 @@
-from edc_constants.constants import YES
+from edc_constants.constants import YES, OTHER
 from edc_form_validators import FormValidator
 
 
@@ -60,4 +60,17 @@ class MaternalContraceptionFormValidator(FormValidator):
             field_required='pap_smear_result_abnormal',
             required_msg='pap smear results were abnormal, can the participant'
                          ' share the result description.'
+        )
+
+        m2m_fields = {'contr': 'contr_other',
+                      'contraceptive_relative': 'contraceptive_relative_other'}
+        for m2m_field, field in m2m_fields.items():
+            self.m2m_other_specify(
+                OTHER,
+                m2m_field=m2m_field,
+                field_other=field)
+
+        self.validate_other_specify(
+            field='influential_decision_making',
+            other_specify_field='influential_decision_making_other',
         )

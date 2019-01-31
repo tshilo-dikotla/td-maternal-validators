@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from edc_constants.constants import YES, POS, NOT_APPLICABLE, NO
+from edc_constants.constants import YES, POS, NOT_APPLICABLE, NO, OTHER
 from edc_form_validators import FormValidator
 from td_maternal.helper_classes import MaternalStatusHelper
 
@@ -41,6 +41,7 @@ class MaternalPostPartumFuFormValidator(FormValidator):
                 m2m_field='hospitalization_reason')
 
         self.validate_who_diagnoses()
+        self.validate_other()
 
     def validate_who_diagnoses(self):
         condition = self.maternal_status_helper.hiv_status == POS
@@ -93,6 +94,21 @@ class MaternalPostPartumFuFormValidator(FormValidator):
                 NOT_APPLICABLE,
                 m2m_field=m2m_field
             )
+
+    def validate_other(self):
+        m2m_fields = ['diagnoses', 'hospitalization_reason']
+        for m2m_field in m2m_fields:
+            self.m2m_single_selection_if(
+                OTHER,
+                m2m_field=m2m_field)
+
+        m2m_fields = {'diagnoses': 'diagnoses_other',
+                      'hospitalization_reason': 'hospitalization_reason_other'}
+        for m2m_field, field in m2m_fields.items():
+            self.m2m_other_specify(
+                OTHER,
+                m2m_field=m2m_field,
+                field_other=field)
 
     @property
     def maternal_status_helper(self):

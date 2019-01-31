@@ -17,11 +17,9 @@ class MaternalIterimIdccFormValidator(FormValidator):
         required_fields = ['value_vl', 'recent_vl_date']
         for required in required_fields:
             if required in self.cleaned_data:
-                self.required_if(
-                    YES,
-                    field='info_since_lastvisit',
-                    field_required=required,
-                )
+                self.required_if_not_none(
+                    field='value_vl_size',
+                    field_required=required)
         self.validate_viral_load_value()
 
     def validate_viral_load_value(self):
@@ -29,15 +27,15 @@ class MaternalIterimIdccFormValidator(FormValidator):
         vl_value = cleaned_data.get('value_vl')
         if (vl_value != 400
                 and cleaned_data.get('value_vl_size') == 'less_than'):
-            msg = {'value_vl': 'You indicated that the value of the most recent VL is'
-                   f'less_than a {vl_value},therefore the value of VL should be 400'}
+            msg = {'value_vl': 'You indicated that the value of the most recent VL is '
+                   f'less_than a {vl_value}, therefore the value of VL should be 400'}
             self._errors.update(msg)
             raise ValidationError(msg)
 
         if (vl_value != 750000
                 and cleaned_data.get('value_vl_size') == 'greater_than'):
-            msg = {'value_vl': 'You indicated that the value of the most recent VL is'
-                   f'less_than a {vl_value},therefore the value of VL should be 750000'}
+            msg = {'value_vl': 'You indicated that the value of the most recent VL is '
+                   f'greater_than a {vl_value}, therefore the value of VL should be 750000'}
             self._errors.update(msg)
             raise ValidationError(msg)
 

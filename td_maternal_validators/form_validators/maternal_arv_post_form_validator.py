@@ -34,3 +34,8 @@ class MarternalArvPostFormValidator(FormValidator):
             NO,
             field='on_arv_since',
             field_applicable='on_arv_reason')
+
+        self.validate_other_specify(
+            field='on_arv_reason',
+            other_specify_field='on_arv_reason_other',
+        )
