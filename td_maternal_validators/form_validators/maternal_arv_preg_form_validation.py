@@ -10,3 +10,9 @@ class MaternalArvPregFormValidator(FormValidator):
             field='is_interrupt',
             field_applicable='interrupt',
         )
+
+        self.validate_other_specify(
+            field='interrupt',
+            other_specify_field='interrupt_other',
+            required_msg='Please give reason for interruption'
+        )
