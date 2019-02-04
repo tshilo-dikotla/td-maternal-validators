@@ -1,6 +1,7 @@
 from dateutil.relativedelta import relativedelta
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
+from edc_constants.constants import YES
 from edc_form_validators import FormValidator
 
 
@@ -28,6 +29,11 @@ class AntenatalEnrollmentFormValidator(FormValidator):
         return django_apps.get_model(self.subject_screening_model)
 
     def clean(self):
+        self.required_if(
+            YES,
+            field='knows_lmp',
+            field_required='last_period_date'
+        )
         self.validate_last_period_date(cleaned_data=self.cleaned_data)
         self.clean_rapid_test(cleaned_data=self.cleaned_data)
         self.validate_current_consent_version()
