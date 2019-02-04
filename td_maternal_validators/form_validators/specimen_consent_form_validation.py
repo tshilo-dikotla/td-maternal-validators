@@ -1,13 +1,22 @@
 from django import forms
-from edc_consent.forms import BaseSpecimenConsentForm
-from td_maternal.models import MaternalConsent
+from td_maternal.models import SubjectConsent
+from edc_constants.constants import NO
+from edc_form_validators import FormValidator
 
 
-class SpecimenConsentForm(BaseSpecimenConsentForm):
+class SpecimenConsentFormValidator(FormValidator):
 
-    STUDY_CONSENT = MaternalConsent
+    STUDY_CONSENT = SubjectConsent
 
     def clean(self):
+
+        self.required_if(
+            NO,
+            field='is_literate',
+            field_required='witness_name',
+            required_msg='You specified that participant is illiterate,'
+            ' witness is required'
+        )
         cleaned_data = super().clean()
         return cleaned_data
 
