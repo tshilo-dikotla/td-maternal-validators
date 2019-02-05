@@ -120,7 +120,8 @@ class MaternalLabDelFormValidator(FormValidator):
         else:
             try:
                 self.maternal_consent_cls.objects.get(
-                    screening_identifier=self.subject_screening.screening_identifier,
+                    subject_identifier=self.cleaned_data.get(
+                        'subject_identifier'),
                     version=td_consent_version.version)
             except self.maternal_consent_cls.DoesNotExist:
                 raise ValidationError(
