@@ -117,7 +117,7 @@ class TestSpecimenConsent(TestCase):
         form_validator = SpecimenConsentFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('purpose_explained', form_validator._errors)
+        self.assertIn('consent_reviewed', form_validator._errors)
 
     def test_consent_reviewed_and_assessment_score_valid(self):
         self.subject_consent = SubjectConsent.objects.create(
@@ -172,7 +172,7 @@ class TestSpecimenConsent(TestCase):
             'may_store_samples': YES,
             'consent_reviewed': YES,
             'assessment_score': YES,
-            'offered_copy': YES}
+            'consent_copy': YES}
         form_validator = SpecimenConsentFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -193,8 +193,8 @@ class TestSpecimenConsent(TestCase):
             'is_literate': YES,
             'may_store_samples': NO,
             'assessment_score': YES,
-            'offered_copy': YES}
+            'consent_copy': YES}
         form_validator = SpecimenConsentFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('offered_copy', form_validator._errors)
+        self.assertIn('consent_copy', form_validator._errors)
