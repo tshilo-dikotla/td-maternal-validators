@@ -1,3 +1,4 @@
+from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_form_validators import FormValidator
@@ -25,6 +26,7 @@ class AntenatalVisitMembershipFormValidator(FormValidator):
 
     def clean(self):
         self.validate_current_consent_version()
+        self.validate_against_consent()
 
     def validate_current_consent_version(self):
         try:
@@ -43,6 +45,33 @@ class AntenatalVisitMembershipFormValidator(FormValidator):
                 raise ValidationError(
                     'Maternal Consent form for version {} before '
                     'proceeding'.format(td_consent_version.version))
+
+    def validate_against_consent(self):
+        """Returns an instance of the current maternal consent or
+        raises an exception if not found."""
+        cleaned_data = self.cleaned_data
+
+        latest_consent = self.maternal_consent_cls.objects.filter(
+            subject_identifier=self.cleaned_data.get('subject_identifier')
+        ).order_by('-consent_datetime').first()
+
+        if latest_consent:
+            try:
+                consent_version = self.consent_version_cls.objects.get(
+                    screening_identifier=latest_consent.screening_identifier)
+            except self.consent_version_cls.DoesNotExist:
+                raise forms.ValidationError(
+                    'Subject consent version form must be completed first.')
+
+            if cleaned_data.get("report_datetime") < latest_consent.consent_datetime:
+                raise forms.ValidationError(
+                    "Report datetime cannot be before consent datetime")
+
+        if (not latest_consent
+                or latest_consent.version != consent_version.version):
+            raise forms.ValidationError(
+                'Subject consent must be completed before first.')
+        return latest_consent
 
     @property
     def subject_screening(self):
