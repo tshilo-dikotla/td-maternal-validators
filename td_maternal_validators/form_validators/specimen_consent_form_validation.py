@@ -25,12 +25,14 @@ class SpecimenConsentFormValidator(FormValidator):
         study_consent = self.validate_against_consent()
         self.compare_attr_to_study_consent('is_literate', study_consent)
         self.compare_attr_to_study_consent('witness_name', study_consent)
-        self.purpose_explained_and_understood()
+        self.consent_reviewed_and_assessment_score()
         self.copy_of_consent_provided()
 
     def validate_against_consent(self):
         """Returns an instance of the current maternal consent or
         raises an exception if not found."""
+        cleaned_data = self.cleaned_data
+
         latest_consent = self.consent_model_cls.objects.filter(
             subject_identifier=self.cleaned_data.get('subject_identifier')
         ).order_by('-consent_datetime').first()
@@ -43,6 +45,10 @@ class SpecimenConsentFormValidator(FormValidator):
                 raise forms.ValidationError(
                     'Subject consent version form must be completed before'
                     ' the specimen consent.')
+
+            if cleaned_data.get("consent_datetime") < latest_consent.consent_datetime:
+                raise forms.ValidationError(
+                    "Specimen consent datetime cannot be before consent datetime")
 
         if (not latest_consent
                 or latest_consent.version != consent_version.version):
@@ -67,19 +73,19 @@ class SpecimenConsentFormValidator(FormValidator):
                  f' for question \'{question}\'. Got {value} !='
                  f' {study_consent_value}. Please correct.'})
 
-    def purpose_explained_and_understood(self):
+    def consent_reviewed_and_assessment_score(self):
         """Ensures the purpose of specimen storage is indicated as
         explained and understood."""
         cleaned_data = self.cleaned_data
         if cleaned_data.get("may_store_samples") == YES:
-            if cleaned_data.get("purpose_explained") != YES:
+            if cleaned_data.get("consent_reviewed") != YES:
                 raise forms.ValidationError(
-                    {'purpose_explained':
+                    {'consent_reviewed':
                      "If the participant agrees for specimens to be stored, "
                      "ensure that purpose of specimen storage is explained."})
-            if cleaned_data.get("purpose_understood") != YES:
+            if cleaned_data.get("assessment_score") != YES:
                 raise forms.ValidationError(
-                    {'purpose_understood':
+                    {'assessment_score':
                      "If the participant agrees for specimens to be stored, "
                      "ensure that participant understands the purpose,  "
                      "procedures and benefits of specimen storage."})
@@ -87,9 +93,9 @@ class SpecimenConsentFormValidator(FormValidator):
     def copy_of_consent_provided(self):
         cleaned_data = self.cleaned_data
         if cleaned_data.get("may_store_samples") == NO:
-            if cleaned_data.get('offered_copy') != NO:
+            if cleaned_data.get('consent_copy') != NO:
                 raise forms.ValidationError(
-                    {'offered_copy':
+                    {'consent_copy':
                      'Participant did not agree for specimens to be stored. '
                      'Do not provide the participant with a copy of the '
                      'specimen consent.'})

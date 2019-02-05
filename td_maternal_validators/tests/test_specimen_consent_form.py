@@ -7,6 +7,7 @@ from ..form_validators import SpecimenConsentFormValidator
 from .models import SubjectConsent, TdConsentVersion
 
 
+@tag('spc')
 class TestSpecimenConsent(TestCase):
 
     def setUp(self):
@@ -118,7 +119,7 @@ class TestSpecimenConsent(TestCase):
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('purpose_explained', form_validator._errors)
 
-    def test_purpose_explained_understood_valid(self):
+    def test_consent_reviewed_and_assessment_score_valid(self):
         self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111', screening_identifier='ABC12345',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
@@ -130,8 +131,8 @@ class TestSpecimenConsent(TestCase):
             'consent_datetime': get_utcnow(),
             'is_literate': YES,
             'may_store_samples': YES,
-            'purpose_explained': YES,
-            'purpose_understood': YES}
+            'consent_reviewed': YES,
+            'assessment_score': YES}
         form_validator = SpecimenConsentFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -139,7 +140,7 @@ class TestSpecimenConsent(TestCase):
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
-    def test_purpose_understood_invalid(self):
+    def test_consent_reviewed_and_assessment_score_invalid(self):
         self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111', screening_identifier='ABC12345',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
@@ -151,11 +152,11 @@ class TestSpecimenConsent(TestCase):
             'consent_datetime': get_utcnow(),
             'is_literate': YES,
             'may_store_samples': YES,
-            'purpose_explained': YES}
+            'consent_reviewed': NO}
         form_validator = SpecimenConsentFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('purpose_understood', form_validator._errors)
+        self.assertIn('consent_reviewed', form_validator._errors)
 
     def test_copy_of_consent_provided_valid(self):
         self.subject_consent = SubjectConsent.objects.create(
@@ -169,8 +170,8 @@ class TestSpecimenConsent(TestCase):
             'consent_datetime': get_utcnow(),
             'is_literate': YES,
             'may_store_samples': YES,
-            'purpose_explained': YES,
-            'purpose_understood': YES,
+            'consent_reviewed': YES,
+            'assessment_score': YES,
             'offered_copy': YES}
         form_validator = SpecimenConsentFormValidator(
             cleaned_data=cleaned_data)
@@ -191,7 +192,7 @@ class TestSpecimenConsent(TestCase):
             'consent_datetime': get_utcnow(),
             'is_literate': YES,
             'may_store_samples': NO,
-            'purpose_explained': YES,
+            'assessment_score': YES,
             'offered_copy': YES}
         form_validator = SpecimenConsentFormValidator(
             cleaned_data=cleaned_data)
