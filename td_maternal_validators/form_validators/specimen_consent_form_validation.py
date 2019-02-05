@@ -69,7 +69,7 @@ class SpecimenConsentFormValidator(FormValidator):
                 if field.name == attrname]
             question = ', '.join([fld.verbose_name for fld in fields])
             raise forms.ValidationError(
-                {question: 'Specimen consent and maternal consent do not match'
+                {'Specimen consent and maternal consent do not match'
                  f' for question \'{question}\'. Got {value} !='
                  f' {study_consent_value}. Please correct.'})
 
