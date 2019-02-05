@@ -1,4 +1,5 @@
 from dateutil.relativedelta import relativedelta
+from django.core.exceptions import ValidationError
 from django.forms import forms
 from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
@@ -6,15 +7,14 @@ from edc_constants.constants import NO, NOT_APPLICABLE
 
 from ..constants import NEVER_STARTED
 from ..form_validators import MarternalArvPostFormValidator
-from .models import (Appointment, MaternalVisit, MaternalConsent,
+from .models import (Appointment, MaternalVisit, SubjectConsent,
                      MaternalArvPostAdh)
-from django.core.exceptions import ValidationError
 
 
 class MaternalArvPostFormValidator(TestCase):
 
     def setUp(self):
-        self.subject_consent = MaternalConsent.objects.create(
+        self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
             consent_datetime=get_utcnow())

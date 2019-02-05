@@ -4,7 +4,7 @@ from edc_base.utils import relativedelta
 from edc_form_validators import FormValidator
 
 
-class MaternalConsentFormValidator(FormValidator):
+class SubjectConsentFormValidator(FormValidator):
 
     screening_model = 'td_maternal.subjectscreening'
 

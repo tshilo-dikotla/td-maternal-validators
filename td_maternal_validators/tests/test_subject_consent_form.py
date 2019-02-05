@@ -1,13 +1,14 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase, tag
-from edc_constants.constants import YES, NO, OTHER
-from ..form_validators import MaternalConsentFormValidator
-from .models import SubjectScreening, TdConsentVersion
 from edc_base.utils import get_utcnow, relativedelta
+from edc_constants.constants import YES, NO, OTHER
+
+from ..form_validators import SubjectConsentFormValidator
+from .models import SubjectScreening, TdConsentVersion
 
 
 @tag('consent')
-class TestMaternalConsentForm(TestCase):
+class TestSubjectConsentForm(TestCase):
 
     def setUp(self):
         self.screening_identifier = 'ABC12345'
@@ -15,11 +16,11 @@ class TestMaternalConsentForm(TestCase):
             screening_identifier=self.screening_identifier, has_omang=YES,
             age_in_years=22)
         subject_screening_model = 'td_maternal_validators.subjectscreening'
-        MaternalConsentFormValidator.screening_model = subject_screening_model
+        SubjectConsentFormValidator.screening_model = subject_screening_model
         self.td_consent_version = TdConsentVersion.objects.create(
             screening_identifier=self.screening_identifier, version='1')
         td_consent_version_model = 'td_maternal_validators.tdconsentversion'
-        MaternalConsentFormValidator.td_consent_version_model =\
+        SubjectConsentFormValidator.td_consent_version_model =\
             td_consent_version_model
 
     def test_citizen_matches_has_omang(self):
@@ -29,7 +30,7 @@ class TestMaternalConsentForm(TestCase):
             'consent_datetime': get_utcnow(),
             'dob': (get_utcnow() - relativedelta(years=22)).date(),
             'citizen': YES}
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         try:
             form_validator.validate()
@@ -43,7 +44,7 @@ class TestMaternalConsentForm(TestCase):
             'consent_datetime': get_utcnow(),
             'dob': (get_utcnow() - relativedelta(years=22)).date(),
             'citizen': NO}
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('citizen', form_validator._errors)
@@ -54,7 +55,7 @@ class TestMaternalConsentForm(TestCase):
             'consent_datetime': get_utcnow(),
             'dob': (get_utcnow() - relativedelta(years=20)).date(),
             'citizen': YES}
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('dob', form_validator._errors)
@@ -65,7 +66,7 @@ class TestMaternalConsentForm(TestCase):
             'consent_datetime': get_utcnow(),
             'dob': (get_utcnow() - relativedelta(years=22)).date(),
             'citizen': YES}
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         try:
             form_validator.validate()
@@ -81,7 +82,7 @@ class TestMaternalConsentForm(TestCase):
             'recruit_source_other': None,
             'citizen': YES
         }
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('recruit_source_other', form_validator._errors)
@@ -95,7 +96,7 @@ class TestMaternalConsentForm(TestCase):
             'recruit_source_other': 'family friend',
             'citizen': YES
         }
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         try:
             form_validator.validate()
@@ -111,7 +112,7 @@ class TestMaternalConsentForm(TestCase):
             'recruit_source_other': 'family friend',
             'citizen': YES
         }
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('recruit_source_other', form_validator._errors)
@@ -125,7 +126,7 @@ class TestMaternalConsentForm(TestCase):
             'recruit_source_other': None,
             'citizen': YES
         }
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         try:
             form_validator.validate()
@@ -141,7 +142,7 @@ class TestMaternalConsentForm(TestCase):
             'recruitment_clinic_other': None,
             'citizen': YES
         }
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('recruitment_clinic_other', form_validator._errors)
@@ -155,7 +156,7 @@ class TestMaternalConsentForm(TestCase):
             'recruitment_clinic_other': 'PMH',
             'citizen': YES
         }
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         try:
             form_validator.validate()
@@ -171,7 +172,7 @@ class TestMaternalConsentForm(TestCase):
             'recruitment_clinic_other': 'G.West Clinic',
             'citizen': YES
         }
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('recruitment_clinic_other', form_validator._errors)
@@ -185,7 +186,7 @@ class TestMaternalConsentForm(TestCase):
             'recruitment_clinic_other': None,
             'citizen': YES
         }
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         try:
             form_validator.validate()
@@ -199,7 +200,7 @@ class TestMaternalConsentForm(TestCase):
             'dob': (get_utcnow() - relativedelta(years=22)).date(),
             'citizen': YES
         }
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         try:
             form_validator.validate()
@@ -215,6 +216,6 @@ class TestMaternalConsentForm(TestCase):
             'dob': (get_utcnow() - relativedelta(years=22)).date(),
             'citizen': YES
         }
-        form_validator = MaternalConsentFormValidator(
+        form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)

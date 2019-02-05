@@ -3,18 +3,18 @@ from django.test import TestCase
 from edc_base.utils import get_utcnow, relativedelta
 
 from ..form_validators import AntenatalVisitMembershipFormValidator
-from .models import TdConsentVersion, SubjectScreening, MaternalConsent
+from .models import TdConsentVersion, SubjectScreening, SubjectConsent
 
 
 class TestAntenatalVisitMembershipForm(TestCase):
 
     def setUp(self):
         self.screening_identifier = 'ABC12345'
-        self.subject_consent = MaternalConsent.objects.create(
+        self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111', screening_identifier='ABC12345',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
             consent_datetime=get_utcnow(), version='3')
-        self.subject_consent_model = 'td_maternal_validators.maternalconsent'
+        self.subject_consent_model = 'td_maternal_validators.subjectconsent'
         AntenatalVisitMembershipFormValidator.maternal_consent_model =\
             self.subject_consent_model
         self.subject_screening = SubjectScreening.objects.create(

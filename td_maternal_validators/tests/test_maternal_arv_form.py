@@ -1,19 +1,21 @@
+from datetime import timedelta
+
+from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from ..form_validators import MaternalArvFormValidator
 from edc_base.utils import get_utcnow
-from datetime import timedelta
 from edc_constants.constants import YES, NO
 
+from ..form_validators import MaternalArvFormValidator
 from .models import (MaternalArvPreg, MaternalArv,
-                     MaternalLifetimeArvHistory, MaternalConsent,
+                     MaternalLifetimeArvHistory, SubjectConsent,
                      MaternalVisit, Appointment)
-from dateutil.relativedelta import relativedelta
 
 
 class TestMaternalArvForm(TestCase):
+
     def setUp(self):
-        self.subject_consent = MaternalConsent.objects.create(
+        self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111', consent_datetime=get_utcnow(),
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date())
         appointment = Appointment.objects.create(

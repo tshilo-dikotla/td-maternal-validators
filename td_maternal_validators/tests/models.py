@@ -1,25 +1,32 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models.deletion import PROTECT
+from django_crypto_fields.fields import FirstnameField, LastnameField
 from edc_appointment.models import Appointment
 from edc_base.model_mixins import BaseUuidModel, ListModelMixin
 from edc_base.utils import get_utcnow
-from django_crypto_fields.fields import FirstnameField, LastnameField
-from edc_registration.model_mixins import UpdatesOrCreatesRegistrationModelMixin
 from edc_constants.choices import YES_NO, GENDER
+from edc_registration.model_mixins import UpdatesOrCreatesRegistrationModelMixin
 
 
 class ListModel(ListModelMixin, BaseUuidModel):
     pass
 
 
-class MaternalConsent(UpdatesOrCreatesRegistrationModelMixin, BaseUuidModel):
+class SubjectConsent(UpdatesOrCreatesRegistrationModelMixin, BaseUuidModel):
 
     subject_identifier = models.CharField(max_length=25)
 
     screening_identifier = models.CharField(max_length=50)
 
     gender = models.CharField(max_length=25)
+
+    is_literate = models.CharField(max_length=25,
+                                   blank=True,
+                                   null=True)
+
+    witness_name = models.CharField(max_length=25,
+                                    blank=True,
+                                    null=True)
 
     dob = models.DateField()
 

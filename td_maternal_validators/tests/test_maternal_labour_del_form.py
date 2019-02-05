@@ -1,11 +1,12 @@
-from django.test import TestCase, tag
 from django.core.exceptions import ValidationError
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import YES, NO, POS, NEG, NOT_APPLICABLE
-from .models import (MaternalArv, MaternalVisit,
-                     MaternalConsent, Appointment, MaternalArvPreg,
-                     SubjectScreening, TdConsentVersion)
+
 from ..form_validators import MaternalLabDelFormValidator
+from .models import (MaternalArv, MaternalVisit,
+                     SubjectConsent, Appointment, MaternalArvPreg,
+                     SubjectScreening, TdConsentVersion)
 
 
 class MaternalStatusHelper:
@@ -21,12 +22,12 @@ class MaternalStatusHelper:
 class TestMaternalLabDelForm(TestCase):
 
     def setUp(self):
-        self.subject_consent = MaternalConsent.objects.create(
+        self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111', screening_identifier='ABC12345',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
             consent_datetime=get_utcnow(), version='3')
 
-        subject_consent_model = 'td_maternal_validators.maternalconsent'
+        subject_consent_model = 'td_maternal_validators.subjectconsent'
         MaternalLabDelFormValidator.maternal_consent_model =\
             subject_consent_model
 

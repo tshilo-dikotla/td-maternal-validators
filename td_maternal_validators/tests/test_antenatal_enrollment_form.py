@@ -6,7 +6,7 @@ from edc_constants.constants import POS, NEG
 
 from ..form_validators import AntenatalEnrollmentFormValidator
 from .models import (AntenatalEnrollment, SubjectScreening,
-                     MaternalConsent, TdConsentVersion)
+                     SubjectConsent, TdConsentVersion)
 
 
 @tag('enrol')
@@ -28,11 +28,11 @@ class TestAntenatalEnrollmentForm(TestCase):
         self.subject_screening_model = 'td_maternal_validators.subjectscreening'
         AntenatalEnrollmentFormValidator.subject_screening_model =\
             self.subject_screening_model
-        self.subject_consent = MaternalConsent.objects.create(
+        self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111', screening_identifier='ABC12345',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
             consent_datetime=get_utcnow(), version='3')
-        self.subject_consent_model = 'td_maternal_validators.maternalconsent'
+        self.subject_consent_model = 'td_maternal_validators.subjectconsent'
         AntenatalEnrollmentFormValidator.maternal_consent_model =\
             self.subject_consent_model
         self.td_consent_version = TdConsentVersion.objects.create(
