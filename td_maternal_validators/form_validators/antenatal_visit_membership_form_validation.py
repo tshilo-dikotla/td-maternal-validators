@@ -43,8 +43,8 @@ class AntenatalVisitMembershipFormValidator(FormValidator):
                     version=td_consent_version.version)
             except self.maternal_consent_cls.DoesNotExist:
                 raise ValidationError(
-                    'Maternal Consent form for version {} before '
-                    'proceeding'.format(td_consent_version.version))
+                    'Maternal Consent form for version '
+                    f'{td_consent_version.version} before proceeding.')
 
     def validate_against_consent(self):
         """Returns an instance of the current maternal consent or
