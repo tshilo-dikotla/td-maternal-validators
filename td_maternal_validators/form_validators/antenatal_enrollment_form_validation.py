@@ -1,7 +1,10 @@
 from dateutil.relativedelta import relativedelta
+from django import forms
 from django.core.exceptions import ValidationError
 from edc_constants.constants import YES
 from edc_form_validators import FormValidator
+
+from td_maternal.helper_classes import EnrollmentHelper
 
 from .form_validator_mixin import TDFormValidatorMixin
 
@@ -18,6 +21,11 @@ class AntenatalEnrollmentFormValidator(TDFormValidatorMixin, FormValidator):
         self.clean_rapid_test(cleaned_data=self.cleaned_data)
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'))
+
+        enrollment_helper = EnrollmentHelper(
+            instance_antenatal=self.instance,
+            exception_cls=forms.ValidationError)
+        enrollment_helper.raise_validation_error_for_rapidtest()
 
     def validate_last_period_date(self, cleaned_data=None):
         last_period_date = cleaned_data.get('last_period_date')
