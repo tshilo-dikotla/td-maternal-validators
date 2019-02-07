@@ -38,24 +38,25 @@ class TDFormValidatorMixin:
     def validate_against_consent(self):
         """Returns an instance of the current maternal consent version form or
         raises an exception if not found."""
-        try:
-            td_consent_version = self.consent_version_cls.objects.get(
-                screening_identifier=self.subject_screening.screening_identifier)
-        except self.consent_version_cls.DoesNotExist:
-            raise ValidationError(
-                'Please complete mother\'s consent version form before proceeding')
-        else:
+        if self.instance._meta.label_lower != self.consent_version_model:
             try:
-                latest_consent = self.maternal_consent_cls.objects.get(
-                    subject_identifier=self.cleaned_data.get(
-                        'subject_identifier'),
-                    version=td_consent_version.version)
-            except self.maternal_consent_cls.DoesNotExist:
+                self.consent_version_cls.objects.get(
+                    screening_identifier=self.subject_screening.screening_identifier)
+            except self.consent_version_cls.DoesNotExist:
                 raise ValidationError(
-                    'Please complete Maternal Consent form for version '
-                    f'{td_consent_version.version} before  proceeding.')
+                    'Please complete mother\'s consent version form before proceeding')
             else:
-                return latest_consent
+                try:
+                    latest_consent = self.maternal_consent_cls.objects.get(
+                        subject_identifier=self.cleaned_data.get(
+                            'subject_identifier'))
+                except self.maternal_consent_cls.DoesNotExist:
+                    raise ValidationError(
+                        'Please complete Maternal Consent form for version '
+                        f'before  proceeding.')
+                else:
+                    return latest_consent
+        return None
 
     @property
     def subject_screening(self):
