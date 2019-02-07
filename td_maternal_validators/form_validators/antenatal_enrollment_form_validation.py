@@ -1,5 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django import forms
+from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_constants.constants import YES
 from edc_form_validators import FormValidator
@@ -10,6 +11,12 @@ from .form_validator_mixin import TDFormValidatorMixin
 
 
 class AntenatalEnrollmentFormValidator(TDFormValidatorMixin, FormValidator):
+
+    antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
+
+    @property
+    def antenatal_enrollment_cls(self):
+        return django_apps.get_model(self.antenatal_enrollment_model)
 
     def clean(self):
         self.required_if(
@@ -23,9 +30,11 @@ class AntenatalEnrollmentFormValidator(TDFormValidatorMixin, FormValidator):
             self.cleaned_data.get('report_datetime'))
 
         enrollment_helper = EnrollmentHelper(
-            instance_antenatal=self.instance,
+            instance_antenatal=self.antenatal_enrollment_cls(
+                **self.cleaned_data),
             exception_cls=forms.ValidationError)
         enrollment_helper.raise_validation_error_for_rapidtest()
+#
 
     def validate_last_period_date(self, cleaned_data=None):
         last_period_date = cleaned_data.get('last_period_date')
