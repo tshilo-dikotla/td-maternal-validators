@@ -1,16 +1,11 @@
 from django import forms
-from django.apps import apps as django_apps
 from edc_constants.constants import YES, NO
 from edc_form_validators import FormValidator
 
+from .form_validator_mixin import TDFormValidatorMixin
 
-class SpecimenConsentFormValidator(FormValidator):
 
-    consent_cls = 'td_maternal.subjectconsent'
-    consent_version_cls = 'td_maternal.tdconsentversion'
-
-    consent_model_cls = django_apps.get_model(consent_cls)
-    consent_version_model = django_apps.get_model(consent_version_cls)
+class SpecimenConsentFormValidator(TDFormValidatorMixin, FormValidator):
 
     def clean(self):
 
@@ -21,41 +16,13 @@ class SpecimenConsentFormValidator(FormValidator):
             required_msg='You specified that participant is illiterate,'
             ' witness is required'
         )
-
+        self.validate_against_consent_datetime(
+            self.cleaned_data.get('consent_datetime'))
         study_consent = self.validate_against_consent()
         self.compare_attr_to_study_consent('is_literate', study_consent)
         self.compare_attr_to_study_consent('witness_name', study_consent)
         self.consent_reviewed_and_assessment_score()
         self.copy_of_consent_provided()
-
-    def validate_against_consent(self):
-        """Returns an instance of the current maternal consent or
-        raises an exception if not found."""
-        cleaned_data = self.cleaned_data
-
-        latest_consent = self.consent_model_cls.objects.filter(
-            subject_identifier=self.cleaned_data.get('subject_identifier')
-        ).order_by('-consent_datetime').first()
-
-        if latest_consent:
-            try:
-                consent_version = self.consent_version_model.objects.get(
-                    screening_identifier=latest_consent.screening_identifier)
-            except self.consent_version_model.DoesNotExist:
-                raise forms.ValidationError(
-                    'Subject consent version form must be completed before'
-                    ' the specimen consent.')
-
-            if cleaned_data.get("consent_datetime") < latest_consent.consent_datetime:
-                raise forms.ValidationError(
-                    "Specimen consent datetime cannot be before consent datetime")
-
-        if (not latest_consent
-                or latest_consent.version != consent_version.version):
-            raise forms.ValidationError(
-                'Subject consent must be completed before'
-                ' the specimen consent.')
-        return latest_consent
 
     def compare_attr_to_study_consent(self, attrname, study_consent):
         """Compares the value of a specimen consent attribute to that on the
@@ -69,7 +36,7 @@ class SpecimenConsentFormValidator(FormValidator):
                 if field.name == attrname]
             question = ', '.join([fld.verbose_name for fld in fields])
             raise forms.ValidationError(
-                {'Specimen consent and maternal consent do not match'
+                {attrname: 'Specimen consent and maternal consent do not match'
                  f' for question \'{question}\'. Got {value} !='
                  f' {study_consent_value}. Please correct.'})
 

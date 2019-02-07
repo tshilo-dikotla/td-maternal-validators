@@ -13,34 +13,28 @@ from .models import (AntenatalEnrollment, SubjectScreening,
 class TestAntenatalEnrollmentForm(TestCase):
 
     def setUp(self):
-        self.subject_identifier = '1234ABC'
+        AntenatalEnrollmentFormValidator.maternal_consent_model = \
+            'td_maternal_validators.subjectconsent'
+        AntenatalEnrollmentFormValidator.consent_version_model = \
+            'td_maternal_validators.tdconsentversion'
+        AntenatalEnrollmentFormValidator.subject_screening_model = \
+            'td_maternal_validators.subjectscreening'
+
         self.antenatal_enrollment = AntenatalEnrollment.objects.create(
-            subject_identifier=self.subject_identifier,
+            subject_identifier='1234ABC',
             enrollment_hiv_status=NEG, week32_result=POS,
             rapid_test_result=POS, rapid_test_date=get_utcnow().date())
-        self.antenatal_enrollment_model = 'td_maternal_validators.antenatalenrollment'
-        AntenatalEnrollmentFormValidator.antenatal_enrollment_model =\
-            self.antenatal_enrollment_model
         self.subject_screening = SubjectScreening.objects.create(
-            subject_identifier=self.subject_identifier,
+            subject_identifier='1234ABC',
             screening_identifier='ABC12345',
             age_in_years=22)
-        self.subject_screening_model = 'td_maternal_validators.subjectscreening'
-        AntenatalEnrollmentFormValidator.subject_screening_model =\
-            self.subject_screening_model
         self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111', screening_identifier='ABC12345',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
             consent_datetime=get_utcnow(), version='3')
-        self.subject_consent_model = 'td_maternal_validators.subjectconsent'
-        AntenatalEnrollmentFormValidator.maternal_consent_model =\
-            self.subject_consent_model
         self.td_consent_version = TdConsentVersion.objects.create(
             screening_identifier=self.subject_screening.screening_identifier,
             version='3', report_datetime=get_utcnow())
-        self.td_consent_version_model = 'td_maternal_validators.tdconsentversion'
-        AntenatalEnrollmentFormValidator.consent_version_model =\
-            self.td_consent_version_model
 
     def test_LMP_within_16wks_of_report_datetime_invalid(self):
         '''Asserts if an exception is raised if last period date is within

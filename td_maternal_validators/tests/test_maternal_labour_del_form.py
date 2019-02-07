@@ -22,21 +22,25 @@ class MaternalStatusHelper:
 class TestMaternalLabDelForm(TestCase):
 
     def setUp(self):
+        MaternalLabDelFormValidator.maternal_consent_model = \
+            'td_maternal_validators.subjectconsent'
+        MaternalLabDelFormValidator.consent_version_model = \
+            'td_maternal_validators.tdconsentversion'
+        MaternalLabDelFormValidator.subject_screening_model = \
+            'td_maternal_validators.subjectscreening'
+        MaternalLabDelFormValidator.maternal_visit_model = \
+            'td_maternal_validators.maternalvisit'
+        MaternalLabDelFormValidator.maternal_arv_model = \
+            'td_maternal_validators.maternalarv'
+
         self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111', screening_identifier='ABC12345',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
             consent_datetime=get_utcnow(), version='3')
 
-        subject_consent_model = 'td_maternal_validators.subjectconsent'
-        MaternalLabDelFormValidator.maternal_consent_model =\
-            subject_consent_model
-
         self.subjectscreening = SubjectScreening.objects.create(
             subject_identifier=self.subject_consent.subject_identifier,
             screening_identifier='ABC12345', age_in_years=22)
-        subject_screening_model = 'td_maternal_validators.subjectscreening'
-        MaternalLabDelFormValidator.subject_screening_model =\
-            subject_screening_model
 
         appointment = Appointment.objects.create(
             subject_identifier=self.subject_consent.subject_identifier,
@@ -46,23 +50,15 @@ class TestMaternalLabDelForm(TestCase):
         maternal_visit = MaternalVisit.objects.create(
             appointment=appointment,
             subject_identifier=self.subject_consent.subject_identifier)
-        maternal_visit_model = 'td_maternal_validators.maternalvisit'
-        MaternalLabDelFormValidator.maternal_visit_model =\
-            maternal_visit_model
 
         self.maternal_arv_preg = MaternalArvPreg.objects.create(
             took_arv=YES, maternal_visit=maternal_visit)
         self.maternal_arv = MaternalArv.objects.create(
             maternal_arv_preg=self.maternal_arv_preg, start_date=get_utcnow().date())
-        maternal_arv_model = 'td_maternal_validators.maternalarv'
-        MaternalLabDelFormValidator.maternal_arv_model = maternal_arv_model
 
         self.td_consent_version = TdConsentVersion.objects.create(
             screening_identifier=self.subjectscreening.screening_identifier,
             version='3', report_datetime=get_utcnow())
-        td_consent_version_model = 'td_maternal_validators.tdconsentversion'
-        MaternalLabDelFormValidator.consent_version_model =\
-            td_consent_version_model
 
     def test_arv_init_date_match_start_date(self):
         cleaned_data = {
