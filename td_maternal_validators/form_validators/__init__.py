@@ -22,3 +22,4 @@ from .maternal_ultrasound_initial_form_validation import MaternalUltrasoundIniti
 from .rapid_test_result_form_validation import RapidTestResultFormValidator
 from .specimen_consent_form_validation import SpecimenConsentFormValidator
 from .subject_consent_form_validation import SubjectConsentFormValidator
+from .td_consent_version_form_validation import TDConsentVersionFormValidator
