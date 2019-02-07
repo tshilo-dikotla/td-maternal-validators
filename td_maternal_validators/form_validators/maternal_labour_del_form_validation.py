@@ -124,4 +124,6 @@ class MaternalLabDelFormValidator(TDFormValidatorMixin, FormValidator):
         if latest_visit:
             return MaternalStatusHelper(latest_visit)
         else:
-            return None
+            raise ValidationError(
+                'Please complete previous visits before filling in '
+                'Maternal Labour Delivery Form.')
