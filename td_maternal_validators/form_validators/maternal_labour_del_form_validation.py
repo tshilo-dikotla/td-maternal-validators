@@ -10,6 +10,7 @@ from .form_validator_mixin import TDFormValidatorMixin
 
 class MaternalLabDelFormValidator(TDFormValidatorMixin, FormValidator):
     maternal_arv_model = 'td_maternal.maternalarv'
+    maternal_visit_model = 'td_maternal.maternalvisit'
 
     @property
     def maternal_visit_cls(self):
