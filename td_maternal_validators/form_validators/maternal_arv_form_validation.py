@@ -1,7 +1,7 @@
 from django.apps import apps as django_apps
-from edc_form_validators import FormValidator
 from django.core.exceptions import ValidationError
 from edc_constants.constants import YES
+from edc_form_validators import FormValidator
 
 
 class MaternalArvFormValidator(FormValidator):
@@ -20,12 +20,11 @@ class MaternalArvFormValidator(FormValidator):
         self.validate_reason_for_stop()
 
     def validate_date(self, cleaned_data=None):
-        if (cleaned_data.get('stop_date') and
-                cleaned_data.get('stop_date') < cleaned_data.get('start_date')):
-            msg = {'start_date': 'Your stop date of {} is prior to start date of {}.'
-                   'Please correct'
-                   .format(cleaned_data.get('stop_date'),
-                           cleaned_data.get('start_date'))}
+        stop_date = cleaned_data.get('stop_date')
+        start_date = cleaned_data.get('start_date')
+        if (stop_date and stop_date < start_date):
+            msg = {'stop_date': f'Your stop date of {stop_date} is prior to '
+                   f'start date of {start_date}.Please correct'}
             self._errors.update(msg)
             raise ValidationError(msg)
 

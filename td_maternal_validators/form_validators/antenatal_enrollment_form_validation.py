@@ -31,22 +31,22 @@ class AntenatalEnrollmentFormValidator(TDFormValidatorMixin, FormValidator):
         last_period_date = cleaned_data.get('last_period_date')
         report_datetime = cleaned_data.get('report_datetime')
         if last_period_date and (
-                last_period_date > (report_datetime.date() - relativedelta(weeks=16))):
+                last_period_date > (
+                    report_datetime.date() - relativedelta(weeks=16))):
             message = {'last_period_date':
                        'LMP cannot be within 16weeks of report datetime. '
-                       'Got LMP as {} and report datetime as {}'.format(last_period_date,
-                                                                        report_datetime)
-                       }
+                       f'Got LMP as {last_period_date} and report datetime as '
+                       f'{report_datetime}'}
             self._errors.update(message)
             raise ValidationError(message)
 
         elif last_period_date and (
-                last_period_date <= (report_datetime.date() - relativedelta(weeks=37))):
+                last_period_date <= (
+                    report_datetime.date() - relativedelta(weeks=37))):
             message = {'last_period_date':
                        'LMP cannot be more than 36weeks of report datetime. '
-                       'Got LMP as {} and report datetime as {}'.format(last_period_date,
-                                                                        report_datetime)
-                       }
+                       f'Got LMP as {last_period_date} and report datetime as '
+                       f'{report_datetime}'}
             self._errors.update(message)
             raise ValidationError(message)
 

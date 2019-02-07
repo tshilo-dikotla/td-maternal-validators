@@ -234,8 +234,9 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
                 subject_identifier=cleaned_data.get('maternal_visit').appointment.subject_identifier)
             if antenatal_enrollment.week32_test_date != cleaned_data.get('date_hiv_diagnosis'):
                 msg = {'date_hiv_diagnosis':
-                       'HIV diagnosis date should match date {} at Antenatal '
-                       'Enrollment'.format(antenatal_enrollment.week32_test_date)}
+                       'HIV diagnosis date should match date '
+                       f'{antenatal_enrollment.week32_test_date} at Antenatal '
+                       'Enrollment'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
 

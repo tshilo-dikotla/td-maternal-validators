@@ -1,9 +1,10 @@
-from django.core.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
+from django.core.exceptions import ValidationError
 from edc_form_validators.form_validator import FormValidator
 
 
 class MaternalUltrasoundInitialFormValidator(FormValidator):
+
     def clean(self):
 
         cleaned_data = self.cleaned_data
@@ -48,9 +49,7 @@ class MaternalUltrasoundInitialFormValidator(FormValidator):
 
                 if (int(weeks_between) + 1) not in range(39, 42):
                     msg = {'est_edd_ultrasound':
-                           'Estimated edd by ultrasound {} should match '
-                           'GA by ultrasound'
-                           .format(est_edd_ultrasound)
-                           }
+                           f'Estimated edd by ultrasound {est_edd_ultrasound} '
+                           'should match GA by ultrasound'}
                     self._errors.update(msg)
                     raise ValidationError(msg)

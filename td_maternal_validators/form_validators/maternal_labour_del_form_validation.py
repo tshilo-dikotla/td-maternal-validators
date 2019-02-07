@@ -38,8 +38,7 @@ class MaternalLabDelFormValidator(TDFormValidatorMixin, FormValidator):
                 message = {'arv_initiation_date':
                            'ARV\'s initiation date must match start date '
                            'in pregnancy form, pregnancy form start date is '
-                           '{}, got {}.'.format(
-                               maternal_arv.start_date, initiation_date)}
+                           f'{maternal_arv.start_date}, got {initiation_date}.'}
                 self._errors.update(message)
                 raise ValidationError(message)
 
