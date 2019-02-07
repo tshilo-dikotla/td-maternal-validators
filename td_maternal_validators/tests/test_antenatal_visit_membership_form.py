@@ -36,6 +36,7 @@ class TestAntenatalVisitMembershipForm(TestCase):
 
         self.td_consent_version.delete()
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier}
         form_validator = AntenatalVisitMembershipFormValidator(
             cleaned_data=cleaned_data)
@@ -46,6 +47,7 @@ class TestAntenatalVisitMembershipForm(TestCase):
         or fails the tests if the Validation Error is raised unexpectedly.'''
 
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier}
         form_validator = AntenatalVisitMembershipFormValidator(
             cleaned_data=cleaned_data)
@@ -60,6 +62,7 @@ class TestAntenatalVisitMembershipForm(TestCase):
 
         self.subject_consent.delete()
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier}
         form_validator = AntenatalVisitMembershipFormValidator(
             cleaned_data=cleaned_data)
@@ -70,6 +73,7 @@ class TestAntenatalVisitMembershipForm(TestCase):
         or fails the tests if the Validation Error is raised unexpectedly.'''
 
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier}
         form_validator = AntenatalVisitMembershipFormValidator(
             cleaned_data=cleaned_data)

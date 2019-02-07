@@ -102,6 +102,7 @@ class TestAntenatalEnrollmentForm(TestCase):
         match that of the antenatal enrollment object.'''
 
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_identifier,
             'rapid_test_date': get_utcnow().date() - relativedelta(days=5),
             'subject_identifier': self.subject_identifier
@@ -115,6 +116,7 @@ class TestAntenatalEnrollmentForm(TestCase):
         or fails the tests if Validation Error is raised unexpectedly.'''
 
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_identifier,
             'rapid_test_date': get_utcnow().date(),
             'subject_identifier': self.subject_identifier
@@ -132,6 +134,7 @@ class TestAntenatalEnrollmentForm(TestCase):
 
         self.antenatal_enrollment.delete()
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_identifier,
             'rapid_test_date': get_utcnow().date() - relativedelta(days=3),
             'subject_identifier': self.subject_identifier}

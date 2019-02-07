@@ -19,6 +19,7 @@ class MaternalStatusHelper:
         return self.status
 
 
+@tag('mld')
 class TestMaternalLabDelForm(TestCase):
 
     def setUp(self):
@@ -62,6 +63,7 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_arv_init_date_match_start_date(self):
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'arv_initiation_date': get_utcnow().date(),
             'delivery_datetime': get_utcnow() + relativedelta(weeks=5),
@@ -77,6 +79,7 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_arv_init_date_does_not_match_start_date(self):
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'arv_initiation_date': (get_utcnow() - relativedelta(days=2)).date(),
             'delivery_datetime': get_utcnow() + relativedelta(weeks=5),
@@ -89,6 +92,7 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_hiv_status_POS_valid_regiment_duration_invalid(self):
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': NO,
             'delivery_datetime': get_utcnow(),
@@ -101,6 +105,7 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_hiv_status_POS_valid_regiment_duration_YES(self):
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': YES,
             'delivery_datetime': get_utcnow() + relativedelta(weeks=5),
@@ -116,6 +121,7 @@ class TestMaternalLabDelForm(TestCase):
     def test_valid_regiment_duration_YES_arv_init_date_required(self):
         self.maternal_arv.delete()
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': YES,
             'arv_initiation_date': None}
@@ -127,6 +133,7 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_valid_regiment_duration_YES_arv_init_date_provided(self):
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': YES,
             'arv_initiation_date': get_utcnow().date(),
@@ -141,6 +148,7 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_delivery_date_within_4wks_arv_init_date_invalid(self):
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': YES,
             'arv_initiation_date': get_utcnow().date(),
@@ -153,6 +161,7 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_delivery_date_more_than_4wks_arv_init_date_valid(self):
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': YES,
             'arv_initiation_date': get_utcnow().date(),
@@ -168,6 +177,7 @@ class TestMaternalLabDelForm(TestCase):
     def test_hiv_status_NEG_valid_regiment_duration_NO_invalid(self):
         self.maternal_arv.delete()
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': NO, }
         form_validator = MaternalLabDelFormValidator(cleaned_data=cleaned_data)
@@ -177,6 +187,7 @@ class TestMaternalLabDelForm(TestCase):
     def test_hiv_status_NEG_valid_regiment_duration_YES_invalid(self):
         self.maternal_arv.delete()
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': YES, }
         maternal_status = MaternalStatusHelper(status=NEG)
@@ -188,6 +199,7 @@ class TestMaternalLabDelForm(TestCase):
     def test_hiv_status_NEG_valid_regiment_duration_NA_valid(self):
         self.maternal_arv.delete()
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': NOT_APPLICABLE, }
         maternal_status = MaternalStatusHelper(status=NEG)
@@ -201,6 +213,7 @@ class TestMaternalLabDelForm(TestCase):
     def test_hiv_status_NEG_arv_init_date_invalid(self):
         self.maternal_arv.delete()
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': NOT_APPLICABLE,
             'arv_initiation_date': get_utcnow().date()
@@ -214,6 +227,7 @@ class TestMaternalLabDelForm(TestCase):
     def test_hiv_status_NEG_arv_init_date_valid(self):
         self.maternal_arv.delete()
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'valid_regiment_duration': NOT_APPLICABLE,
             'arv_initiation_date': None
@@ -228,6 +242,7 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_still_births_zero_live_births_one_valid(self):
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'arv_initiation_date': get_utcnow().date(),
             'valid_regiment_duration': YES,
@@ -243,6 +258,7 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_still_births_one_live_births_zero_valid(self):
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'arv_initiation_date': get_utcnow().date(),
             'valid_regiment_duration': YES,
@@ -258,6 +274,7 @@ class TestMaternalLabDelForm(TestCase):
 
     def test_live_births_one_still_births_invalid(self):
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier,
             'arv_initiation_date': get_utcnow().date(),
             'valid_regiment_duration': YES,
