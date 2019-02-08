@@ -38,25 +38,23 @@ class TDFormValidatorMixin:
     def validate_against_consent(self):
         """Returns an instance of the current maternal consent version form or
         raises an exception if not found."""
-        if self.instance._meta.label_lower != self.consent_version_model:
+        try:
+            self.consent_version_cls.objects.get(
+                screening_identifier=self.subject_screening.screening_identifier)
+        except self.consent_version_cls.DoesNotExist:
+            raise ValidationError(
+                'Please complete mother\'s consent version form before proceeding')
+        else:
             try:
-                self.consent_version_cls.objects.get(
-                    screening_identifier=self.subject_screening.screening_identifier)
-            except self.consent_version_cls.DoesNotExist:
+                latest_consent = self.maternal_consent_cls.objects.get(
+                    subject_identifier=self.cleaned_data.get(
+                        'subject_identifier'))
+            except self.maternal_consent_cls.DoesNotExist:
                 raise ValidationError(
-                    'Please complete mother\'s consent version form before proceeding')
+                    'Please complete Maternal Consent form '
+                    f'before  proceeding.')
             else:
-                try:
-                    latest_consent = self.maternal_consent_cls.objects.get(
-                        subject_identifier=self.cleaned_data.get(
-                            'subject_identifier'))
-                except self.maternal_consent_cls.DoesNotExist:
-                    raise ValidationError(
-                        'Please complete Maternal Consent form for version '
-                        f'before  proceeding.')
-                else:
-                    return latest_consent
-        return None
+                return latest_consent
 
     @property
     def subject_screening(self):

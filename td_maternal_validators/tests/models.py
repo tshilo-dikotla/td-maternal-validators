@@ -126,6 +126,10 @@ class MaternalLifetimeArvHistory(models.Model):
 
 class RapidTestResult(BaseUuidModel):
 
+    report_datetime = models.DateTimeField(
+        null=True,
+        blank=True)
+
     maternal_visit = models.OneToOneField(MaternalVisit, on_delete=PROTECT)
 
     result = models.CharField(max_length=15)
@@ -135,9 +139,23 @@ class AntenatalEnrollment(BaseUuidModel):
 
     subject_identifier = models.CharField(max_length=50)
 
+    report_datetime = models.DateTimeField(
+        null=True,
+        blank=True)
+
+    last_period_date = models.DateField(
+        null=True,
+        blank=True)
+
+    current_hiv_status = models.CharField(max_length=15)
+
+    week32_test = models.CharField(max_length=15)
+
     enrollment_hiv_status = models.CharField(max_length=15)
 
     week32_result = models.CharField(max_length=15)
+
+    rapid_test_done = models.CharField(max_length=15)
 
     rapid_test_result = models.CharField(max_length=15)
 
@@ -158,6 +176,10 @@ class SubjectScreening(BaseUuidModel):
     subject_identifier = models.CharField(
         max_length=50)
 
+    report_datetime = models.DateTimeField(
+        null=True,
+        blank=True)
+
     screening_identifier = models.CharField(
         max_length=36,
         unique=True,
@@ -174,6 +196,6 @@ class TdConsentVersion(BaseUuidModel):
 
     version = models.CharField(max_length=3)
 
-    report_datetime = models.DateField(
+    report_datetime = models.DateTimeField(
         null=True,
         blank=True)
