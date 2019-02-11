@@ -38,11 +38,11 @@ class TestAntenatalEnrollmentForm(TestCase):
             screening_identifier=self.subject_screening.screening_identifier,
             version='3', report_datetime=get_utcnow())
 
-        self.antenatal_enrollment = AntenatalEnrollment.objects.create(
-            subject_identifier='11111111',
-            enrollment_hiv_status=NEG, week32_result=POS,
-            rapid_test_done=YES,
-            rapid_test_result=POS, rapid_test_date=get_utcnow().date())
+#         self.antenatal_enrollment = AntenatalEnrollment.objects.create(
+#             subject_identifier='11111111',
+#             enrollment_hiv_status=NEG, week32_result=POS,
+#             rapid_test_done=YES,
+#             rapid_test_result=POS, rapid_test_date=get_utcnow().date())
 
     def test_LMP_within_16wks_of_report_datetime_invalid(self):
         '''Asserts if an exception is raised if last period date is within
@@ -120,14 +120,15 @@ class TestAntenatalEnrollmentForm(TestCase):
     def test_rapid_test_date_changed_invalid(self):
         '''Asserts if an exception is raised if the rapid test date does not
         match that of the antenatal enrollment object.'''
+        self.antenatal_enrollment = AntenatalEnrollment.objects.create(
+            subject_identifier='1234ABC',
+            enrollment_hiv_status=NEG, week32_result=POS,
+            rapid_test_result=POS, rapid_test_date=get_utcnow().date())
 
         cleaned_data = {
             'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_identifier,
-            'rapid_test_done': YES,
-            'rapid_test_result': NEG,
             'rapid_test_date': get_utcnow().date() - relativedelta(days=5),
-            'subject_identifier': self.subject_identifier
         }
         form_validator = AntenatalEnrollmentFormValidator(
             cleaned_data=cleaned_data)
@@ -141,7 +142,6 @@ class TestAntenatalEnrollmentForm(TestCase):
             'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_identifier,
             'rapid_test_done': YES,
-            'rapid_test_result': NEG,
             'rapid_test_date': get_utcnow()
         }
         form_validator = AntenatalEnrollmentFormValidator(
@@ -155,7 +155,6 @@ class TestAntenatalEnrollmentForm(TestCase):
         '''Tests if antenatal object does not exist cleaned data validates
         or fails the tests if Validation Error is raised unexpectedly.'''
 
-        self.antenatal_enrollment.delete()
         cleaned_data = {
             'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_identifier,

@@ -33,7 +33,6 @@ class MaternalUltrasoundInitialFormValidator(FormValidator):
             self._errors.update(msg)
             raise ValidationError(msg)
 
-        est_edd = cleaned_data.get('est_edd_ultrasound')
         ga_by_ultrasound = cleaned_data.get('ga_by_ultrasound_wks')
         est_edd_ultrasound = cleaned_data.get('est_edd_ultrasound')
         report_datetime = cleaned_data.get('report_datetime')
@@ -43,7 +42,7 @@ class MaternalUltrasoundInitialFormValidator(FormValidator):
             est_conceive_date = (report_datetime.date() -
                                  relativedelta(weeks=ga_by_ultrasound))
 
-            weeks_between = ((est_edd - est_conceive_date).days) / 7
+            weeks_between = ((est_edd_ultrasound - est_conceive_date).days) / 7
 
             if (weeks_between + 1) > ga_by_ultrasound:
 

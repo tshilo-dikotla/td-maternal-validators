@@ -1,10 +1,11 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from ..form_validators import MaternalUltrasoundInitialFormValidator
 
 
+@tag('mui') est_edd
 class TestMaternalUltrasoundInitialForm(TestCase):
 
     def test_est_ultrasound_lesss_than(self):
@@ -22,7 +23,9 @@ class TestMaternalUltrasoundInitialForm(TestCase):
     def test_est_ultrasound_greater_than(self):
         cleaned_data = {
             "est_edd_ultrasound": get_utcnow().date() + relativedelta(weeks=60),
-            "report_datetime": get_utcnow()
+            "report_datetime": get_utcnow(),
+            'est_edd_ultrasound': 
+            'est_conceive_date'
         }
         form_validator = MaternalUltrasoundInitialFormValidator(
             cleaned_data=cleaned_data)
