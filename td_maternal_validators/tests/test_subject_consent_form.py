@@ -219,3 +219,38 @@ class TestSubjectConsentForm(TestCase):
         form_validator = SubjectConsentFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
+
+    @tag('sc')
+    def test_first_name_last_name_valid(self):
+
+        cleaned_data = {
+            'screening_identifier': self.screening_identifier,
+            'consent_datetime': get_utcnow(),
+            'dob': (get_utcnow() - relativedelta(years=22)).date(),
+            'citizen': YES,
+            'first_name': 'TEST BONE',
+            'last_name': 'TEST',
+            'initials': 'TOT'
+        }
+        form_validator = SubjectConsentFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+
+    @tag('sc')
+    def test_first_name_last_name_invalid(self):
+
+        cleaned_data = {
+            'screening_identifier': self.screening_identifier,
+            'consent_datetime': get_utcnow(),
+            'dob': (get_utcnow() - relativedelta(years=22)).date(),
+            'citizen': YES,
+            'first_name': 'TEST ONE',
+            'last_name': 'TEST',
+            'initials': 'TOT'
+        }
+        form_validator = SubjectConsentFormValidator(
+            cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raised. Got{e}')

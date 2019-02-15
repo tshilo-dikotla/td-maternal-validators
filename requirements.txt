@@ -34,3 +34,4 @@ git+https://github.com/botswana-harvard/edc-model-admin.git@develop#eggs=edc_mod
 git+https://github.com/botswana-harvard/edc-identifier.git@develop#egg=edc_identifier
 git+https://github.com/botswana-harvard/edc-label.git@develop#egg=edc_label
 git+https://github.com/tshilo-dikotla/td-maternal.git@develop#egg=td_maternal
+git+https://github.com/tshilo-dikotla/td-rando.git@develop#egg=td_rando

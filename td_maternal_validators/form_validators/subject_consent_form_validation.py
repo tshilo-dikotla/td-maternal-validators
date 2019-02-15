@@ -1,3 +1,4 @@
+from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_base.utils import relativedelta
@@ -35,12 +36,58 @@ class SubjectConsentFormValidator(FormValidator):
             self._errors.update(message)
             raise ValidationError(message)
 
+        self.clean_full_name_syntax()
+        self.clean_initials_with_full_name()
         self.validate_dob(cleaned_data=self.cleaned_data,
                           model_obj=subject_screening)
         self.validate_identity_number(cleaned_data=self.cleaned_data)
         self.validate_recruit_source()
         self.validate_recruitment_clinic()
         self.validate_td_consent(model_obj=subject_screening)
+
+    def clean_full_name_syntax(self):
+        cleaned_data = self.cleaned_data
+        first_name = cleaned_data.get("first_name")
+        last_name = cleaned_data.get("last_name")
+
+        if first_name and last_name:
+            if first_name != first_name.upper():
+                raise ValidationError(
+                    {'first_name': 'First name must be in CAPS.'})
+            elif last_name != last_name.upper():
+                raise ValidationError(
+                    {'last_name': 'Last name must be in CAPS.'})
+
+    def clean_initials_with_full_name(self):
+        cleaned_data = self.cleaned_data
+        first_name = cleaned_data.get("first_name")
+        last_name = cleaned_data.get("last_name")
+        initials = cleaned_data.get("initials")
+        try:
+            middle_name = None
+            is_first_name = False
+            if len(first_name.split(' ')) > 1:
+                new_first_name = first_name.split(' ')[0]
+                middle_name = first_name.split(' ')[1]
+
+            if (middle_name and
+                (initials[:1] != new_first_name[:1] or
+                 initials[1:2] != middle_name[:1])):
+                is_first_name = True
+
+            elif initials[:1] != new_first_name[:1]:
+                is_first_name = True
+
+            if is_first_name or initials[-1:] != last_name[:1]:
+                raise forms.ValidationError(
+                    {'initials': 'Initials do not match full name.'},
+                    params={
+                        'initials': initials,
+                        'first_name': first_name,
+                        'last_name': last_name},
+                    code='invalid')
+        except (IndexError, TypeError):
+            raise forms.ValidationError('Initials do not match fullname.')
 
     def validate_identity_number(self, cleaned_data=None):
         if cleaned_data.get('identity_type') == 'country_id':
