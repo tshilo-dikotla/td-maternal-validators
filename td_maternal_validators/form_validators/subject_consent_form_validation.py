@@ -1,3 +1,4 @@
+import re
 from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
@@ -50,13 +51,22 @@ class SubjectConsentFormValidator(FormValidator):
         first_name = cleaned_data.get("first_name")
         last_name = cleaned_data.get("last_name")
 
+        if not re.match(r'^[A-Z-]+[ ][A-Z-]+$', first_name):
+            message = {'first_name': 'Ensure initials are letters (A-Z) in '
+                       'upper case, no special characters, except spaces '
+                       'and hyphens.'}
+            self._errors.update(message)
+            raise ValidationError(message)
+
         if first_name and last_name:
             if first_name != first_name.upper():
-                raise ValidationError(
-                    {'first_name': 'First name must be in CAPS.'})
+                message = {'first_name': 'First name must be in CAPS.'}
+                self._errors.update(message)
+                raise ValidationError(message)
             elif last_name != last_name.upper():
-                raise ValidationError(
-                    {'last_name': 'Last name must be in CAPS.'})
+                message = {'last_name': 'Last name must be in CAPS.'}
+                self._errors.update(message)
+                raise ValidationError(message)
 
     def clean_initials_with_full_name(self):
         cleaned_data = self.cleaned_data
