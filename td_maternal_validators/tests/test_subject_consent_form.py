@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import YES, NO, OTHER
 
@@ -318,7 +318,7 @@ class TestSubjectConsentForm(TestCase):
             'consent_datetime': get_utcnow(),
             'dob': (get_utcnow() - relativedelta(years=22)).date(),
             'citizen': YES,
-            'first_name': 'TEST ONE-BEST',
+            'first_name': 'TEST ONE',
             'last_name': 'TEST',
             'initials': 'TOT'
         }
