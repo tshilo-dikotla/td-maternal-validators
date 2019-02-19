@@ -80,6 +80,16 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
                 NOT_APPLICABLE,
                 m2m_field='who')
 
+            qs = self.cleaned_data.get('who')
+            if qs and qs.count() > 0:
+                selected = {obj.short_name: obj.name for obj in qs}
+            if NOT_APPLICABLE not in selected:
+                msg = {'who':
+                       f'Participant is HIV {subject_status}, this field must be '
+                       'Not Applicable.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
+
         if subject_status == POS and cleaned_data.get('who_diagnosis') == YES:
             qs = self.cleaned_data.get('who')
             if qs and qs.count() > 0:
@@ -98,7 +108,7 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
 
     def validate_mother_father_chronic_illness_multiple_selection(self):
         m2m_fields = ('mother_chronic', 'father_chronic')
-        selections = [OTHER, NOT_APPLICABLE]
+        selections = [NOT_APPLICABLE]
 
         for m2m_field in m2m_fields:
             self.m2m_single_selection_if(
@@ -120,7 +130,7 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
             field_other='father_chronic_other')
 
     def validate_mother_medications_multiple_selections(self):
-        selections = [OTHER, NOT_APPLICABLE]
+        selections = [NOT_APPLICABLE]
         self.m2m_single_selection_if(
             *selections,
             m2m_field='mother_medications')
