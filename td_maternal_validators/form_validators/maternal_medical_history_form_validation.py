@@ -98,7 +98,7 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
 
     def validate_mother_father_chronic_illness_multiple_selection(self):
         m2m_fields = ('mother_chronic', 'father_chronic')
-        selections = [OTHER, NOT_APPLICABLE]
+        selections = [NOT_APPLICABLE]
 
         for m2m_field in m2m_fields:
             self.m2m_single_selection_if(
@@ -120,7 +120,7 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
             field_other='father_chronic_other')
 
     def validate_mother_medications_multiple_selections(self):
-        selections = [OTHER, NOT_APPLICABLE]
+        selections = [NOT_APPLICABLE]
         self.m2m_single_selection_if(
             *selections,
             m2m_field='mother_medications')
