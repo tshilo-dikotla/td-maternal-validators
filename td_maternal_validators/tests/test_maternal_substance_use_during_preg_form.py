@@ -33,7 +33,7 @@ class TestMaternalSubstanceDuringPregForm(TestCase):
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
     def test_smoked_during_preg_no_freq_invalid(self):
-        '''Asserts raises exception if subject did not smoke during pregnancy 
+        '''Asserts raises exception if subject did not smoke during pregnancy
         and smoking frequency value has been provided.'''
 
         cleaned_data = {
