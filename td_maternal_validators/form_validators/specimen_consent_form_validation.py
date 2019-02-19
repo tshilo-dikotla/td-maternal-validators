@@ -17,8 +17,10 @@ class SpecimenConsentFormValidator(TDFormValidatorMixin, FormValidator):
             ' witness is required'
         )
         self.validate_against_consent_datetime(
-            self.cleaned_data.get('consent_datetime'))
-        study_consent = self.validate_against_consent()
+            self.cleaned_data.get('consent_datetime'),
+            self.cleaned_data.get('subject_identifier'))
+        study_consent = self.validate_against_consent(
+            self.cleaned_data.get('subject_identifier'))
         self.compare_attr_to_study_consent('is_literate', study_consent)
         self.compare_attr_to_study_consent('witness_name', study_consent)
         self.consent_reviewed_and_assessment_score()

@@ -8,4 +8,5 @@ class AntenatalVisitMembershipFormValidator(TDFormValidatorMixin, FormValidator)
 
     def clean(self):
         self.validate_against_consent_datetime(
-            self.cleaned_data.get('report_datetime'))
+            self.cleaned_data.get('report_datetime'),
+            self.cleaned_data.get('subject_identifier'))

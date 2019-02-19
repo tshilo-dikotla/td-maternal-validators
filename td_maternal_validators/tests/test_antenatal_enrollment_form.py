@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
 from edc_constants.constants import POS, NEG, YES
 
@@ -9,7 +9,6 @@ from .models import (AntenatalEnrollment, SubjectScreening,
                      SubjectConsent, TdConsentVersion)
 
 
-@tag('enrol')
 class TestAntenatalEnrollmentForm(TestCase):
 
     def setUp(self):
