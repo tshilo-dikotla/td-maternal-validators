@@ -1,20 +1,97 @@
-from edc_constants.constants import YES, NO
-from django.test import TestCase
 from django.core.exceptions import ValidationError
-from ..form_validators import MaternalIterimIdccFormValidator
+from django.test import TestCase
 from edc_base.utils import get_utcnow
+from edc_constants.constants import YES, NO
+
+from ..form_validators import MaternalIterimIdccFormValidator
 
 
 class TestMaternalInterimIdccFormValidator(TestCase):
-    def test_last_visit_is_yes_valid(self):
-        '''True if info_since_lastvisit is yes.
+
+    def test_last_visit_is_no_recent_cd4_invalid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
         '''
         cleaned_data = {
-            "info_since_lastvisit": YES,
-            "recent_cd4": 440.5,
-            "recent_cd4_date": get_utcnow(),
-            "value_vl": 440.5,
-            "recent_vl_date": get_utcnow()
+            'info_since_lastvisit': NO,
+            'recent_cd4': 250.2,
+        }
+        form_validator = MaternalIterimIdccFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('recent_cd4', form_validator._errors)
+
+    def test_last_visit_is_no_recent_cd4_date_invalid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
+        '''
+        cleaned_data = {
+            'info_since_lastvisit': NO,
+            'recent_cd4_date': get_utcnow(),
+        }
+        form_validator = MaternalIterimIdccFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('recent_cd4_date', form_validator._errors)
+
+    def test_last_visit_is_no_value_vl_size_invalid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
+        '''
+        cleaned_data = {
+            'info_since_lastvisit': NO,
+            'value_vl_size': 'equal',
+        }
+        form_validator = MaternalIterimIdccFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('value_vl_size', form_validator._errors)
+
+    def test_last_visit_is_no_value_vl_invalid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
+        '''
+        cleaned_data = {
+            'info_since_lastvisit': NO,
+            'value_vl': 440.5,
+        }
+        form_validator = MaternalIterimIdccFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('value_vl', form_validator._errors)
+
+    def test_last_visit_is_no_recent_vl_date_invalid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
+        '''
+        cleaned_data = {
+            'info_since_lastvisit': NO,
+            'recent_vl_date': get_utcnow(),
+        }
+        form_validator = MaternalIterimIdccFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('recent_vl_date', form_validator._errors)
+
+    def test_last_visit_is_no_other_diagnoses_invalid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
+        '''
+        cleaned_data = {
+            'info_since_lastvisit': NO,
+            'other_diagnoses': 'blahblah',
+        }
+        form_validator = MaternalIterimIdccFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('other_diagnoses', form_validator._errors)
+
+    def test_last_visit_is_no_valid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
+        '''
+        cleaned_data = {
+            'info_since_lastvisit': NO,
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
@@ -23,172 +100,156 @@ class TestMaternalInterimIdccFormValidator(TestCase):
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raises. Got{e}')
 
-    def test_last_visit_is_yes_invalid(self):
-        '''Assert raises exception if the last visit is yes but recent_cd4 is
-        not provided  and recent_c4_date is provided.
+    def test_recent_cd4_no_date_invalid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
         '''
         cleaned_data = {
-            "info_since_lastvisit": YES,
-            "recent_cd4": None,
-            "recent_cd4_date": get_utcnow()
-        }
-        form_validator = MaternalIterimIdccFormValidator(
-            cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('recent_cd4', form_validator._errors)
-
-    def test_last_visit_is_yes_without_recent_cd4_date(self):
-        '''Assert raises exception if the last visit is yes, recent_cd4 has a value but
-        recent_cd4_date has not date.
-        '''
-        cleaned_data = {
-            "info_since_lastvisit": YES,
-            "recent_cd4": 440.5,
-            "recent_cd4_date": None
+            'info_since_lastvisit': YES,
+            'recent_cd4': 250.2,
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('recent_cd4_date', form_validator._errors)
 
-    def test_last_visit_is_no_others_yes(self):
-        '''Assert raises exception if the last visit is no, but recent_cd4 and
-        recent_cd4_date are given.
+    def test_recent_cd4_date_valid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
         '''
         cleaned_data = {
-            "info_since_lastvisit": NO,
-            "recent_cd4": 440.5,
-            "recent_cd4_date": get_utcnow()
+            'info_since_lastvisit': YES,
+            'recent_cd4': 250.2,
+            'recent_cd4_date': get_utcnow()
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('recent_cd4', form_validator._errors)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raises. Got{e}')
 
-    def test_last_visit_is_no_recent_cd4_is_none(self):
-        '''Assert raises exception if the last visit is yes, recent_cd4 is none but
-        recent_cd4_date has date.
+    def test_value_vl_no_value_invalid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
         '''
         cleaned_data = {
-            "info_since_lastvisit": NO,
-            "recent_cd4": None,
-            "recent_cd4_date": get_utcnow(),
-            "value_vl": 440,
-            "value_vl_size": get_utcnow()
-        }
-        form_validator = MaternalIterimIdccFormValidator(
-            cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('recent_cd4_date', form_validator._errors)
-
-    def test_last_visit_is_yes_value_vl_none(self):
-        '''Assert raises exception if the last visit is yes but recent_vl is
-        not provided  and recent_vl_date is provided.
-        '''
-        cleaned_data = {
-            "info_since_lastvisit": YES,
-            "value_vl": None,
-            "recent_vl_date": get_utcnow()
-        }
-        form_validator = MaternalIterimIdccFormValidator(
-            cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('value_vl', form_validator._errors)
-
-    def test_last_visit_is_yes_without_recent_vl_date(self):
-        '''Assert raises exception if the last visit is yes, recent_vl has a value but
-        recent_cd4_date has not date.
-        '''
-        cleaned_data = {
-            "info_since_lastvisit": YES,
-            "value_vl": 440.5,
-            "recent_vl_date": None
+            'info_since_lastvisit': YES,
+            'value_vl': 250.2,
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('recent_vl_date', form_validator._errors)
 
-    def test_last_visit_is_no_others_valid(self):
-        '''Assert raises exception if the last visit is no, but other fields are valid
+    def test_value_vl_value_valid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
         '''
         cleaned_data = {
-            "info_since_lastvisit": NO,
-            "value_vl": 440.5,
-            "recent_vl_date": get_utcnow()
+            'info_since_lastvisit': YES,
+            'value_vl': 250.2,
+            'recent_vl_date': get_utcnow()
+        }
+        form_validator = MaternalIterimIdccFormValidator(
+            cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raises. Got{e}')
+
+    def test_value_vl_no_less_than_invalid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
+        '''
+        cleaned_data = {
+            'info_since_lastvisit': YES,
+            'value_vl': 250.2,
+            'recent_vl_date': get_utcnow(),
+            'value_vl_size': 'less_than'
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('value_vl', form_validator._errors)
 
-    def test_last_visit_is_no_recent_vl_is_none(self):
-        '''Assert raises exception if the last visit is yes, recent_vl is none but
-        recent_vl_date has date.
+    def test_value_vl_no_less_than_valid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
         '''
         cleaned_data = {
-            "info_since_lastvisit": NO,
-            "value_vl": None,
-            "recent_vl_date": get_utcnow()
+            'info_since_lastvisit': YES,
+            'value_vl': 400,
+            'recent_vl_date': get_utcnow(),
+            'value_vl_size': 'less_than'
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('recent_vl_date', form_validator._errors)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raises. Got{e}')
 
-    def test_last_visit_is_yes_value_vl_size_less_than(self):
-        '''Assert raises exception if the last visit is yes, value_vl_size is invalid
-        but value_vl is valid.
+    def test_value_vl_no_greater_than_invalid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
         '''
         cleaned_data = {
-            "info_since_lastvisit": YES,
-            "value_vl": 40,
-            "value_vl_size": 'less_than'
+            'info_since_lastvisit': YES,
+            'value_vl': 250.2,
+            'recent_vl_date': get_utcnow(),
+            'value_vl_size': 'greater_than'
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('value_vl', form_validator._errors)
 
-    def test_last_visit_is_yes_value_vl_size_greater_than(self):
-        '''Assert raises exception if the last visit is yes, value_vl_size is invalid
-        but value_vl valid.
+    def test_value_vl_no_greater_than_valid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
         '''
         cleaned_data = {
-            "info_since_lastvisit": YES,
-            "value_vl": 40,
-            "value_vl_size": 'greater_than'
+            'info_since_lastvisit': YES,
+            'value_vl': 750000,
+            'recent_vl_date': get_utcnow(),
+            'value_vl_size': 'greater_than'
+        }
+        form_validator = MaternalIterimIdccFormValidator(
+            cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raises. Got{e}')
+
+    def test_value_vl_no_equal_invalid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
+        '''
+        cleaned_data = {
+            'info_since_lastvisit': YES,
+            'value_vl': 250.2,
+            'recent_vl_date': get_utcnow(),
+            'value_vl_size': 'equal'
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('value_vl', form_validator._errors)
 
-    def test_last_visit_is_yes_value_vl_size_equal(self):
-        '''Assert raises exception if the last visit is yes, value_vl_size is invalid
-        but value_vl is valid.
+    def test_value_vl_no_equal_valid(self):
+        '''Assert raises exception if the last visit is no,
+        but other fields are provided.
         '''
         cleaned_data = {
-            "info_since_lastvisit": YES,
-            "value_vl": 40,
-            "value_vl_size": 'equal'
+            'info_since_lastvisit': YES,
+            'value_vl': 6000,
+            'recent_vl_date': get_utcnow(),
+            'value_vl_size': 'equal'
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('value_vl', form_validator._errors)
-
-    def test_last_visit_is_no_invalid(self):
-        '''Invalid if info_since_lastvisit is no.
-        '''
-        cleaned_data = {
-            "info_since_lastvisit": NO,
-            "recent_cd4": 440.5,
-            "recent_cd4_date": get_utcnow(),
-            "value_vl": 440,
-            "value_vl_size": 'less_than'
-        }
-        form_validator = MaternalIterimIdccFormValidator(
-            cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('recent_cd4', form_validator._errors)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raises. Got{e}')

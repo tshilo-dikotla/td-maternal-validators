@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'edc_metadata.apps.AppConfig',
     # 'edc_sync.apps.AppConfig',
     'edc_lab.apps.AppConfig',
+    'td_rando.apps.AppConfig',
     'td_maternal.apps.AppConfig',
     'td_maternal_validators.apps.AppConfig',
     'td_maternal_validators.apps.EdcVisitTrackingAppConfig'

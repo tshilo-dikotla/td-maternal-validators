@@ -37,7 +37,7 @@ class TestMaternalArvForm(TestCase):
         form_validator = MaternalArvFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('start_date', form_validator._errors)
+        self.assertIn('stop_date', form_validator._errors)
 
     def test_stop_date_valid(self):
         '''True if start_date < stop_date.
@@ -76,9 +76,8 @@ class TestMaternalArvForm(TestCase):
 
         cleaned_data = {
             "maternal_arv_preg": maternal_arv_preg,
-            "stop_date": get_utcnow().date(),
-            "start_date": get_utcnow().date() + timedelta(days=31),
             "stop_date": get_utcnow().date() + timedelta(days=33),
+            "start_date": get_utcnow().date() + timedelta(days=30),
             "reason_for_stop": 'reason',
             "arv_code": 'Value',
         }
@@ -101,7 +100,6 @@ class TestMaternalArvForm(TestCase):
 
         cleaned_data = {
             "maternal_arv_preg": maternal_arv_preg,
-            "stop_date": get_utcnow().date(),
             "start_date": get_utcnow().date() + timedelta(days=31),
             "stop_date": get_utcnow().date() + timedelta(days=32),
             "reason_for_stop": 'reason',
@@ -144,7 +142,6 @@ class TestMaternalArvForm(TestCase):
 
         cleaned_data = {
             "maternal_arv_preg": maternal_arv_preg,
-            "stop_date": get_utcnow().date(),
             "start_date": get_utcnow().date() + timedelta(days=31),
             "stop_date": get_utcnow().date() + timedelta(days=32),
             "reason_for_stop": 'reason',
@@ -201,27 +198,6 @@ class TestMaternalArvForm(TestCase):
             form_validator.validate()
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
-
-    def test_historical_arv_date_invalid_start_date(self):
-        '''Assert raises exception if start_date and arv_history have the same date.
-        '''
-        MaternalLifetimeArvHistory.objects.create(
-            haart_start_date=get_utcnow().date() + timedelta(days=30),
-            maternal_visit=self.maternal_visit)
-        maternal_arv_preg = MaternalArvPreg.objects.create(
-            took_arv=NO, maternal_visit=self.maternal_visit)
-
-        cleaned_data = {
-            "maternal_arv_preg": maternal_arv_preg,
-            "arv_history": MaternalLifetimeArvHistory.objects.get(
-                maternal_visit=maternal_arv_preg.maternal_visit),
-            "start_date": get_utcnow().date() + timedelta(days=30),
-            "stop_date": get_utcnow().date(),
-            "reason_for_stop": 'reason'
-        }
-        form_validator = MaternalArvFormValidator(cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('start_date', form_validator._errors)
 
     def test_arv_stopped_valid(self):
         '''True if the stop_date is specified and the reason_for_stop is given.

@@ -23,3 +23,7 @@ class MaternalDemographicsFormValidator(FormValidator):
         self.validate_other_specify(
             field='money_earned',
         )
+
+        self.validate_other_specify(
+            field='toilet_facility',
+        )

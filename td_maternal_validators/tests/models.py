@@ -1,7 +1,6 @@
 from django.db import models
 from django.db.models.deletion import PROTECT
 from django_crypto_fields.fields import FirstnameField, LastnameField
-from edc_appointment.models import Appointment
 from edc_base.model_mixins import BaseUuidModel, ListModelMixin
 from edc_base.utils import get_utcnow
 from edc_constants.choices import YES_NO, GENDER
