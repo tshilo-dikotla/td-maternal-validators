@@ -27,8 +27,7 @@ class AntenatalEnrollmentFormValidator(TDFormValidatorMixin, FormValidator):
         self.validate_last_period_date(cleaned_data=self.cleaned_data)
         self.clean_rapid_test(cleaned_data=self.cleaned_data)
         self.validate_against_consent_datetime(
-            self.cleaned_data.get('report_datetime'),
-            self.cleaned_data.get('subject_identifier'))
+            self.cleaned_data.get('report_datetime'))
 
         enrollment_helper = EnrollmentHelper(
             instance_antenatal=self.antenatal_enrollment_cls(

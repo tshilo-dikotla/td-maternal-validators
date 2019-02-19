@@ -26,16 +26,16 @@ class TDFormValidatorMixin:
     def subject_screening_cls(self):
         return django_apps.get_model(self.subject_screening_model)
 
-    def validate_against_consent_datetime(self, report_datetime, subject_identifier):
+    def validate_against_consent_datetime(self, report_datetime):
         """Returns an instance of the current maternal consent or
         raises an exception if not found."""
 
-        latest_consent = self.validate_against_consent(subject_identifier)
+        latest_consent = self.validate_against_consent()
         if report_datetime < latest_consent.consent_datetime:
             raise forms.ValidationError(
                 "Report datetime cannot be before consent datetime")
 
-    def validate_against_consent(self, subject_identifier):
+    def validate_against_consent(self):
         """Returns an instance of the current maternal consent version form or
         raises an exception if not found."""
         try:
@@ -47,7 +47,7 @@ class TDFormValidatorMixin:
         else:
             try:
                 latest_consent = self.maternal_consent_cls.objects.get(
-                    subject_identifier=subject_identifier)
+                    subject_identifier=self.cleaned_data.get('subject_identifier'))
             except self.maternal_consent_cls.DoesNotExist:
                 raise ValidationError(
                     'Please complete Maternal Consent form '
