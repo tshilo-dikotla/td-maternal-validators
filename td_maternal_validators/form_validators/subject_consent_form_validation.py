@@ -90,7 +90,7 @@ class SubjectConsentFormValidator(FormValidator):
                  initials[1:2] != middle_name[:1])):
                 is_first_name = True
 
-            elif initials[:1] != new_first_name[:1]:
+            elif not middle_name and initials[:1] != new_first_name[:1]:
                 is_first_name = True
 
             if is_first_name or initials[-1:] != last_name[:1]:
