@@ -80,6 +80,16 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
                 NOT_APPLICABLE,
                 m2m_field='who')
 
+            qs = self.cleaned_data.get('who')
+            if qs and qs.count() > 0:
+                selected = {obj.short_name: obj.name for obj in qs}
+            if NOT_APPLICABLE not in selected:
+                msg = {'who':
+                       f'Participant is HIV {subject_status}, this field must be '
+                       'Not Applicable.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
+
         if subject_status == POS and cleaned_data.get('who_diagnosis') == YES:
             qs = self.cleaned_data.get('who')
             if qs and qs.count() > 0:
