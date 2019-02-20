@@ -16,7 +16,7 @@ class MaternalObstericalHistoryFormValidator(FormValidator):
         self.validate_children_deliv(cleaned_data=self.cleaned_data)
 
     def validate_children_deliv(self, cleaned_data=None):
-        if cleaned_data.get('children_deliv_before_37wks'):
+        if cleaned_data.get('children_deliv_before_37wks') is not None:
 
             sum_deliv_37_wks = \
                 (cleaned_data.get('children_deliv_before_37wks') +

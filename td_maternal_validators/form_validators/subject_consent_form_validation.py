@@ -51,7 +51,7 @@ class SubjectConsentFormValidator(FormValidator):
         first_name = cleaned_data.get("first_name")
         last_name = cleaned_data.get("last_name")
 
-        if not re.match(r'^[A-Z]+|([A-Z]+[ ][A-Z]+)$', first_name):
+        if not re.match(r'^[A-Z]+$|^([A-Z]+[ ][A-Z]+)$', first_name):
             message = {'first_name': 'Ensure first name is letters (A-Z) in '
                        'upper case, no special characters, except spaces.'}
             self._errors.update(message)
@@ -81,6 +81,7 @@ class SubjectConsentFormValidator(FormValidator):
         try:
             middle_name = None
             is_first_name = False
+            new_first_name = None
             if len(first_name.split(' ')) > 1:
                 new_first_name = first_name.split(' ')[0]
                 middle_name = first_name.split(' ')[1]
@@ -90,7 +91,7 @@ class SubjectConsentFormValidator(FormValidator):
                  initials[1:2] != middle_name[:1])):
                 is_first_name = True
 
-            elif not middle_name and initials[:1] != new_first_name[:1]:
+            elif not middle_name and initials[:1] != first_name[:1]:
                 is_first_name = True
 
             if is_first_name or initials[-1:] != last_name[:1]:

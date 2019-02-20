@@ -125,3 +125,27 @@ class TestMaternaldemographicsForm(TestCase):
             form_validator.validate()
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
+
+    def test_toilet_facility_other_invalid(self):
+        '''Assert raises if marital status was provided as other but
+        was not specified in other field.
+        '''
+        cleaned_data = {
+            'toilet_facility': OTHER,
+        }
+        form_validator = MaternalDemographicsFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('toilet_facility_other', form_validator._errors)
+
+    def test_toilet_facility_other_valid(self):
+        cleaned_data = {
+            'toilet_facility': OTHER,
+            'toilet_facility_other': 'blahblah'
+        }
+        form_validator = MaternalDemographicsFormValidator(
+            cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raised. Got{e}')

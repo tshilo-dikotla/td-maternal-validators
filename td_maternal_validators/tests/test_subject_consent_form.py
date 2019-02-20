@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import YES, NO, OTHER
 
@@ -7,6 +7,7 @@ from ..form_validators import SubjectConsentFormValidator
 from .models import SubjectScreening, TdConsentVersion
 
 
+@tag('cons')
 class TestSubjectConsentForm(TestCase):
 
     def setUp(self):
@@ -310,6 +311,40 @@ class TestSubjectConsentForm(TestCase):
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('first_name', form_validator._errors)
+
+    def test_initials_invalid(self):
+
+        cleaned_data = {
+            'screening_identifier': self.screening_identifier,
+            'consent_datetime': get_utcnow(),
+            'dob': (get_utcnow() - relativedelta(years=22)).date(),
+            'citizen': YES,
+            'first_name': 'TEST ONE',
+            'last_name': 'TEST',
+            'initials': 'TT'
+        }
+        form_validator = SubjectConsentFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('initials', form_validator._errors)
+
+    def test_first_name_valid_1(self):
+
+        cleaned_data = {
+            'screening_identifier': self.screening_identifier,
+            'consent_datetime': get_utcnow(),
+            'dob': (get_utcnow() - relativedelta(years=22)).date(),
+            'citizen': YES,
+            'first_name': 'TEST',
+            'last_name': 'TEST',
+            'initials': 'TT'
+        }
+        form_validator = SubjectConsentFormValidator(
+            cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
     def test_first_name_valid(self):
 
