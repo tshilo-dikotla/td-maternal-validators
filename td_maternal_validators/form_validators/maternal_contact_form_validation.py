@@ -17,14 +17,14 @@ class MaternalContactFormValidator(FormValidator):
         locator = self.maternal_locator
         if self.maternal_locator:
             if cleaned_data.get('contact_type') == 'voice_call' and locator.may_follow_up != YES:
-                msg = {'may_follow_up':
-                       f'Maternal Locator says may_follow_up: {locator.may_follow_up}, '
+                msg = {'contact_type':
+                       f'Maternal Locator says may_call: {locator.may_call}, '
                        'you cannot call participant if they did not give permission.'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
             if cleaned_data.get('contact_type') == 'text_message' and locator.may_sms_follow_up != YES:
-                msg = {'may_follow_up':
-                       f'Maternal Locator says may_sms_follow_up: {locator.may_sms_follow_up}, '
+                msg = {'contact_type':
+                       f'Maternal Locator says may_sms: {locator.may_sms}, '
                        'you cannot sms participant if they did not give permission.'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
