@@ -150,6 +150,10 @@ class AntenatalEnrollment(BaseUuidModel):
 
     week32_test = models.CharField(max_length=15)
 
+    week32_test_date = models.DateField(
+        null=True,
+        blank=True)
+
     enrollment_hiv_status = models.CharField(max_length=15)
 
     week32_result = models.CharField(max_length=15)
@@ -168,6 +172,15 @@ class MaternalObstericalHistory(models.Model):
     maternal_visit = models.OneToOneField(MaternalVisit, on_delete=PROTECT)
 
     prev_pregnancies = models.IntegerField()
+
+
+class MaternalMedicalHistory(models.Model):
+
+    maternal_visit = models.ForeignKey(MaternalVisit, on_delete=PROTECT)
+
+    date_hiv_diagnosis = models.DateField(
+        null=True,
+        blank=True)
 
 
 class SubjectScreening(BaseUuidModel):

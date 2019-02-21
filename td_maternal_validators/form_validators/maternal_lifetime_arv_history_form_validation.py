@@ -113,12 +113,13 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
         else:
             if(self.cleaned_data.get('haart_start_date') and
                self.cleaned_data.get('haart_start_date') < medical_history.date_hiv_diagnosis):
-                msg = {'Haart start date cannot be before HIV diagnosis date.'}
+                msg = {'haart_start_date':
+                       'Haart start date cannot be before HIV diagnosis date.'}
                 self._errors.update(msg)
 
         try:
             antenatal_enrollment = self.antenatal_enrollment_cls.objects.get(
-                maternal_visit__subject_identifier=self.cleaned_data.get(
+                subject_identifier=self.cleaned_data.get(
                     'maternal_visit').subject_identifier)
         except self.antenatal_enrollment_cls.DoesNotExist:
             raise forms.ValidationError(
@@ -127,6 +128,7 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
         else:
             if(self.cleaned_data.get('haart_start_date') and
                     self.cleaned_data.get('haart_start_date') < antenatal_enrollment.week32_test_date):
-                msg = {'Haart start date cannot be before date of HIV test.'}
+                msg = {'haart_start_date':
+                       'Haart start date cannot be before date of HIV test.'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
