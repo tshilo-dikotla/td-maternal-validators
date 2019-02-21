@@ -15,6 +15,10 @@ class MaternalRandoFormValidator(FormValidator):
     def clean(self):
         self.verify_hiv_status()
 
+        self.validate_other_specify(
+            field='delivery_clinic',
+            other_specify_field='delivery_clinic_other')
+
     @property
     def antenatal_enrollment(self):
         """Return antenatal enrollment.
