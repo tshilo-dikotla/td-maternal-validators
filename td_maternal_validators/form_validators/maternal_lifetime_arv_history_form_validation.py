@@ -1,12 +1,18 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_constants.constants import YES, NO, RESTARTED, CONTINUOUS, STOPPED, OTHER
+from edc_constants.constants import YES, NO, RESTARTED, CONTINUOUS, STOPPED, OTHER, POS
 from edc_form_validators import FormValidator
+from td_maternal.helper_classes import MaternalStatusHelper
 
 
 class MaternalLifetimeArvHistoryFormValidator(FormValidator):
     maternal_consent_model = 'td_maternal.subjectconsent'
     ob_history_model = 'td_maternal.maternalobstericalhistory'
+    antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
+
+    @property
+    def antenatal_enrollment_cls(self):
+        return django_apps.get_model(self.antenatal_enrollment_model)
 
     @property
     def maternal_consent_model_cls(self):
@@ -17,18 +23,6 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
         return django_apps.get_model(self.ob_history_model)
 
     def clean(self):
-        self.required_if(
-            YES,
-            field='prev_preg_haart',
-            field_required='haart_start_date',
-            required_msg='The subject has received haart when pregnant, '
-                         'please provide the date it was first started.')
-
-        self.required_if_not_none(
-            field='haart_start_date',
-            field_required='is_date_estimated',
-            required_msg='Please answer: Is the subject\'s date of triple'
-                         ' antiretrovirals estimated?')
 
         self.validate_prior_preg(cleaned_data=self.cleaned_data)
 
@@ -77,18 +71,6 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
                     self._errors.update(msg)
                     raise ValidationError(msg)
 
-                self.required_if_not_none(
-                    field='haart_start_date',
-                    field_required='is_date_estimated',
-                    required_msg='Please answer: Is the subject\'s date of triple'
-                                 ' antiretrovirals estimated?')
-                self.required_if(
-                    YES,
-                    field='prev_preg_haart',
-                    field_required='haart_start_date',
-                    required_msg='Please give date triple antiretrovirals '
-                    'first started.'
-                )
                 if cleaned_data.get('haart_start_date') < maternal_consent.dob:
                     msg = {'haart_start_date': 'Date of triple ARVs first '
                                                'started CANNOT be before DOB.'}
@@ -113,3 +95,18 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
                     condition=condition,
                     field_applicable=field_applicable,
                 )
+
+    def validate_hiv_test_date_antenatal_enrollment(self):
+
+        antenatal_enrollment = self.antenatal_enrollment_cls.objects.get(
+            subject_identifier=self.cleaned_data.get('maternal_visit').appointment.subject_identifier)
+
+        status_helper = MaternalStatusHelper(
+            self.cleaned_data.get('maternal_visit'))
+
+        if (status_helper.hiv_status == POS and
+                self.cleaned_data.get('date_hiv_diagnosis') < antenatal_enrollment.week32_test_date):
+            msg = {'haart_start_date': 'Date of triple ARVs first '
+                   'started CANNOT be before Antenatal Enrollment date of HIV test.'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
