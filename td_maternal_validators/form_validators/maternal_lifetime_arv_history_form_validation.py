@@ -30,6 +30,7 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
         self.validate_maternal_consent(cleaned_data=self.cleaned_data)
 
         self.validate_prev_preg(cleaned_data=self.cleaned_data)
+        self.validate_hiv_test_date_antenatal_enrollment()
         self.validate_other_mother()
 
     def validate_prior_preg(self, cleaned_data=None):
@@ -42,11 +43,10 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
             raise ValidationError(msg)
 
         if (cleaned_data.get('preg_on_haart') == YES
-                and self.cleaned_data.get('prior_preg') == STOPPED):
+                and self.cleaned_data.get('prior_preg') in [STOPPED, NOT_APPLICABLE]):
             msg = {'prior_preg': 'You indicated that the mother was still on '
-                                 'triple ARV when she got pregnant, yet you '
-                                 'indicated that ARVs were interrupted and '
-                                 'never restarted. Please correct.'}
+                                 'triple ARV when she got pregnant, this field'
+                                 ' s required.'}
             self._errors.update(msg)
             raise ValidationError(msg)
 
@@ -65,7 +65,7 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
             try:
                 maternal_consent = self.maternal_consent_model_cls.objects.get(
                     subject_identifier=cleaned_data.get(
-                        'maternal_visit').appointment.subject_identifier)
+                        'maternal_visit').subject_identifier)
                 if cleaned_data.get('report_datetime') < maternal_consent.consent_datetime:
                     msg = {'report_datetime': 'Report datetime CANNOT be '
                                               'before consent datetime'}
@@ -83,7 +83,7 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
     def validate_prev_preg(self, cleaned_data=None):
         ob_history = self.maternal_ob_history_model_cls.objects.filter(
             maternal_visit__appointment__subject_identifier=cleaned_data.get(
-                'maternal_visit').appointment.subject_identifier)
+                'maternal_visit').subject_identifier)
         if not ob_history:
             raise ValidationError(
                 'Please fill in the Maternal Obsterical History form first.')
@@ -98,7 +98,7 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
     def validate_hiv_test_date_antenatal_enrollment(self):
 
         antenatal_enrollment = self.antenatal_enrollment_cls.objects.get(
-            subject_identifier=self.cleaned_data.get('maternal_visit').appointment.subject_identifier)
+            subject_identifier=self.cleaned_data.get('maternal_visit').subject_identifier)
 
         status_helper = MaternalStatusHelper(
             self.cleaned_data.get('maternal_visit'))
