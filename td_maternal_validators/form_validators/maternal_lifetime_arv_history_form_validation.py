@@ -1,8 +1,10 @@
+from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_constants.constants import YES, NO, RESTARTED, CONTINUOUS, STOPPED, OTHER, POS,\
     NOT_APPLICABLE
 from edc_form_validators import FormValidator
+
 from td_maternal.helper_classes import MaternalStatusHelper
 
 
@@ -10,6 +12,7 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
     maternal_consent_model = 'td_maternal.subjectconsent'
     ob_history_model = 'td_maternal.maternalobstericalhistory'
     antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
+    medical_history_model = 'td_maternal.maternalmedicalhisotry'
 
     @property
     def antenatal_enrollment_cls(self):
@@ -18,6 +21,10 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
     @property
     def maternal_consent_model_cls(self):
         return django_apps.get_model(self.maternal_consent_model)
+
+    @property
+    def maternal_medical_history_model_cls(self):
+        return django_apps.get_model(self.medical_history_model)
 
     @property
     def maternal_ob_history_model_cls(self):
@@ -96,16 +103,30 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
                                         field_applicable=field_applicable)
 
     def validate_hiv_test_date_antenatal_enrollment(self):
+        try:
+            medical_history = self.maternal_medical_history_model_cls.objects.get(
+                subject_identifier=self.cleaned_data.get('maternal_visit').subject_identifier)
+        except self.maternal_medical_history_model_cls.DoesNotExist:
+            raise forms.ValidationError(
+                'Date of diagnosis required, complete Maternal Medical '
+                'History form before proceeding.')
+        else:
+            if(self.cleaned_data.get('haart_start_date') and
+               self.cleaned_data.get('haart_start_date') < medical_history.date_hiv_diagnosis):
+                msg = {'Haart start date cannot be before HIV diagnosis date.'}
+                self._errors.update(msg)
 
-        antenatal_enrollment = self.antenatal_enrollment_cls.objects.get(
-            subject_identifier=self.cleaned_data.get('maternal_visit').subject_identifier)
-
-        status_helper = MaternalStatusHelper(
-            self.cleaned_data.get('maternal_visit'))
-
-        if (status_helper.hiv_status == POS and
-                self.cleaned_data.get('date_hiv_diagnosis') < antenatal_enrollment.week32_test_date):
-            msg = {'haart_start_date': 'Date of triple ARVs first '
-                   'started CANNOT be before Antenatal Enrollment date of HIV test.'}
-            self._errors.update(msg)
-            raise ValidationError(msg)
+        try:
+            antenatal_enrollment = self.antenatal_enrollment_cls.objects.get(
+                registered_subject__subject_identifier=self.cleaned_data.get(
+                    'maternal_visit').appointment.registered_subject.subject_identifier)
+        except self.antenatal_enrollment_cls.DoesNotExist:
+            raise forms.ValidationError(
+                'Date of HIV test required, complete Antenatal Enrollment'
+                ' form before proceeding.')
+        else:
+            if(self.cleaned_data.get('haart_start_date') and
+                    self.cleaned_data.get('haart_start_date') < antenatal_enrollment.week32_test_date):
+                msg = {'Haart start date cannot be before date of HIV test.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
