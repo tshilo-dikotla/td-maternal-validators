@@ -89,7 +89,7 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
 
     def validate_prev_preg(self, cleaned_data=None):
         ob_history = self.maternal_ob_history_model_cls.objects.filter(
-            maternal_visit__appointment__subject_identifier=cleaned_data.get(
+            maternal_visit__subject_identifier=cleaned_data.get(
                 'maternal_visit').subject_identifier)
         if not ob_history:
             raise ValidationError(
@@ -105,7 +105,7 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
     def validate_hiv_test_date_antenatal_enrollment(self):
         try:
             medical_history = self.maternal_medical_history_model_cls.objects.get(
-                subject_identifier=self.cleaned_data.get('maternal_visit').subject_identifier)
+                maternal_visit__subject_identifier=self.cleaned_data.get('maternal_visit').subject_identifier)
         except self.maternal_medical_history_model_cls.DoesNotExist:
             raise forms.ValidationError(
                 'Date of diagnosis required, complete Maternal Medical '
@@ -118,7 +118,7 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
 
         try:
             antenatal_enrollment = self.antenatal_enrollment_cls.objects.get(
-                subject_identifier=self.cleaned_data.get(
+                maternal_visit__subject_identifier=self.cleaned_data.get(
                     'maternal_visit').subject_identifier)
         except self.antenatal_enrollment_cls.DoesNotExist:
             raise forms.ValidationError(
