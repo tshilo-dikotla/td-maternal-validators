@@ -118,8 +118,8 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
 
         try:
             antenatal_enrollment = self.antenatal_enrollment_cls.objects.get(
-                registered_subject__subject_identifier=self.cleaned_data.get(
-                    'maternal_visit').appointment.registered_subject.subject_identifier)
+                subject_identifier=self.cleaned_data.get(
+                    'maternal_visit').subject_identifier)
         except self.antenatal_enrollment_cls.DoesNotExist:
             raise forms.ValidationError(
                 'Date of HIV test required, complete Antenatal Enrollment'
