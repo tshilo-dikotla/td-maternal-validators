@@ -88,17 +88,12 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
             raise ValidationError(
                 'Please fill in the Maternal Obsterical History form first.')
         else:
-            condition = ob_history[0].prev_pregnancies == 0
+            condition = ob_history[0].prev_pregnancies > 1
             fields_applicable = ['prev_preg_azt',
                                  'prev_sdnvp_labour', 'prev_preg_haart']
             for field_applicable in fields_applicable:
-                if condition and field_applicable not in [NOT_APPLICABLE]:
-                    msg = {
-                        field_applicable: 'Maternal Obsterical History previous '
-                        f'pregnancies is {ob_history[0].prev_pregnancies}, this field '
-                        'must be Not Applicable.'}
-                    self._errors.update(msg)
-                    raise ValidationError(msg)
+                self.applicable_if_true(condition,
+                                        field_applicable=field_applicable)
 
     def validate_hiv_test_date_antenatal_enrollment(self):
 
