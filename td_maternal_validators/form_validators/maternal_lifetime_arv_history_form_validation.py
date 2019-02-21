@@ -88,8 +88,7 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
                 'Please fill in the Maternal Obsterical History form first.')
         else:
             condition = ob_history[0].prev_pregnancies != 0
-            fields_applicable = ['prev_preg_azt',
-                                 'prev_sdnvp_labour', 'prev_preg_haart']
+            fields_applicable = ['prev_sdnvp_labour', 'prev_preg_haart']
             for field_applicable in fields_applicable:
                 self.applicable_if_true(
                     condition=condition,
