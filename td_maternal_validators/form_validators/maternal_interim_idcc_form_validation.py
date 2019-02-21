@@ -25,19 +25,22 @@ class MaternalIterimIdccFormValidator(FormValidator):
 
         if self.cleaned_data.get('info_since_lastvisit') == YES:
 
-            if (not self.cleaned_data.get('recent_cd4') or
+            if (not self.cleaned_data.get('recent_cd4') and
                     not self.cleaned_data.get('value_vl')):
                 msg = {'recent_cd4':
-                       'New labs available please add CD4 or Viral Load result'}
+                       'New labs available, please add CD4 or Viral Load result'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
+
             if (self.cleaned_data.get('recent_cd4') and
                     not self.cleaned_data.get('recent_cd4_date')):
                 msg = {'recent_cd4_date':
                        'This field is required'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
-            if (self.cleaned_data.get('value_vl') and
+
+            if (self.cleaned_data.get('value_vl_size') and
+                not self.cleaned_data.get('value_vl') and
                     not self.cleaned_data.get('recent_vl_date')):
                 msg = {'recent_vl_date':
                        'This field is required'}
