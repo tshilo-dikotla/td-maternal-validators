@@ -1,6 +1,7 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_constants.constants import YES, NO, RESTARTED, CONTINUOUS, STOPPED, OTHER, POS
+from edc_constants.constants import YES, NO, RESTARTED, CONTINUOUS, STOPPED, OTHER, POS,\
+    NOT_APPLICABLE
 from edc_form_validators import FormValidator
 from td_maternal.helper_classes import MaternalStatusHelper
 
@@ -87,13 +88,17 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
             raise ValidationError(
                 'Please fill in the Maternal Obsterical History form first.')
         else:
-            condition = ob_history[0].prev_pregnancies != 0
-            fields_applicable = ['prev_sdnvp_labour', 'prev_preg_haart']
+            condition = ob_history[0].prev_pregnancies == 0
+            fields_applicable = ['prev_preg_azt',
+                                 'prev_sdnvp_labour', 'prev_preg_haart']
             for field_applicable in fields_applicable:
-                self.applicable_if_true(
-                    condition=condition,
-                    field_applicable=field_applicable,
-                )
+                if condition and field_applicable not in [NOT_APPLICABLE]:
+                    msg = {
+                        field_applicable: 'Maternal Obsterical History previous '
+                        f'pregnancies is {ob_history[0].prev_pregnancies}, this field '
+                        'must be Not Applicable.'}
+                    self._errors.update(msg)
+                    raise ValidationError(msg)
 
     def validate_hiv_test_date_antenatal_enrollment(self):
 
