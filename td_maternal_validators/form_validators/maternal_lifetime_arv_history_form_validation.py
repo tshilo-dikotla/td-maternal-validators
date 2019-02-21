@@ -12,7 +12,7 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
     maternal_consent_model = 'td_maternal.subjectconsent'
     ob_history_model = 'td_maternal.maternalobstericalhistory'
     antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
-    medical_history_model = 'td_maternal.maternalmedicalhisotry'
+    medical_history_model = 'td_maternal.maternalmedicalhistory'
 
     @property
     def antenatal_enrollment_cls(self):
