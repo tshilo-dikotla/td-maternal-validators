@@ -40,7 +40,7 @@ class MaternalIterimIdccFormValidator(FormValidator):
                 raise ValidationError(msg)
 
             if (self.cleaned_data.get('value_vl_size') and
-                not self.cleaned_data.get('value_vl') and
+                not self.cleaned_data.get('value_vl') or
                     not self.cleaned_data.get('recent_vl_date')):
                 msg = {'recent_vl_date':
                        'This field is required'}
