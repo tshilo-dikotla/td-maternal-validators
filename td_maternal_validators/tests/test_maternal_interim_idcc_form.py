@@ -1,11 +1,12 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from edc_constants.constants import YES, NO
 
 from ..form_validators import MaternalIterimIdccFormValidator
 
 
+@tag('idcc')
 class TestMaternalInterimIdccFormValidator(TestCase):
 
     def test_last_visit_is_no_recent_cd4_invalid(self):
@@ -73,19 +74,6 @@ class TestMaternalInterimIdccFormValidator(TestCase):
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('recent_vl_date', form_validator._errors)
 
-    def test_last_visit_is_no_other_diagnoses_invalid(self):
-        '''Assert raises exception if the last visit is no,
-        but other fields are provided.
-        '''
-        cleaned_data = {
-            'info_since_lastvisit': NO,
-            'other_diagnoses': 'blahblah',
-        }
-        form_validator = MaternalIterimIdccFormValidator(
-            cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('other_diagnoses', form_validator._errors)
-
     def test_last_visit_is_no_valid(self):
         '''Assert raises exception if the last visit is no,
         but other fields are provided.
@@ -135,7 +123,10 @@ class TestMaternalInterimIdccFormValidator(TestCase):
         '''
         cleaned_data = {
             'info_since_lastvisit': YES,
+            'recent_cd4': None,
+            'value_vl_size': 'equal',
             'value_vl': 250.2,
+            'recent_vl_date': None
         }
         form_validator = MaternalIterimIdccFormValidator(
             cleaned_data=cleaned_data)
@@ -148,7 +139,8 @@ class TestMaternalInterimIdccFormValidator(TestCase):
         '''
         cleaned_data = {
             'info_since_lastvisit': YES,
-            'value_vl': 250.2,
+            'value_vl_size': 'equal',
+            'value_vl': 4444,
             'recent_vl_date': get_utcnow()
         }
         form_validator = MaternalIterimIdccFormValidator(

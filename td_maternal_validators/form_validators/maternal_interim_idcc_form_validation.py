@@ -26,32 +26,36 @@ class MaternalIterimIdccFormValidator(FormValidator):
         if self.cleaned_data.get('info_since_lastvisit') == YES:
 
             if (not self.cleaned_data.get('recent_cd4') and
-                    not self.cleaned_data.get('value_vl')):
+                    not self.cleaned_data.get('value_vl_size')):
                 msg = {'recent_cd4':
                        'New labs available, please add CD4 or Viral Load result'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
-
-            if (self.cleaned_data.get('recent_cd4') and
-                    not self.cleaned_data.get('recent_cd4_date')):
-                msg = {'recent_cd4_date':
-                       'This field is required'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
-
-            if (self.cleaned_data.get('value_vl_size') and
-                    not self.cleaned_data.get('value_vl')):
-                msg = {'value_vl':
-                       'This field is required'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
-            if (self.cleaned_data.get('value_vl_size') and
-                    not self.cleaned_data.get('recent_vl_date')):
-                msg = {'recent_vl_date':
-                       'This field is required'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
+            self.validate_recent_cd4()
+            self.validate_recent_vl()
             self.validate_viral_load_value()
+
+    def validate_recent_cd4(self):
+        if (self.cleaned_data.get('recent_cd4') and
+                not self.cleaned_data.get('recent_cd4_date')):
+            msg = {'recent_cd4_date':
+                   'This field is required'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
+
+    def validate_recent_vl(self):
+        if (self.cleaned_data.get('value_vl_size') and
+                not self.cleaned_data.get('value_vl')):
+            msg = {'value_vl':
+                   'This field is required'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
+        elif (self.cleaned_data.get('value_vl_size') and
+              not self.cleaned_data.get('recent_vl_date')):
+            msg = {'recent_vl_date':
+                   'This field is required'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
 
     def validate_viral_load_value(self):
         cleaned_data = self.cleaned_data
