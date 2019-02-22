@@ -7,11 +7,11 @@ class MaternalIterimIdccFormValidator(FormValidator):
 
     def clean(self):
         required_fields = ['recent_cd4', 'recent_cd4_date', 'value_vl_size',
-                           'value_vl', 'recent_vl_date', 'other_diagnoses']
+                           'value_vl', 'recent_vl_date']
 
         message = ('You indicated that there has not been any lab '
                    'information since the last visit please do not answer '
-                   'the questions on CD4, VL and diagnoses found')
+                   'the questions on CD4, VL.')
 
         for required in required_fields:
             if required in self.cleaned_data:
@@ -40,7 +40,7 @@ class MaternalIterimIdccFormValidator(FormValidator):
                 raise ValidationError(msg)
 
             if (self.cleaned_data.get('value_vl_size') and
-                not self.cleaned_data.get('value_vl') or
+                not self.cleaned_data.get('value_vl') and
                     not self.cleaned_data.get('recent_vl_date')):
                 msg = {'recent_vl_date':
                        'This field is required'}
