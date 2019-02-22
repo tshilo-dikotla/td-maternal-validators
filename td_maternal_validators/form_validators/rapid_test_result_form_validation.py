@@ -14,7 +14,8 @@ class RapidTestResultFormValidator(FormValidator):
                           f'the result date of the rapid test?'),
             not_required_msg=('If a rapid test was not processed, '
                               f'please do not provide the result date. '
-                              'Got {}.'))
+                              'Got {}.'),
+            inverse=True)
 
         self.required_if(
             YES,
@@ -24,4 +25,5 @@ class RapidTestResultFormValidator(FormValidator):
                           f'the result of the rapid test?'),
             not_required_msg=('If a rapid test was not processed, '
                               f'please do not provide the result. '
-                              'Got {}.'))
+                              'Got {}.'),
+            inverse=True)
