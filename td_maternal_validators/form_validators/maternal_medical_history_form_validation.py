@@ -18,9 +18,8 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
         return django_apps.get_model(self.maternal_visit_model)
 
     def clean(self):
+
         self.validate_chronic_since_who_diagnosis_neg(
-            cleaned_data=self.cleaned_data)
-        self.validate_chronic_since_who_diagnosis_pos(
             cleaned_data=self.cleaned_data)
         self.validate_who_diagnosis_who_chronic_list(
             cleaned_data=self.cleaned_data)
@@ -30,37 +29,32 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
             cleaned_data=self.cleaned_data)
         self.validate_negative_mother_seropositive_no(
             cleaned_data=self.cleaned_data)
-        self.validate_negative_mother_seropositive_no_cd4_not(
-            cleaned_data=self.cleaned_data)
+        self.validate_negative_mother_seropositive_no_cd4_not()
         self.validate_hiv_diagnosis_date(cleaned_data=self.cleaned_data)
         self.validate_other_mother()
         self.validate_other_father()
         self.validate_other_mother_medications()
 
     def validate_chronic_since_who_diagnosis_neg(self, cleaned_data=None):
-        #                 print(self.maternal_status_helper.hiv_status)
-        if self.maternal_status_helper.hiv_status == NEG:
-            if cleaned_data.get('chronic_since') == YES:
-                msg = {'chronic_since':
-                       'The mother is HIV negative. Chronic_since should be NO '
-                       'and Who Diagnosis should be Not Applicable'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
 
-            self.not_applicable_if(
-                NO,
-                field='chronic_since',
-                field_applicable='who_diagnosis'
-            )
+        subject_status = self.maternal_status_helper.hiv_status
 
-    def validate_chronic_since_who_diagnosis_pos(self, cleaned_data=None):
-        status_helper = MaternalStatusHelper(
-            cleaned_data.get('maternal_visit'))
-        subject_status = status_helper.hiv_status
+        if subject_status == NEG and cleaned_data.get('chronic_since') == YES:
+            msg = {'chronic_since':
+                   'The mother is HIV negative. Chronic_since should be NO'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
 
-        if cleaned_data.get('chronic_since') == NO and subject_status == POS:
+        self.applicable_if_true(
+            subject_status == POS,
+            field_applicable='who_diagnosis',
+            not_applicable_msg=('The mother is HIV negative. Who Diagnosis '
+                                'should be Not Applicable')
+        )
+
+        if subject_status == POS and cleaned_data.get('chronic_since') == NO:
             if cleaned_data.get('who_diagnosis') != NO:
-                msg = {'who_diagnosis':
+                msg = {'chronic_since':
                        'The mother is HIV positive, because Chronic_since is '
                        'NO and Who Diagnosis should also be NO'}
                 self._errors.update(msg)
@@ -68,40 +62,29 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
 
     def validate_who_diagnosis_who_chronic_list(self, cleaned_data=None):
 
-        status_helper = MaternalStatusHelper(
-            cleaned_data.get('maternal_visit'))
-        subject_status = status_helper.hiv_status
-
-        self.m2m_required(
-            m2m_field='who')
-
-        if subject_status == NEG and cleaned_data.get('who_diagnosis') == NOT_APPLICABLE:
-            self.m2m_single_selection_if(
-                NOT_APPLICABLE,
-                m2m_field='who')
-
-            qs = self.cleaned_data.get('who')
-            if qs and qs.count() > 0:
-                selected = {obj.short_name: obj.name for obj in qs}
-            if NOT_APPLICABLE not in selected:
-                msg = {'who':
-                       f'Participant is HIV {subject_status}, this field must be '
-                       'Not Applicable.'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
+        subject_status = self.maternal_status_helper.hiv_status
 
         if subject_status == POS and cleaned_data.get('who_diagnosis') == YES:
             qs = self.cleaned_data.get('who')
             if qs and qs.count() > 0:
                 selected = {obj.short_name: obj.name for obj in qs}
-            if NOT_APPLICABLE in selected:
-                msg = {'who':
-                       'Participant indicated that they had WHO stage III '
-                       'and IV, list of diagnosis cannot be N/A'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
+                if NOT_APPLICABLE in selected:
+                    msg = {'who':
+                           'Participant indicated that they had WHO stage III '
+                           'and IV, list of diagnosis cannot be N/A'}
+                    self._errors.update(msg)
+                    raise ValidationError(msg)
+        elif cleaned_data.get('who_diagnosis') != YES:
+            qs = self.cleaned_data.get('who')
+            if qs and qs.count() > 0:
+                selected = {obj.short_name: obj.name for obj in qs}
+                if NOT_APPLICABLE not in selected:
+                    msg = {'who':
+                           'Participant indicated that they do not have WHO stage'
+                           ' III and IV, list of diagnosis must be N/A'}
+                    self._errors.update(msg)
+                    raise ValidationError(msg)
 
-        if subject_status == POS and cleaned_data.get('who_diagnosis') == NO:
             self.m2m_single_selection_if(
                 NOT_APPLICABLE,
                 m2m_field='who')
@@ -143,9 +126,7 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
             field_other='mother_medications_other')
 
     def validate_positive_mother_seropositive_yes(self, cleaned_data=None):
-        status_helper = MaternalStatusHelper(
-            cleaned_data.get('maternal_visit'))
-        subject_status = status_helper.hiv_status
+        subject_status = self.maternal_status_helper.hiv_status
 
         if subject_status == POS:
             self.required_if(
@@ -206,10 +187,8 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
                 self._errors.update(msg)
                 raise ValidationError(msg)
 
-    def validate_negative_mother_seropositive_no_cd4_not(self, cleaned_data=None):
-        status_helper = MaternalStatusHelper(
-            cleaned_data.get('maternal_visit'))
-        subject_status = status_helper.hiv_status
+    def validate_negative_mother_seropositive_no_cd4_not(self):
+        subject_status = self.maternal_status_helper.hiv_status
 
         condition = subject_status == POS
 
