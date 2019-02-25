@@ -7,7 +7,7 @@ from edc_constants.constants import (
 
 from ..form_validators import MaternalLifetimeArvHistoryFormValidator
 from .models import (SubjectConsent, Appointment, MaternalVisit, AntenatalEnrollment,
-                     MaternalObstericalHistory, MaternalMedicalHistory)
+                     MaternalObstericalHistory, MaternalMedicalHistory, ListModel)
 
 
 @tag('alh')
