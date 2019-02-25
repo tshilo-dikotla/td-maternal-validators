@@ -57,8 +57,24 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
             self._errors.update(msg)
             raise ValidationError(msg)
 
+        qs = self.cleaned_data.get(self.cleaned_data.get('prior_arv'))
+        if qs and qs.count() > 1:
+            selected = {obj.short_name: obj.name for obj in qs}
+            if (self.cleaned_data.get('prior_preg') != NOT_APPLICABLE and
+                    NOT_APPLICABLE in selected):
+                message = {
+                    'prior_arv':
+                    'This field is applicable.'}
+                self._errors.update(message)
+                raise ValidationError(message)
+            elif (self.cleaned_data.get('prior_preg') == NOT_APPLICABLE and
+                    NOT_APPLICABLE not in selected):
+                message = {
+                    'prior_arv':
+                    'This field is not applicable.'}
+
     def validate_other_mother(self):
-        selections = [OTHER]
+        selections = [NOT_APPLICABLE]
         self.m2m_single_selection_if(
             *selections,
             m2m_field='prior_arv')
