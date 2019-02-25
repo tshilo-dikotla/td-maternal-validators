@@ -200,16 +200,6 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
                 'the lowest CD4 count is known should be N/A')
         )
 
-        required_fields = ('cd4_count', 'cd4_date', 'is_date_estimated')
-        for required in required_fields:
-            self.required_if_true(
-                condition,
-                field_required=required,
-                not_required_msg=(
-                    f'The Mother is HIV Negative, the field for {required} '
-                    'should be left blank')
-            )
-
     def validate_hiv_diagnosis_date(self, cleaned_data=None):
 
         if cleaned_data.get('sero_posetive') == YES:
