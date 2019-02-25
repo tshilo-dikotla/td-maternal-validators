@@ -22,8 +22,7 @@ class MaternalLabDelFormValidator(TDFormValidatorMixin, FormValidator):
 
     def clean(self):
         self.validate_against_consent_datetime(
-            self.cleaned_data.get('report_datetime'),
-            self.cleaned_data.get('subject_identifier'))
+            self.cleaned_data.get('report_datetime'))
         self.validate_initiation_date(cleaned_data=self.cleaned_data)
         self.validate_valid_regime_hiv_pos_only(cleaned_data=self.cleaned_data)
         self.validate_live_births_still_birth(cleaned_data=self.cleaned_data)
