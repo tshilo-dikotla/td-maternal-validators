@@ -157,6 +157,7 @@ class TestMaternalMedicalHistoryForm(TestCase):
         '''Assert raises exception if who is provided but
         who_diagnosis is NO.
         '''
+        ListModel.objects.create(name=NOT_APPLICABLE)
         maternal_status = MaternalStatusHelper(status=POS)
         MaternalMedicalHistoryFormValidator.maternal_status_helper = maternal_status
         self.cleaned_data.update(
@@ -171,6 +172,7 @@ class TestMaternalMedicalHistoryForm(TestCase):
             is_date_estimated=NO,
             cd4_count=50,
             cd4_date=get_utcnow(),
+            who=ListModel.objects.filter(name=NOT_APPLICABLE)
         )
         form_validator = MaternalMedicalHistoryFormValidator(
             cleaned_data=self.cleaned_data)
