@@ -3,33 +3,32 @@ from django.test import TestCase
 from edc_base.utils import get_utcnow, relativedelta
 
 from ..form_validators import AntenatalVisitMembershipFormValidator
-from .models import TdConsentVersion, SubjectScreening, MaternalConsent
+from .models import TdConsentVersion, SubjectScreening, SubjectConsent
 
 
 class TestAntenatalVisitMembershipForm(TestCase):
 
     def setUp(self):
-        self.screening_identifier = 'ABC12345'
-        self.subject_consent = MaternalConsent.objects.create(
+        AntenatalVisitMembershipFormValidator.maternal_consent_model = \
+            'td_maternal_validators.subjectconsent'
+        AntenatalVisitMembershipFormValidator.consent_version_model = \
+            'td_maternal_validators.tdconsentversion'
+        AntenatalVisitMembershipFormValidator.subject_screening_model = \
+            'td_maternal_validators.subjectscreening'
+
+        self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111', screening_identifier='ABC12345',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
             consent_datetime=get_utcnow(), version='3')
-        self.subject_consent_model = 'td_maternal_validators.maternalconsent'
-        AntenatalVisitMembershipFormValidator.maternal_consent_model =\
-            self.subject_consent_model
+
         self.subject_screening = SubjectScreening.objects.create(
             subject_identifier=self.subject_consent.subject_identifier,
-            screening_identifier=self.screening_identifier,
+            screening_identifier='ABC12345',
             age_in_years=22)
-        self.subject_screening_model = 'td_maternal_validators.subjectscreening'
-        AntenatalVisitMembershipFormValidator.subject_screening_model =\
-            self.subject_screening_model
+
         self.td_consent_version = TdConsentVersion.objects.create(
             screening_identifier=self.subject_screening.screening_identifier,
             version='3', report_datetime=get_utcnow())
-        self.td_consent_version_model = 'td_maternal_validators.tdconsentversion'
-        AntenatalVisitMembershipFormValidator.consent_version_model =\
-            self.td_consent_version_model
 
     def test_consentversion_object_does_not_exist(self):
         '''Asserts if Validation Error is raised if the consent version object
@@ -37,6 +36,7 @@ class TestAntenatalVisitMembershipForm(TestCase):
 
         self.td_consent_version.delete()
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier}
         form_validator = AntenatalVisitMembershipFormValidator(
             cleaned_data=cleaned_data)
@@ -47,6 +47,7 @@ class TestAntenatalVisitMembershipForm(TestCase):
         or fails the tests if the Validation Error is raised unexpectedly.'''
 
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier}
         form_validator = AntenatalVisitMembershipFormValidator(
             cleaned_data=cleaned_data)
@@ -61,6 +62,7 @@ class TestAntenatalVisitMembershipForm(TestCase):
 
         self.subject_consent.delete()
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier}
         form_validator = AntenatalVisitMembershipFormValidator(
             cleaned_data=cleaned_data)
@@ -71,6 +73,7 @@ class TestAntenatalVisitMembershipForm(TestCase):
         or fails the tests if the Validation Error is raised unexpectedly.'''
 
         cleaned_data = {
+            'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_consent.subject_identifier}
         form_validator = AntenatalVisitMembershipFormValidator(
             cleaned_data=cleaned_data)

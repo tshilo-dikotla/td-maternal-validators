@@ -5,21 +5,12 @@ from edc_constants.constants import POS, YES, NOT_APPLICABLE, OTHER, NONE
 from edc_form_validators import FormValidator
 from td_maternal.helper_classes import MaternalStatusHelper
 
+from .form_validator_mixin import TDFormValidatorMixin
 
-class MaternalLabDelFormValidator(FormValidator):
+
+class MaternalLabDelFormValidator(TDFormValidatorMixin, FormValidator):
     maternal_arv_model = 'td_maternal.maternalarv'
-    consent_version_model = 'td_maternal.tdconsentversion'
-    maternal_consent_model = 'td_maternal.subjectconsent'
     maternal_visit_model = 'td_maternal.maternalvisit'
-    subject_screening_model = 'td_maternal.subjectscreening'
-
-    @property
-    def consent_version_cls(self):
-        return django_apps.get_model(self.consent_version_model)
-
-    @property
-    def maternal_consent_cls(self):
-        return django_apps.get_model(self.maternal_consent_model)
 
     @property
     def maternal_visit_cls(self):
@@ -29,16 +20,13 @@ class MaternalLabDelFormValidator(FormValidator):
     def maternal_arv_cls(self):
         return django_apps.get_model(self.maternal_arv_model)
 
-    @property
-    def subject_screening_cls(self):
-        return django_apps.get_model(self.subject_screening_model)
-
     def clean(self):
+        self.validate_against_consent_datetime(
+            self.cleaned_data.get('report_datetime'))
         self.validate_initiation_date(cleaned_data=self.cleaned_data)
         self.validate_valid_regime_hiv_pos_only(cleaned_data=self.cleaned_data)
         self.validate_live_births_still_birth(cleaned_data=self.cleaned_data)
         self.validate_other()
-        self.validate_current_consent_version()
 
     def validate_initiation_date(self, cleaned_data=None):
         subject_identifier = cleaned_data.get('subject_identifier')
@@ -51,8 +39,7 @@ class MaternalLabDelFormValidator(FormValidator):
                 message = {'arv_initiation_date':
                            'ARV\'s initiation date must match start date '
                            'in pregnancy form, pregnancy form start date is '
-                           '{}, got {}.'.format(
-                               maternal_arv.start_date, initiation_date)}
+                           f'{maternal_arv.start_date}, got {initiation_date}.'}
                 self._errors.update(message)
                 raise ValidationError(message)
 
@@ -110,23 +97,6 @@ class MaternalLabDelFormValidator(FormValidator):
             self._errors.update(message)
             raise ValidationError(message)
 
-    def validate_current_consent_version(self):
-        try:
-            td_consent_version = self.consent_version_cls.objects.get(
-                screening_identifier=self.subject_screening.screening_identifier)
-        except self.consent_version_cls.DoesNotExist:
-            raise ValidationError(
-                'Complete mother\'s consent version form before proceeding')
-        else:
-            try:
-                self.maternal_consent_cls.objects.get(
-                    screening_identifier=self.subject_screening.screening_identifier,
-                    version=td_consent_version.version)
-            except self.maternal_consent_cls.DoesNotExist:
-                raise ValidationError(
-                    'Maternal Consent form for version {} before '
-                    'proceeding'.format(td_consent_version.version))
-
     def validate_other(self):
         fields = {'delivery_hospital': 'delivery_hospital_other',
                   'mode_delivery': 'mode_delivery_other',
@@ -146,15 +116,6 @@ class MaternalLabDelFormValidator(FormValidator):
             field_other='delivery_complications_other')
 
     @property
-    def subject_screening(self):
-        cleaned_data = self.cleaned_data
-        try:
-            return self.subject_screening_cls.objects.get(
-                subject_identifier=cleaned_data.get('subject_identifier'))
-        except self.subject_screening_cls.DoesNotExist:
-            return None
-
-    @property
     def maternal_status_helper(self):
         cleaned_data = self.cleaned_data
         latest_visit = self.maternal_visit_cls.objects.filter(
@@ -163,4 +124,6 @@ class MaternalLabDelFormValidator(FormValidator):
         if latest_visit:
             return MaternalStatusHelper(latest_visit)
         else:
-            return None
+            raise ValidationError(
+                'Please complete previous visits before filling in '
+                'Maternal Labour Delivery Form.')

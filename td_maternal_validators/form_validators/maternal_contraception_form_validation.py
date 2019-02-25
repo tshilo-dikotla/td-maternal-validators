@@ -3,6 +3,7 @@ from edc_form_validators import FormValidator
 
 
 class MaternalContraceptionFormValidator(FormValidator):
+
     def clean(self):
         self.required_if(
             YES,

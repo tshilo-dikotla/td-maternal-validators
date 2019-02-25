@@ -1,10 +1,11 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from edc_constants.constants import YES, POS, NEG, IND, NO
 from ..form_validators import RapidTestResultFormValidator
 
 
+@tag('rr')
 class TestRapidTestResultForm(TestCase):
 
     def test_rapid_test_done_YES_result_date_required(self):

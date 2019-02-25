@@ -3,11 +3,13 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from edc_constants.constants import POS, NOT_APPLICABLE, MALE, YES, NO, NEG
-from .models import (
-    MaternalConsent, Appointment, MaternalVisit,
-    RegisteredSubject, ListModel)
-from ..form_validators import MaternalMedicalHistoryFormValidator
+
 from td_maternal.models.list_models import ChronicConditions, MaternalMedications, WcsDxAdult
+
+from ..form_validators import MaternalMedicalHistoryFormValidator
+from .models import (
+    SubjectConsent, Appointment, MaternalVisit,
+    RegisteredSubject, ListModel)
 
 
 class MaternalStatusHelper:
@@ -22,8 +24,9 @@ class MaternalStatusHelper:
 
 @tag('hist')
 class TestMaternalMedicalHistoryForm(TestCase):
+
     def setUp(self):
-        self.subject_consent = MaternalConsent.objects.create(
+        self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
             consent_datetime=get_utcnow())
@@ -506,6 +509,7 @@ class TestMaternalMedicalHistoryForm(TestCase):
         maternal_status = MaternalStatusHelper(status=POS)
         MaternalMedicalHistoryFormValidator.maternal_status_helper = maternal_status
         self.cleaned_data.update(
+            sero_posetive=YES,
             lowest_cd4_known=NOT_APPLICABLE
         )
         form_validator = MaternalMedicalHistoryFormValidator(

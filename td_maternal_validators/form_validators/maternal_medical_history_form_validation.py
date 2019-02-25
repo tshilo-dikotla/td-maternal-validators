@@ -41,7 +41,7 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
         #                 print(self.maternal_status_helper.hiv_status)
         if self.maternal_status_helper.hiv_status == NEG:
             if cleaned_data.get('chronic_since') == YES:
-                msg = {'who_diagnosis':
+                msg = {'chronic_since':
                        'The mother is HIV negative. Chronic_since should be NO '
                        'and Who Diagnosis should be Not Applicable'}
                 self._errors.update(msg)
@@ -67,16 +67,28 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
                 raise ValidationError(msg)
 
     def validate_who_diagnosis_who_chronic_list(self, cleaned_data=None):
-        self.m2m_required(
-            m2m_field='who')
+
         status_helper = MaternalStatusHelper(
             cleaned_data.get('maternal_visit'))
         subject_status = status_helper.hiv_status
+
+        self.m2m_required(
+            m2m_field='who')
 
         if subject_status == NEG and cleaned_data.get('who_diagnosis') == NOT_APPLICABLE:
             self.m2m_single_selection_if(
                 NOT_APPLICABLE,
                 m2m_field='who')
+
+            qs = self.cleaned_data.get('who')
+            if qs and qs.count() > 0:
+                selected = {obj.short_name: obj.name for obj in qs}
+            if NOT_APPLICABLE not in selected:
+                msg = {'who':
+                       f'Participant is HIV {subject_status}, this field must be '
+                       'Not Applicable.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
 
         if subject_status == POS and cleaned_data.get('who_diagnosis') == YES:
             qs = self.cleaned_data.get('who')
@@ -96,43 +108,35 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
 
     def validate_mother_father_chronic_illness_multiple_selection(self):
         m2m_fields = ('mother_chronic', 'father_chronic')
-        for m2m_field in m2m_fields:
-            self.m2m_required(
-                m2m_field=m2m_field)
+        selections = [NOT_APPLICABLE]
 
+        for m2m_field in m2m_fields:
             self.m2m_single_selection_if(
-                NOT_APPLICABLE,
+                *selections,
                 m2m_field=m2m_field)
 
     def validate_other_mother(self):
-        selections = [OTHER, NOT_APPLICABLE]
-        self.m2m_single_selection_if(
-            *selections,
-            m2m_field='mother_chronic')
+
         self.m2m_other_specify(
             OTHER,
             m2m_field='mother_chronic',
             field_other='mother_chronic_other')
 
     def validate_other_father(self):
-        selections = [OTHER, NOT_APPLICABLE]
-        self.m2m_single_selection_if(
-            *selections,
-            m2m_field='father_chronic')
+
         self.m2m_other_specify(
             OTHER,
             m2m_field='father_chronic',
             field_other='father_chronic_other')
 
     def validate_mother_medications_multiple_selections(self):
-        self.m2m_required(
-            m2m_field='mother_medications')
-
-    def validate_other_mother_medications(self):
-        selections = [OTHER, NOT_APPLICABLE]
+        selections = [NOT_APPLICABLE]
         self.m2m_single_selection_if(
             *selections,
             m2m_field='mother_medications')
+
+    def validate_other_mother_medications(self):
+
         self.m2m_other_specify(
             OTHER,
             m2m_field='mother_medications',
@@ -234,8 +238,9 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
                 subject_identifier=cleaned_data.get('maternal_visit').appointment.subject_identifier)
             if antenatal_enrollment.week32_test_date != cleaned_data.get('date_hiv_diagnosis'):
                 msg = {'date_hiv_diagnosis':
-                       'HIV diagnosis date should match date {} at Antenatal '
-                       'Enrollment'.format(antenatal_enrollment.week32_test_date)}
+                       'HIV diagnosis date should match date '
+                       f'{antenatal_enrollment.week32_test_date} at Antenatal '
+                       'Enrollment'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
 

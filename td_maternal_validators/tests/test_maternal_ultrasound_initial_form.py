@@ -22,7 +22,7 @@ class TestMaternalUltrasoundInitialForm(TestCase):
     def test_est_ultrasound_greater_than(self):
         cleaned_data = {
             "est_edd_ultrasound": get_utcnow().date() + relativedelta(weeks=60),
-            "report_datetime": get_utcnow()
+            "report_datetime": get_utcnow(),
         }
         form_validator = MaternalUltrasoundInitialFormValidator(
             cleaned_data=cleaned_data)
@@ -44,6 +44,7 @@ class TestMaternalUltrasoundInitialForm(TestCase):
     def test_ga_ultrasound_wks_valid(self):
         cleaned_data = {
             "ga_by_ultrasound_wks": 30,
+            'report_datetime': get_utcnow(),
 
         }
         form_validator = MaternalUltrasoundInitialFormValidator(
@@ -56,6 +57,7 @@ class TestMaternalUltrasoundInitialForm(TestCase):
     def test_ga_ultrasound_wks_invalid(self):
         cleaned_data = {
             "ga_by_ultrasound_wks": 50,
+            'report_datetime': get_utcnow(),
         }
         form_validator = MaternalUltrasoundInitialFormValidator(
             cleaned_data=cleaned_data)
@@ -65,6 +67,7 @@ class TestMaternalUltrasoundInitialForm(TestCase):
     def test_ga_ultrasound_wks_equal_invalid(self):
         cleaned_data = {
             "ga_by_ultrasound_wks": 40,
+            'report_datetime': get_utcnow(),
         }
         form_validator = MaternalUltrasoundInitialFormValidator(
             cleaned_data=cleaned_data)
@@ -76,6 +79,7 @@ class TestMaternalUltrasoundInitialForm(TestCase):
     def test_ga_by_ultrasound_days_valid(self):
         cleaned_data = {
             "ga_by_ultrasound_days": 6,
+            'report_datetime': get_utcnow(),
         }
         form_validator = MaternalUltrasoundInitialFormValidator(
             cleaned_data=cleaned_data)

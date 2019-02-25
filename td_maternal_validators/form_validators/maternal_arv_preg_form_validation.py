@@ -1,10 +1,13 @@
 from edc_constants.constants import YES
 from edc_form_validators import FormValidator
 
+from .form_validator_mixin import TDFormValidatorMixin
 
-class MaternalArvPregFormValidator(FormValidator):
+
+class MaternalArvPregFormValidator(TDFormValidatorMixin, FormValidator):
 
     def clean(self):
+
         self.applicable_if(
             YES,
             field='is_interrupt',

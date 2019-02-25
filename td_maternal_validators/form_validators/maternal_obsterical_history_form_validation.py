@@ -16,7 +16,7 @@ class MaternalObstericalHistoryFormValidator(FormValidator):
         self.validate_children_deliv(cleaned_data=self.cleaned_data)
 
     def validate_children_deliv(self, cleaned_data=None):
-        if cleaned_data.get('children_deliv_before_37wks'):
+        if cleaned_data.get('children_deliv_before_37wks') is not None:
 
             sum_deliv_37_wks = \
                 (cleaned_data.get('children_deliv_before_37wks') +
@@ -38,23 +38,25 @@ class MaternalObstericalHistoryFormValidator(FormValidator):
         if (('prev_pregnancies' in cleaned_data and
                 cleaned_data.get('prev_pregnancies') > 1)
                 or ultrasound[0].ga_confirmed >= 24):
-            sum_pregs = (cleaned_data.get('pregs_24wks_or_more') +
-                         (cleaned_data.get('lost_before_24wks')))
+            if (cleaned_data.get('pregs_24wks_or_more') and
+                    cleaned_data.get('lost_before_24wks')):
+                sum_pregs = (cleaned_data.get('pregs_24wks_or_more') +
+                             (cleaned_data.get('lost_before_24wks')))
 
-            previous_pregs = (cleaned_data.get('prev_pregnancies'))
+                previous_pregs = (cleaned_data.get('prev_pregnancies'))
 
-            if (sum_pregs != previous_pregs):
-                raise ValidationError('Total pregnancies should be '
-                                      'equal to sum of pregancies '
-                                      'lost and current')
+                if (sum_pregs != previous_pregs):
+                    raise ValidationError('Total pregnancies should be '
+                                          'equal to sum of pregancies '
+                                          'lost and current')
 
-            if (cleaned_data.get('pregs_24wks_or_more') <
-                    cleaned_data.get('lost_after_24wks')):
-                message = {'pregs_24wks_or_more':
-                           'Sum of Pregnancies more than 24 weeks should be '
-                           'less than those lost'}
-                self._errors.update(message)
-                raise ValidationError(message)
+                if (cleaned_data.get('pregs_24wks_or_more') <
+                        cleaned_data.get('lost_after_24wks')):
+                    message = {'pregs_24wks_or_more':
+                               'Sum of Pregnancies more than 24 weeks should be '
+                               'less than those lost'}
+                    self._errors.update(message)
+                    raise ValidationError(message)
 
     def validate_ultrasound(self, cleaned_data=None):
         ultrasound = self.maternal_ultrasound_init_cls.objects.filter(

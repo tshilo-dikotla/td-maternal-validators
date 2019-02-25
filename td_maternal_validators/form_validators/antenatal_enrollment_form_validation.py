@@ -1,32 +1,22 @@
 from dateutil.relativedelta import relativedelta
+from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_constants.constants import YES
 from edc_form_validators import FormValidator
 
+from td_maternal.helper_classes import EnrollmentHelper
 
-class AntenatalEnrollmentFormValidator(FormValidator):
+from .form_validator_mixin import TDFormValidatorMixin
+
+
+class AntenatalEnrollmentFormValidator(TDFormValidatorMixin, FormValidator):
 
     antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
-    consent_version_model = 'td_maternal.tdconsentversion'
-    maternal_consent_model = 'td_maternal.subjectconsent'
-    subject_screening_model = 'td_maternal.subjectscreening'
 
     @property
     def antenatal_enrollment_cls(self):
         return django_apps.get_model(self.antenatal_enrollment_model)
-
-    @property
-    def consent_version_cls(self):
-        return django_apps.get_model(self.consent_version_model)
-
-    @property
-    def maternal_consent_cls(self):
-        return django_apps.get_model(self.maternal_consent_model)
-
-    @property
-    def subject_screening_cls(self):
-        return django_apps.get_model(self.subject_screening_model)
 
     def clean(self):
         self.required_if(
@@ -36,28 +26,36 @@ class AntenatalEnrollmentFormValidator(FormValidator):
         )
         self.validate_last_period_date(cleaned_data=self.cleaned_data)
         self.clean_rapid_test(cleaned_data=self.cleaned_data)
-        self.validate_current_consent_version()
+        self.validate_against_consent_datetime(
+            self.cleaned_data.get('report_datetime'))
+
+        enrollment_helper = EnrollmentHelper(
+            instance_antenatal=self.antenatal_enrollment_cls(
+                **self.cleaned_data),
+            exception_cls=forms.ValidationError)
+        enrollment_helper.raise_validation_error_for_rapidtest()
+#
 
     def validate_last_period_date(self, cleaned_data=None):
         last_period_date = cleaned_data.get('last_period_date')
         report_datetime = cleaned_data.get('report_datetime')
         if last_period_date and (
-                last_period_date > (report_datetime.date() - relativedelta(weeks=16))):
+                last_period_date > (
+                    report_datetime.date() - relativedelta(weeks=16))):
             message = {'last_period_date':
                        'LMP cannot be within 16weeks of report datetime. '
-                       'Got LMP as {} and report datetime as {}'.format(last_period_date,
-                                                                        report_datetime)
-                       }
+                       f'Got LMP as {last_period_date} and report datetime as '
+                       f'{report_datetime}'}
             self._errors.update(message)
             raise ValidationError(message)
 
         elif last_period_date and (
-                last_period_date <= (report_datetime.date() - relativedelta(weeks=37))):
+                last_period_date <= (
+                    report_datetime.date() - relativedelta(weeks=37))):
             message = {'last_period_date':
                        'LMP cannot be more than 36weeks of report datetime. '
-                       'Got LMP as {} and report datetime as {}'.format(last_period_date,
-                                                                        report_datetime)
-                       }
+                       f'Got LMP as {last_period_date} and report datetime as '
+                       f'{report_datetime}'}
             self._errors.update(message)
             raise ValidationError(message)
 
@@ -75,29 +73,3 @@ class AntenatalEnrollmentFormValidator(FormValidator):
             except self.antenatal_enrollment_cls.DoesNotExist:
                 pass
         return rapid_test_date
-
-    def validate_current_consent_version(self):
-        try:
-            td_consent_version = self.consent_version_cls.objects.get(
-                screening_identifier=self.subject_screening.screening_identifier)
-        except self.consent_version_cls.DoesNotExist:
-            raise ValidationError(
-                'Complete mother\'s consent version form before proceeding')
-        else:
-            try:
-                self.maternal_consent_cls.objects.get(
-                    screening_identifier=self.subject_screening.screening_identifier,
-                    version=td_consent_version.version)
-            except self.maternal_consent_cls.DoesNotExist:
-                raise ValidationError(
-                    'Maternal Consent form for version {} before '
-                    'proceeding'.format(td_consent_version.version))
-
-    @property
-    def subject_screening(self):
-        cleaned_data = self.cleaned_data
-        try:
-            return self.subject_screening_cls.objects.get(
-                subject_identifier=cleaned_data.get('subject_identifier'))
-        except self.subject_screening_cls.DoesNotExist:
-            return None

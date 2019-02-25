@@ -1,15 +1,18 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
-from .models import (
-    MaternalConsent, Appointment, MaternalVisit, MaternalUltraSoundInitial)
+
 from ..form_validators import MaternalObstericalHistoryFormValidator
+from .models import (
+    SubjectConsent, Appointment, MaternalVisit, MaternalUltraSoundInitial)
 
 
+@tag('ob')
 class TestMaternalObstericalHistoryForm(TestCase):
+
     def setUp(self):
-        self.subject_consent = MaternalConsent.objects.create(
+        self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
             consent_datetime=get_utcnow())
@@ -39,6 +42,24 @@ class TestMaternalObstericalHistoryForm(TestCase):
         is raised unexpectedly.'''
         cleaned_data = {
             'maternal_visit': self.maternal_visit}
+        form_validator = MaternalObstericalHistoryFormValidator(
+            cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raised. Got{e}')
+
+    def test_prev_preg_one_pregs_24wks_or_more_not_one_lost(self):
+        '''Asserts raises exception if previous pregnancies is 1
+        and and the value of pregnancies 24 weeks or more is not 0.'''
+
+        cleaned_data = {
+            'maternal_visit': self.maternal_visit,
+            'prev_pregnancies': 3,
+            'pregs_24wks_or_more': 3,
+            'lost_before_24wks': 0,
+            'lost_after_24wks': 1,
+            'live_children': 2}
         form_validator = MaternalObstericalHistoryFormValidator(
             cleaned_data=cleaned_data)
         try:

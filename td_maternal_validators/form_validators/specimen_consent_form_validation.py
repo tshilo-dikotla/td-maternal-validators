@@ -1,12 +1,11 @@
 from django import forms
-from td_maternal.models import SubjectConsent
-from edc_constants.constants import NO
+from edc_constants.constants import YES, NO
 from edc_form_validators import FormValidator
 
+from .form_validator_mixin import TDFormValidatorMixin
 
-class SpecimenConsentFormValidator(FormValidator):
 
-    STUDY_CONSENT = SubjectConsent
+class SpecimenConsentFormValidator(TDFormValidatorMixin, FormValidator):
 
     def clean(self):
 
@@ -17,20 +16,71 @@ class SpecimenConsentFormValidator(FormValidator):
             required_msg='You specified that participant is illiterate,'
             ' witness is required'
         )
-        cleaned_data = super().clean()
-        return cleaned_data
 
-    def study_consent_or_raise(self):
-        """Returns an instance of the current maternal consent or
-        raises an exception if not found."""
+#         if (self.cleaned_data.get('may_store_samples') == NO and
+#                 self.cleaned_data.get('consent_copy') != NO):
+#             raise forms.ValidationError(
+#                 {'consent_copy':
+#                  'The particpant did not sign speciment consent. Please do not'
+#                  'provide them with a copy of the consent.'})
+#         elif (self.cleaned_data.get('may_store_samples') == YES and
+#                 self.cleaned_data.get('consent_copy') == NO):
+#             raise forms.ValidationError(
+#                 {'consent_copy':
+#                  'Please provide the subject with a copy of the consent.'})
+
+        self.validate_against_consent_datetime(
+            self.cleaned_data.get('consent_datetime'))
+        study_consent = self.validate_against_consent()
+        self.compare_attr_to_study_consent('is_literate', study_consent)
+        self.compare_attr_to_study_consent('witness_name', study_consent)
+        self.consent_reviewed_and_assessment_score()
+        self.copy_of_consent_provided()
+
+    def compare_attr_to_study_consent(self, attrname, study_consent):
+        '''Compares the value of a specimen consent attribute to that on the
+        study consent and raises if the values are not equal.'''
         cleaned_data = self.cleaned_data
-        subject_identifier = cleaned_data.get(
-            'registered_subject').subject_identifier
-        maternal_consent = self.STUDY_CONSENT.objects.filter(
-            maternal_eligibility__registered_subject__subject_identifier=subject_identifier).order_by('consent_datetime').last()
-        if not maternal_consent:
+        value = cleaned_data.get(attrname)
+        study_consent_value = getattr(study_consent, attrname)
+        if value != study_consent_value:
+            fields = [
+                field for field in study_consent._meta.fields
+                if field.name == attrname]
+            question = ', '.join([fld.verbose_name for fld in fields])
             raise forms.ValidationError(
-                'Maternal consent must be completed before'
-                ' the specimen consent.')
+                {attrname: 'Specimen consent and maternal consent do not match'
+                 f' for question \'{question}\'. Got {value} !='
+                 f' {study_consent_value}. Please correct.'})
 
-        return maternal_consent
+    def consent_reviewed_and_assessment_score(self):
+        '''Ensures the purpose of specimen storage is indicated as
+        explained and understood.'''
+        cleaned_data = self.cleaned_data
+        if cleaned_data.get('may_store_samples') == YES:
+            if cleaned_data.get('consent_reviewed') != YES:
+                raise forms.ValidationError(
+                    {'consent_reviewed':
+                     'If the participant agrees for specimens to be stored, '
+                     'ensure that purpose of specimen storage is explained.'})
+            if cleaned_data.get('assessment_score') != YES:
+                raise forms.ValidationError(
+                    {'assessment_score':
+                     'If the participant agrees for specimens to be stored, '
+                     'ensure that participant understands the purpose,  '
+                     'procedures and benefits of specimen storage.'})
+
+    def copy_of_consent_provided(self):
+        cleaned_data = self.cleaned_data
+        if (cleaned_data.get('may_store_samples') == NO
+                and cleaned_data.get('consent_copy') != NO):
+            raise forms.ValidationError(
+                {'consent_copy':
+                 'Participant did not agree for specimens to be stored. '
+                 'Do not provide the participant with a copy of the '
+                 'specimen consent.'})
+        elif (self.cleaned_data.get('may_store_samples') == YES and
+                self.cleaned_data.get('consent_copy') == NO):
+            raise forms.ValidationError(
+                {'consent_copy':
+                 'Please provide the subject with a copy of the consent.'})

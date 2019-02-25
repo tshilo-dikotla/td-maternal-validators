@@ -1,31 +1,66 @@
-from edc_constants.constants import YES
-from edc_form_validators import FormValidator
 from django.core.exceptions import ValidationError
+from edc_constants.constants import YES, NO
+from edc_form_validators import FormValidator
 
 
 class MaternalIterimIdccFormValidator(FormValidator):
+
     def clean(self):
-        required_fields = ['recent_cd4', 'recent_cd4_date']
+        required_fields = ['recent_cd4', 'recent_cd4_date', 'value_vl_size',
+                           'value_vl', 'recent_vl_date']
+
+        message = ('You indicated that there has not been any lab '
+                   'information since the last visit please do not answer '
+                   'the questions on CD4, VL.')
+
         for required in required_fields:
             if required in self.cleaned_data:
-                self.required_if(
-                    YES,
+                self.not_required_if(
+                    NO,
+                    inverse=False,
                     field='info_since_lastvisit',
                     field_required=required,
+                    not_required_msg=message
                 )
 
-        required_fields = ['value_vl', 'recent_vl_date']
-        for required in required_fields:
-            if required in self.cleaned_data:
-                self.required_if_not_none(
-                    field='value_vl_size',
-                    field_required=required)
-        self.validate_viral_load_value()
+        if self.cleaned_data.get('info_since_lastvisit') == YES:
+
+            if (not self.cleaned_data.get('recent_cd4') and
+                    not self.cleaned_data.get('value_vl_size')):
+                msg = {'recent_cd4':
+                       'New labs available, please add CD4 or Viral Load result'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
+            self.validate_recent_cd4()
+            self.validate_recent_vl()
+            self.validate_viral_load_value()
+
+    def validate_recent_cd4(self):
+        if (self.cleaned_data.get('recent_cd4') and
+                not self.cleaned_data.get('recent_cd4_date')):
+            msg = {'recent_cd4_date':
+                   'This field is required'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
+
+    def validate_recent_vl(self):
+        if (self.cleaned_data.get('value_vl_size') and
+                not self.cleaned_data.get('value_vl')):
+            msg = {'value_vl':
+                   'This field is required'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
+        elif (self.cleaned_data.get('value_vl_size') and
+              not self.cleaned_data.get('recent_vl_date')):
+            msg = {'recent_vl_date':
+                   'This field is required'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
 
     def validate_viral_load_value(self):
         cleaned_data = self.cleaned_data
         vl_value = cleaned_data.get('value_vl')
-        if vl_value:
+        if cleaned_data.get('info_since_lastvisit') == YES and vl_value:
             if (vl_value != 400
                     and cleaned_data.get('value_vl_size') == 'less_than'):
                 msg = {'value_vl': 'You indicated that the value of the most recent VL is '
