@@ -1,7 +1,7 @@
 from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_constants.constants import YES, NO, RESTARTED, CONTINUOUS, STOPPED, OTHER, POS, \
+from edc_constants.constants import YES, NO, RESTARTED, CONTINUOUS, STOPPED, OTHER, \
     NOT_APPLICABLE
 from edc_form_validators import FormValidator
 
@@ -72,8 +72,8 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
             self._errors.update(msg)
             raise ValidationError(msg)
 
-        qs = self.cleaned_data.get(self.cleaned_data.get('prior_arv'))
-        if qs and qs.count() > 1:
+        qs = self.cleaned_data.get('prior_arv')
+        if qs and qs.count() >= 1:
             selected = {obj.short_name: obj.name for obj in qs}
             if (self.cleaned_data.get('prior_preg') != NOT_APPLICABLE and
                     NOT_APPLICABLE in selected):
