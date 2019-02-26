@@ -216,3 +216,25 @@ class TestMaternalObstericalHistoryForm(TestCase):
             form_validator.validate()
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
+
+    @tag('ob1')
+    def test_sum_deliv_37wks_valid_1(self):
+        '''Tests if cleaned data validates or fails tests if exception
+        is raised unexpectedly.'''
+
+        cleaned_data = {
+            'maternal_visit': self.maternal_visit,
+            'prev_pregnancies': 3,
+            'pregs_24wks_or_more': 2,
+            'lost_before_24wks': 0,
+            'lost_after_24wks': 1,
+            'live_children': 1,
+            'children_died_b4_5yrs': 0,
+            'children_deliv_before_37wks': 1,
+            'children_deliv_aftr_37wks': 0}
+        form_validator = MaternalObstericalHistoryFormValidator(
+            cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raised. Got{e}')
