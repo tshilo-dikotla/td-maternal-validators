@@ -39,21 +39,6 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
         self.validate_prev_preg(cleaned_data=self.cleaned_data)
         self.validate_hiv_test_date_antenatal_enrollment()
         self.validate_other_mother()
-        self.required_if(
-            YES,
-            field='preg_on_haart',
-            field_required='prior_arv'
-        )
-
-        prior_preg = self.cleaned_data.get('prior_preg')
-        stopped = True if prior_preg == STOPPED else False
-        preg_on_haart = self.cleaned_data.get('preg_on_haart')
-
-        condition = True if (preg_on_haart == NO and stopped) else False
-        self.required_if_true(
-            condition=condition,
-            field_required='prior_arv',
-            required_msg='This field is applicable')
 
     def validate_prior_preg(self, cleaned_data=None):
         responses = (CONTINUOUS, RESTARTED)
