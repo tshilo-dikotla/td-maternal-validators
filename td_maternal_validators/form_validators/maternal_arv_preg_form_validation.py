@@ -19,3 +19,5 @@ class MaternalArvPregFormValidator(TDFormValidatorMixin, FormValidator):
             other_specify_field='interrupt_other',
             required_msg='Please give reason for interruption'
         )
+        qs = self.cleaned_data.get('maternal_arv_preg')
+        print(qs)

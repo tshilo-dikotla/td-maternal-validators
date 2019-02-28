@@ -1,3 +1,4 @@
+from django.apps import apps as django_apps
 from django.db import models
 from django.db.models.deletion import PROTECT
 from django_crypto_fields.fields import FirstnameField, LastnameField
