@@ -1,11 +1,16 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from edc_base.utils import get_utcnow
-from edc_constants.constants import (YES, NO)
+from edc_constants.constants import (YES, NO, NOT_APPLICABLE)
 from ..form_validators import MaternalContraceptionFormValidator
+from td_maternal.models.list_models import Contraceptives
 
 
 class TestMaternalContraceptionForm(TestCase):
+
+    def setUp(self):
+        Contraceptives.objects.create(name=NOT_APPLICABLE, short_name='N/A')
+        Contraceptives.objects.create(name='pills', short_name='Pills')
 
     def test_more_children_yes_next_child_required(self):
         '''Asserts raises exception if subject wants more children and
@@ -65,7 +70,7 @@ class TestMaternalContraceptionForm(TestCase):
 
         cleaned_data = {
             'uses_contraceptive': YES,
-            'contr': None,
+            'contr': Contraceptives.objects.filter(name=NOT_APPLICABLE),
             'contraceptive_startdate': get_utcnow().date}
         form_validator = MaternalContraceptionFormValidator(
             cleaned_data=cleaned_data)
@@ -93,7 +98,7 @@ class TestMaternalContraceptionForm(TestCase):
 
         cleaned_data = {
             'uses_contraceptive': NO,
-            'contr': 'pill'}
+            'contr': Contraceptives.objects.filter(name='pills')}
         form_validator = MaternalContraceptionFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
@@ -105,7 +110,7 @@ class TestMaternalContraceptionForm(TestCase):
 
         cleaned_data = {
             'uses_contraceptive': NO,
-            'contr': None}
+            'contr': Contraceptives.objects.filter(name=NOT_APPLICABLE)}
         form_validator = MaternalContraceptionFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -119,7 +124,7 @@ class TestMaternalContraceptionForm(TestCase):
 
         cleaned_data = {
             'uses_contraceptive': YES,
-            'contr': 'pill',
+            'contr': Contraceptives.objects.filter(name='pills'),
             'contraceptive_startdate': None}
         form_validator = MaternalContraceptionFormValidator(
             cleaned_data=cleaned_data)
@@ -147,7 +152,7 @@ class TestMaternalContraceptionForm(TestCase):
 
         cleaned_data = {
             'uses_contraceptive': NO,
-            'contr': None,
+            'contr': Contraceptives.objects.filter(name=NOT_APPLICABLE),
             'contraceptive_startdate': get_utcnow().date()}
         form_validator = MaternalContraceptionFormValidator(
             cleaned_data=cleaned_data)
@@ -160,7 +165,7 @@ class TestMaternalContraceptionForm(TestCase):
 
         cleaned_data = {
             'uses_contraceptive': NO,
-            'contr': None,
+            'contr': Contraceptives.objects.filter(name=NOT_APPLICABLE),
             'contraceptive_startdate': None}
         form_validator = MaternalContraceptionFormValidator(
             cleaned_data=cleaned_data)

@@ -30,6 +30,7 @@ class MaternalContraceptionFormValidator(FormValidator):
         )
 
         qs = self.cleaned_data.get('contr')
+        print(qs, '>>>>>>>>>>>>>>>>>>>>>>>>>>`')
         if qs and qs.count() >= 1:
             selected = {obj.short_name: obj.name for obj in qs}
             if (self.cleaned_data.get('uses_contraceptive') == YES and
@@ -44,6 +45,8 @@ class MaternalContraceptionFormValidator(FormValidator):
                 message = {
                     'contr':
                     'This field is not applicable.'}
+                self._errors.update(message)
+                raise ValidationError(message)
 
         self.m2m_single_selection_if(
             'no_one',
