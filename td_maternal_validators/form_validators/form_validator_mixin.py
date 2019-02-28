@@ -31,7 +31,7 @@ class TDFormValidatorMixin:
         raises an exception if not found."""
 
         latest_consent = self.validate_against_consent()
-        if report_datetime < latest_consent.consent_datetime:
+        if report_datetime and report_datetime < latest_consent.consent_datetime:
             raise forms.ValidationError(
                 "Report datetime cannot be before consent datetime")
 

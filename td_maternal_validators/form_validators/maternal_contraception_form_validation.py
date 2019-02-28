@@ -1,4 +1,5 @@
-from edc_constants.constants import YES, OTHER
+from django.core.exceptions import ValidationError
+from edc_constants.constants import YES, OTHER, NOT_APPLICABLE
 from edc_form_validators import FormValidator
 
 
@@ -15,20 +16,38 @@ class MaternalContraceptionFormValidator(FormValidator):
                              'question on next child is not required.'
         )
 
-        required_fields = ['contr', 'contraceptive_startdate']
         required_msgs = {
             'contr': 'Participant uses a contraceptive method, '
                      'please select a valid method',
             'contraceptive_startdate': 'Participant uses a contraceptive '
                                        'method, please give a contraceptive '
                                        'startdate.'}
-        for required in required_fields:
-            self.required_if(
-                YES,
-                field='uses_contraceptive',
-                field_required=required,
-                required_msg=required_msgs[required]
-            )
+        self.required_if(
+            YES,
+            field='uses_contraceptive',
+            field_required='contraceptive_startdate',
+            required_msg=required_msgs['contraceptive_startdate']
+        )
+
+        qs = self.cleaned_data.get('contr')
+        if qs and qs.count() >= 1:
+            selected = {obj.short_name: obj.name for obj in qs}
+            if (self.cleaned_data.get('uses_contraceptive') == YES and
+                    NOT_APPLICABLE in selected):
+                message = {
+                    'contr':
+                    'This field is applicable.'}
+                self._errors.update(message)
+                raise ValidationError(message)
+            elif (self.cleaned_data.get('uses_contraceptive') != YES and
+                    NOT_APPLICABLE not in selected):
+                message = {
+                    'contr':
+                    'This field is not applicable.'}
+
+        self.m2m_single_selection_if(
+            'no_one',
+            m2m_field='contraceptive_relative')
 
         self.required_if(
             YES,
