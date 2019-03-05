@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import YES, NO, POS, NEG, NOT_APPLICABLE
 
@@ -271,7 +271,6 @@ class TestMaternalLabDelForm(TestCase):
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
-    @tag('sb')
     def test_live_births_one_still_births_invalid(self):
         cleaned_data = {
             'report_datetime': get_utcnow(),
