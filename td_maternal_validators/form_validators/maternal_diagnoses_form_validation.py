@@ -1,11 +1,14 @@
 from django.core.exceptions import ValidationError
-from edc_constants.constants import YES, NOT_APPLICABLE, OTHER
+from edc_constants.constants import YES, NOT_APPLICABLE, OTHER, POS
 from edc_form_validators.form_validator import FormValidator
+from td_maternal.helper_classes import MaternalStatusHelper
 
 
 class MaternalDiagnosesFormValidator(FormValidator):
 
     def clean(self):
+        subject_status = self.maternal_status_helper.hiv_status
+
         self.m2m_required(
             m2m_field='diagnoses')
 
@@ -25,6 +28,9 @@ class MaternalDiagnosesFormValidator(FormValidator):
 
         self.m2m_required(
             m2m_field='who')
+
+        self.applicable_if_true(subject_status == POS,
+                                field_applicable='has_who_dx')
 
         self.m2m_na_validation(
             field='has_who_dx',
@@ -55,3 +61,10 @@ class MaternalDiagnosesFormValidator(FormValidator):
                 NOT_APPLICABLE,
                 m2m_field=m2m_field
             )
+
+    @property
+    def maternal_status_helper(self):
+        cleaned_data = self.cleaned_data
+        status_helper = MaternalStatusHelper(
+            cleaned_data.get('maternal_visit'))
+        return status_helper
