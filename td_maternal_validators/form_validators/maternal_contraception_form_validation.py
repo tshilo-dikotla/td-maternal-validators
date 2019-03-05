@@ -30,7 +30,6 @@ class MaternalContraceptionFormValidator(FormValidator):
         )
 
         qs = self.cleaned_data.get('contr')
-        print(qs, '>>>>>>>>>>>>>>>>>>>>>>>>>>`')
         if qs and qs.count() >= 1:
             selected = {obj.short_name: obj.name for obj in qs}
             if (self.cleaned_data.get('uses_contraceptive') == YES and

@@ -19,7 +19,6 @@ class MaternalStatusHelper:
         return self.status
 
 
-@tag('mld')
 class TestMaternalLabDelForm(TestCase):
 
     def setUp(self):
@@ -285,3 +284,37 @@ class TestMaternalLabDelForm(TestCase):
         form_validator = MaternalLabDelFormValidator(cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('still_births', form_validator._errors)
+
+    def test_delivery_c_section_invalid(self):
+        cleaned_data = {
+            'report_datetime': get_utcnow(),
+            'subject_identifier': self.subject_consent.subject_identifier,
+            'arv_initiation_date': get_utcnow().date(),
+            'delivery_datetime': get_utcnow() + relativedelta(weeks=5),
+            'valid_regiment_duration': YES,
+            'mode_delivery': 'elective c-section',
+            'csection_reason': None
+        }
+        maternal_status = MaternalStatusHelper(status=POS)
+        MaternalLabDelFormValidator.maternal_status_helper = maternal_status
+        form_validator = MaternalLabDelFormValidator(cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('csection_reason', form_validator._errors)
+
+    def test_delivery_c_section_valid(self):
+        cleaned_data = {
+            'report_datetime': get_utcnow(),
+            'subject_identifier': self.subject_consent.subject_identifier,
+            'arv_initiation_date': get_utcnow().date(),
+            'delivery_datetime': get_utcnow() + relativedelta(weeks=5),
+            'valid_regiment_duration': YES,
+            'mode_delivery': 'elective c-section',
+            'csection_reason': 'blahblah'
+        }
+        maternal_status = MaternalStatusHelper(status=POS)
+        MaternalLabDelFormValidator.maternal_status_helper = maternal_status
+        form_validator = MaternalLabDelFormValidator(cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raised. Got{e}')
