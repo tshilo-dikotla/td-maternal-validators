@@ -271,6 +271,7 @@ class TestMaternalLabDelForm(TestCase):
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
+    @tag('sb')
     def test_live_births_one_still_births_invalid(self):
         cleaned_data = {
             'report_datetime': get_utcnow(),
@@ -281,6 +282,8 @@ class TestMaternalLabDelForm(TestCase):
             'still_births': 1,
             'live_infants_to_register': 1
         }
+        maternal_status = MaternalStatusHelper(status=POS)
+        MaternalLabDelFormValidator.maternal_status_helper = maternal_status
         form_validator = MaternalLabDelFormValidator(cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('still_births', form_validator._errors)

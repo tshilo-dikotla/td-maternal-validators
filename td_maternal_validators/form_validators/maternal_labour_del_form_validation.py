@@ -102,6 +102,7 @@ class MaternalLabDelFormValidator(TDFormValidatorMixin, FormValidator):
             message = {'still_births':
                        'If live births is 1 then still birth should be 0.'}
             self._errors.update(message)
+            raise ValidationError(message)
 
     def validate_other(self):
         fields = {'delivery_hospital': 'delivery_hospital_other',
