@@ -1,7 +1,11 @@
+from django.apps import apps as django_apps
+from django.core.exceptions import ValidationError
+from django import forms
 from edc_constants.constants import YES
 from edc_form_validators import FormValidator
 
 from .form_validator_mixin import TDFormValidatorMixin
+from edc_appointment.models import Appointment
 
 
 class MaternalArvPregFormValidator(TDFormValidatorMixin, FormValidator):
@@ -19,5 +23,3 @@ class MaternalArvPregFormValidator(TDFormValidatorMixin, FormValidator):
             other_specify_field='interrupt_other',
             required_msg='Please give reason for interruption'
         )
-        qs = self.cleaned_data.get('maternal_arv_preg')
-        print(qs)

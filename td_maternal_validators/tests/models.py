@@ -102,6 +102,13 @@ class MaternalArvPreg(models.Model):
     maternal_visit = models.OneToOneField(MaternalVisit, on_delete=PROTECT)
 
 
+class MaternalArvHistory(models.Model):
+
+    maternal_visit = models.OneToOneField(MaternalVisit, on_delete=PROTECT)
+
+    haart_start_date = models.CharField(max_length=50)
+
+
 class MaternalArv(models.Model):
 
     maternal_arv_preg = models.ForeignKey(MaternalArvPreg, on_delete=PROTECT)
