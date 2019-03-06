@@ -1,11 +1,14 @@
 from dateutil.relativedelta import relativedelta
+from django.forms import forms
 from django.core.exceptions import ValidationError
 from django.test import TestCase, tag
+from django.utils import timezone
 from edc_base.utils import get_utcnow
 from edc_constants.constants import YES, NO, NOT_APPLICABLE
 
 from ..form_validators import MaternalArvPregFormValidator
-from .models import MaternalVisit, Appointment
+from td_maternal.forms import MaternalArvPregForm
+from .models import MaternalVisit, Appointment, MaternalArvPreg
 from .models import SubjectScreening, SubjectConsent, TdConsentVersion
 
 
@@ -106,3 +109,20 @@ class TestMaternalArvPregForm(TestCase):
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('interrupt', form_validator._errors)
+
+    @tag('arv')
+    def test_arvs_less_than_three(self):
+        """Assert arv taken but none listed"""
+
+        maternal_arv_preg = MaternalArvPreg.objects.create(
+            maternal_visit=self.maternal_visit)
+        inline_data = {
+            'maternal_arv_preg': maternal_arv_preg,
+            'arv_code': '3TC',
+            'start_date': timezone.now().date() - timezone.timedelta(days=1),
+            'stop_date': timezone.now().date()
+        }
+
+        form = MaternalArvPregForm(data=inline_data)
+        self.assertIn("Patient should have more than 3 arv\'s",
+                      form.errors.get('__all__'))
