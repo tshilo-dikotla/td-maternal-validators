@@ -16,15 +16,19 @@ class MaternalObstericalHistoryFormValidator(FormValidator):
         self.validate_children_deliv(cleaned_data=self.cleaned_data)
 
     def validate_children_deliv(self, cleaned_data=None):
-        if cleaned_data.get('children_deliv_before_37wks') is not None:
+        if None not in [cleaned_data.get('children_deliv_before_37wks'),
+                        cleaned_data.get('children_deliv_aftr_37wks'),
+                        cleaned_data.get('lost_before_24wks'),
+                        cleaned_data.get('lost_after_24wks')]:
 
             sum_deliv_37_wks = \
                 (cleaned_data.get('children_deliv_before_37wks') +
                  cleaned_data.get('children_deliv_aftr_37wks'))
             sum_lost_24_wks = (cleaned_data.get('lost_before_24wks') +
                                cleaned_data.get('lost_after_24wks'))
-            if sum_deliv_37_wks != ((cleaned_data.get('prev_pregnancies') - 1)
-                                    - sum_lost_24_wks):
+            if (cleaned_data.get('prev_pregnancies') and
+                sum_deliv_37_wks != ((cleaned_data.get('prev_pregnancies') - 1)
+                                     - sum_lost_24_wks)):
                 raise ValidationError('The sum of Q9 and Q10 must be equal to '
                                       '(Q3 -1) - (Q5 + Q6). Please correct.')
 

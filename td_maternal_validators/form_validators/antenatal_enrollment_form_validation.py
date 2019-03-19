@@ -34,7 +34,6 @@ class AntenatalEnrollmentFormValidator(TDFormValidatorMixin, FormValidator):
                 **self.cleaned_data),
             exception_cls=forms.ValidationError)
         enrollment_helper.raise_validation_error_for_rapidtest()
-#
 
     def validate_last_period_date(self, cleaned_data=None):
         last_period_date = cleaned_data.get('last_period_date')
