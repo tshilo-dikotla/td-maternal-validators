@@ -1,14 +1,12 @@
 from dateutil.relativedelta import relativedelta
-from django.forms import forms
 from django.core.exceptions import ValidationError
 from django.test import TestCase, tag
 from django.utils import timezone
 from edc_base.utils import get_utcnow
 from edc_constants.constants import YES, NO, NOT_APPLICABLE
-
 from ..form_validators import MaternalArvPregFormValidator
 from td_maternal.forms import MaternalArvPregForm
-from .models import MaternalVisit, Appointment, MaternalArvPreg
+from .models import MaternalVisit, Appointment, MaternalArvPreg, MaternalArv
 from .models import SubjectScreening, SubjectConsent, TdConsentVersion
 
 
@@ -42,11 +40,14 @@ class TestMaternalArvPregForm(TestCase):
         self.appointment = Appointment.objects.create(
             subject_identifier=self.subject_consent.subject_identifier,
             appt_datetime=get_utcnow(),
-            visit_code='1000')
+            visit_code='1000M')
 
         self.maternal_visit = MaternalVisit.objects.create(
             appointment=self.appointment,
             subject_identifier=self.subject_consent.subject_identifier)
+
+        self.maternal_arv_preg = MaternalArvPreg.objects.create(
+            maternal_visit=self.maternal_visit)
 
     def test_medication_interrupted_invalid(self):
         '''Assert raises if arvs was interrupted but
@@ -111,18 +112,53 @@ class TestMaternalArvPregForm(TestCase):
         self.assertIn('interrupt', form_validator._errors)
 
     @tag('arv')
-    def test_arvs_less_than_three(self):
-        """Assert arv taken but none listed"""
+    def test_arv_date_1000M_equal_1020M(self):
+
+        appointment = Appointment.objects.create(
+            subject_identifier=self.subject_consent.subject_identifier,
+            appt_datetime=get_utcnow(),
+            visit_code='1020M')
+
+        maternal_visit = MaternalVisit.objects.create(
+            appointment=appointment,
+            subject_identifier=self.subject_consent.subject_identifier)
 
         maternal_arv_preg = MaternalArvPreg.objects.create(
-            maternal_visit=self.maternal_visit)
-        inline_data = {
-            'maternal_arv_preg': maternal_arv_preg,
-            'arv_code': '3TC',
-            'start_date': timezone.now().date() - timezone.timedelta(days=1),
-            'stop_date': timezone.now().date()
-        }
+            maternal_visit=maternal_visit)
+        MaternalArv.objects.create(
+            maternal_arv_preg=self.maternal_arv_preg,
+            arv_code='TDF',
+            start_date=get_utcnow().date() - relativedelta(days=21),
+            stop_date=None)
+        MaternalArv.objects.create(
+            maternal_arv_preg=self.maternal_arv_preg,
+            arv_code='3TC',
+            start_date=get_utcnow().date() - relativedelta(days=21),
+            stop_date=None)
+        MaternalArv.objects.create(
+            maternal_arv_preg=self.maternal_arv_preg,
+            arv_code='EFV',
+            start_date=get_utcnow().date() - relativedelta(days=21),
+            stop_date=None)
 
-        form = MaternalArvPregForm(data=inline_data)
-        self.assertIn("Patient should have more than 3 arv\'s",
-                      form.errors.get('__all__'))
+        MaternalArvPregFormValidator.appointment = \
+            'td_maternal_validators.appointment'
+        MaternalArvPregFormValidator.maternal_arv = \
+            'td_maternal_validators.maternalarv'
+        data = {
+            'maternal_visit': maternal_visit,
+            'report_datetime': get_utcnow(),
+            'maternal_arv_preg': maternal_arv_preg,
+            'maternalarv_set-TOTAL_FORMS': 3,
+            'maternalarv_set-0-arv_code': '3TC',
+            'maternalarv_set-0-start_date': get_utcnow().date() - relativedelta(days=21),
+            'maternalarv_set-0-stop_date': get_utcnow().date(),
+            'maternalarv_set-1-arv_code': 'TDF',
+            'maternalarv_set-1-start_date': get_utcnow().date() - relativedelta(days=22),
+            'maternalarv_set-1-stop_date': get_utcnow().date(),
+            'maternalarv_set-2-arv_code': 'EFV',
+            'maternalarv_set-2-start_date': get_utcnow().date() - relativedelta(days=21),
+            'maternalarv_set-2-stop_date': get_utcnow().date()
+        }
+        form_validator = MaternalArvPregFormValidator(cleaned_data=data)
+        self.assertRaises(ValidationError, form_validator.validate)

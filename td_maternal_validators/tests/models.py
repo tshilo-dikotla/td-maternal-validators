@@ -113,6 +113,10 @@ class MaternalArv(models.Model):
 
     maternal_arv_preg = models.ForeignKey(MaternalArvPreg, on_delete=PROTECT)
 
+    arv_code = models.CharField(
+        verbose_name="ARV code",
+        max_length=35)
+
     start_date = models.DateField(
         null=True,
         blank=False)
