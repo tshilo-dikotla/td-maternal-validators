@@ -1,7 +1,9 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
+from edc_constants.constants import OFF_STUDY, DEAD
 from edc_form_validators import FormValidator
 from edc_visit_tracking.form_validators import VisitFormValidator
+
 from .form_validator_mixin import TDFormValidatorMixin
 
 
@@ -15,9 +17,20 @@ class MaternalVisitFormValidator(TDFormValidatorMixin, VisitFormValidator,
             condition=condition,
             field_required='last_alive_date'
         )
-        self.validate_against_consent_datetime(self.cleaned_data.get(
-            'report_datetime'))
+
+        self.validate_death()
+
+        self.validate_against_consent_datetime(
+            self.cleaned_data.get('report_datetime'))
         VisitFormValidator.clean(self)
+
+    def validate_death(self):
+        if (self.cleaned_data.get('survival_status') == DEAD
+                and self.cleaned_data.get('study_status') != OFF_STUDY):
+            msg = {'study_status': 'Participant is deceased, study status '
+                   'should be off study.'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
 
     def validate_against_consent(self):
         """Returns an instance of the current maternal consent version form or

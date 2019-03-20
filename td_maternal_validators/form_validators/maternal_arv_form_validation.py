@@ -46,9 +46,9 @@ class MaternalArvFormValidator(FormValidator):
                 raise ValidationError(msg)
 
     def validate_historical_and_present_arv_start_dates(self, cleaned_data=None):
+        maternal_visit = cleaned_data.get(
+            'maternal_arv_preg').maternal_visit
         try:
-            maternal_visit = cleaned_data.get(
-                'maternal_arv_preg').maternal_visit
             arv_history = self.arv_history_cls.objects.get(
                 maternal_visit=maternal_visit)
             if arv_history.haart_start_date:
