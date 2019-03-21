@@ -9,22 +9,6 @@ from td_maternal.models import MaternalArvPreg, MaternalArv
 
 class MaternalArvPregFormValidator(TDFormValidatorMixin, FormValidator):
 
-    appointment = 'edc_appointment.appointment'
-    maternal_arv = 'td_maternal.maternalarv'
-    maternal_preg = 'td_maternal.maternalarvpreg'
-
-    @property
-    def appointment_cls(self):
-        return django_apps.get_model(self.appointment)
-
-    @property
-    def maternal_arv_cls(self):
-        return django_apps.get_model(self.maternal_arv)
-
-    @property
-    def maternal_preg_cls(self):
-        return django_apps.get_model(self.maternal_preg)
-
     def clean(self):
 
         self.applicable_if(
