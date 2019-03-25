@@ -1,27 +1,26 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from edc_constants.constants import OFF_STUDY, DEAD
+from edc_constants.constants import OFF_STUDY, DEAD, ALIVE
 from edc_form_validators import FormValidator
-from edc_visit_tracking.form_validators import VisitFormValidator
 
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class MaternalVisitFormValidator(VisitFormValidator, TDFormValidatorMixin,
+class MaternalVisitFormValidator(TDFormValidatorMixin,
                                  FormValidator):
 
     def clean(self):
-        condition = True if self.cleaned_data['survival_status'] == 'alive' \
-            or self.cleaned_data['survival_status'] == 'dead' else False
+        condition = self.cleaned_data['survival_status'] in [ALIVE, DEAD]
+
         self.required_if_true(
             condition=condition,
             field_required='last_alive_date'
         )
+        self.validate_last_alive_date()
         self.validate_death()
 
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'))
-        VisitFormValidator.clean(self)
 
     def validate_death(self):
         if (self.cleaned_data.get('survival_status') == DEAD
@@ -43,13 +42,25 @@ class MaternalVisitFormValidator(VisitFormValidator, TDFormValidatorMixin,
         else:
             try:
                 latest_consent = self.maternal_consent_cls.objects.get(
-                    subject_identifier=self.cleaned_data.get('appointment').subject_identifier)
+                    subject_identifier=self.cleaned_data.get(
+                        'appointment').subject_identifier)
             except self.maternal_consent_cls.DoesNotExist:
                 raise ValidationError(
                     'Please complete Maternal Consent form '
                     f'before  proceeding.')
             else:
                 return latest_consent
+
+    def validate_last_alive_date(self):
+        """Returns an instance of the current maternal consent or
+        raises an exception if not found."""
+
+        latest_consent = self.validate_against_consent()
+        last_alive_date = self.cleaned_data.get('last_alive_date')
+        if last_alive_date and last_alive_date < latest_consent.consent_datetime.date():
+            msg = {'last_alive_date': 'Date cannot be before consent date'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
 
     @property
     def subject_screening(self):
