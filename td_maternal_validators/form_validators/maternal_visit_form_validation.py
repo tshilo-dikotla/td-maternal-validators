@@ -1,4 +1,3 @@
-from django import forms
 from django.core.exceptions import ValidationError
 from edc_constants.constants import OFF_STUDY, DEAD, ALIVE
 from edc_form_validators import FormValidator
@@ -16,11 +15,12 @@ class MaternalVisitFormValidator(TDFormValidatorMixin,
             condition=condition,
             field_required='last_alive_date'
         )
-        self.validate_last_alive_date()
         self.validate_death()
 
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'))
+
+        self.validate_last_alive_date()
 
     def validate_death(self):
         if (self.cleaned_data.get('survival_status') == DEAD
@@ -35,7 +35,8 @@ class MaternalVisitFormValidator(TDFormValidatorMixin,
         raises an exception if not found."""
         try:
             self.consent_version_cls.objects.get(
-                screening_identifier=self.subject_screening.screening_identifier)
+                screening_identifier=self.subject_screening.screening_identifier
+            )
         except self.consent_version_cls.DoesNotExist:
             raise ValidationError(
                 'Please complete mother\'s consent version form before proceeding')
@@ -67,6 +68,6 @@ class MaternalVisitFormValidator(TDFormValidatorMixin,
         cleaned_data = self.cleaned_data
         try:
             return self.subject_screening_cls.objects.get(
-                subject_identifier=cleaned_data['appointment'].subject_identifier)
+                subject_identifier=cleaned_data.get('appointment').subject_identifier)
         except self.subject_screening_cls.DoesNotExist:
             return None

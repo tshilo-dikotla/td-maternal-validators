@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import OFF_STUDY, ON_STUDY
 from edc_constants.constants import UNKNOWN, DEAD, ALIVE
@@ -11,6 +11,7 @@ from td_maternal_validators.tests.models import (Appointment, SubjectScreening,
 from ..form_validators import MaternalVisitFormValidator
 
 
+@tag('mv')
 class TestMaternalVisitFormValidator(TestCase):
 
     def setUp(self):
@@ -24,7 +25,6 @@ class TestMaternalVisitFormValidator(TestCase):
             'td_maternal_validators.antenatalenrollment'
 
         self.subject_identifier = '11111111'
-
         self.subject_screening = SubjectScreening.objects.create(
             subject_identifier=self.subject_identifier,
             screening_identifier='ABC12345',
