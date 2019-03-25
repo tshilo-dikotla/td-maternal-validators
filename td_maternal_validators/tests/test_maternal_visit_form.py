@@ -72,42 +72,6 @@ class TestMaternalVisitFormValidator(TestCase):
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
-    def test_last_alive_date_not_required_invalid(self):
-        cleaned_data = {
-            'report_datetime': get_utcnow(),
-            'survival_status': UNKNOWN,
-            'last_alive_date': get_utcnow(),
-            'appointment': self.appointment
-        }
-        form_validator = MaternalVisitFormValidator(
-            cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('last_alive_date', form_validator._errors)
-
-    def test_last_alive_date_required_invalid(self):
-        cleaned_data = {
-            'report_datetime': get_utcnow(),
-            'survival_status': ALIVE,
-            'last_alive_date': None,
-            'appointment': self.appointment
-        }
-        form_validator = MaternalVisitFormValidator(
-            cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('last_alive_date', form_validator._errors)
-
-    def test_last_alive_date_before_consent_datetime(self):
-        cleaned_data = {
-            'report_datetime': get_utcnow(),
-            'survival_status': ALIVE,
-            'last_alive_date': (self.subject_consent.consent_datetime - relativedelta(days=3)).date(),
-            'appointment': self.appointment
-        }
-        form_validator = MaternalVisitFormValidator(
-            cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('last_alive_date', form_validator._errors)
-
     def test_death_study_status_invalid(self):
         cleaned_data = {
             'report_datetime': get_utcnow(),
