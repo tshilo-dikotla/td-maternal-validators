@@ -1,14 +1,16 @@
 from django.core.exceptions import ValidationError
 from edc_constants.constants import OFF_STUDY, DEAD, ALIVE
 from edc_form_validators import FormValidator
+from edc_visit_tracking.form_validators import VisitFormValidator
 
 from .form_validator_mixin import TDFormValidatorMixin
 
 
 class MaternalVisitFormValidator(TDFormValidatorMixin,
-                                 FormValidator):
+                                 VisitFormValidator, FormValidator):
 
     def clean(self):
+        super().clean()
         condition = self.cleaned_data['survival_status'] in [ALIVE, DEAD]
 
         self.required_if_true(
