@@ -25,7 +25,8 @@ class MaternalPostPartumFuFormValidator(FormValidator):
         self.m2m_na_validation(
             field='hospitalized',
             m2m_field='hospitalization_reason',
-            msg=('Question7: Participant was hospitalized, reasons cannot be N/A'),
+            msg=(
+                'Question7: Participant was hospitalized, reasons cannot be N/A'),
             na_msg=('Question7: Participant was not hospitalized, '
                     'reasons should be N/A')
         )
@@ -96,11 +97,6 @@ class MaternalPostPartumFuFormValidator(FormValidator):
             )
 
     def validate_other(self):
-        m2m_fields = ['diagnoses', 'hospitalization_reason']
-        for m2m_field in m2m_fields:
-            self.m2m_single_selection_if(
-                OTHER,
-                m2m_field=m2m_field)
 
         m2m_fields = {'diagnoses': 'diagnoses_other',
                       'hospitalization_reason': 'hospitalization_reason_other'}
