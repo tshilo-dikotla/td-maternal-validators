@@ -1,7 +1,8 @@
 from django.core.exceptions import ValidationError
-from edc_constants.constants import OFF_STUDY, DEAD
+from edc_constants.constants import OFF_STUDY, DEAD, YES
 from edc_form_validators import FormValidator
 from edc_visit_tracking.form_validators import VisitFormValidator
+from edc_visit_tracking.constants import MISSED_VISIT, LOST_VISIT
 
 from .form_validator_mixin import TDFormValidatorMixin
 
@@ -17,6 +18,12 @@ class MaternalVisitFormValidator(TDFormValidatorMixin, VisitFormValidator,
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'))
 
+        is_present = self.cleaned_data.get('is_present')
+        reason = self.cleaned_data.get('reason')
+        if is_present and is_present == YES:
+            if reason in [MISSED_VISIT, LOST_VISIT]:
+                msg = 'if Q9 is present, this field must not be missed visit or lost visits'
+                raise ValidationError(msg)
         self.validate_last_alive_date()
 
     def validate_death(self):
