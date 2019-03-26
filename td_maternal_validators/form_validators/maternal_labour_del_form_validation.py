@@ -11,6 +11,11 @@ from .form_validator_mixin import TDFormValidatorMixin
 class MaternalLabDelFormValidator(TDFormValidatorMixin, FormValidator):
     maternal_arv_model = 'td_maternal.maternalarv'
     maternal_visit_model = 'td_maternal.maternalvisit'
+    maternal_ultrasound_init_model = 'td_maternal.maternalultrasoundinitial'
+
+    @property
+    def maternal_ultrasound_init_cls(self):
+        return django_apps.get_model(self.maternal_ultrasound_init_model)
 
     @property
     def maternal_visit_cls(self):
@@ -30,10 +35,18 @@ class MaternalLabDelFormValidator(TDFormValidatorMixin, FormValidator):
             condition,
             field_required='csection_reason'
         )
+        self.validate_ultrasound(cleaned_data=self.cleaned_data)
         self.validate_initiation_date(cleaned_data=self.cleaned_data)
         self.validate_valid_regime_hiv_pos_only(cleaned_data=self.cleaned_data)
         self.validate_live_births_still_birth(cleaned_data=self.cleaned_data)
         self.validate_other()
+
+    def validate_ultrasound(self, cleaned_data=None):
+        ultrasound = self.maternal_ultrasound_init_cls.objects.filter(
+            maternal_visit__appointment_subject_identifier=cleaned_data.get('subject_identifier'))
+        if not ultrasound:
+            message = 'Please complete ultrasound form first'
+            raise ValidationError(message)
 
     def validate_initiation_date(self, cleaned_data=None):
         subject_identifier = cleaned_data.get('subject_identifier')
