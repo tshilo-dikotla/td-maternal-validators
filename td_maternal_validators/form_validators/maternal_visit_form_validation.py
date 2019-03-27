@@ -8,7 +8,7 @@ from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
+class MaternalVisitFormValidator(TDCRFFormValidator,
                                  TDFormValidatorMixin, FormValidator):
 
     def clean(self):
@@ -25,8 +25,18 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
         reason = self.cleaned_data.get('reason')
         if is_present and is_present == YES:
             if reason in [MISSED_VISIT, LOST_VISIT]:
-                msg = 'if Q9 is present, this field must not be missed visit or lost visits'
+                msg = {'reason': 'If Q9 is present, this field must not be '
+                       'missed visit or lost visits'}
+                self._errors.update(msg)
                 raise ValidationError(msg)
+
+        if (reason == LOST_VISIT and
+                self.cleaned_data.get('study_status') != OFF_STUDY):
+            msg = {'study_status': 'Participant has been lost to follow up, '
+                   'study status should be off study.'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
+
         self.validate_last_alive_date()
 
     def validate_death(self):

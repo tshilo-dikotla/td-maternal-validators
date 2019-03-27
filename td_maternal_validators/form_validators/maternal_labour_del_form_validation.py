@@ -49,7 +49,8 @@ class MaternalLabDelFormValidator(TDCRFFormValidator,
 
     def validate_ultrasound(self, cleaned_data=None):
         ultrasound = self.maternal_ultrasound_init_cls.objects.filter(
-            maternal_visit__appointment__subject_identifier=cleaned_data.get('subject_identifier'))
+            maternal_visit__appointment__subject_identifier=cleaned_data.get(
+                'subject_identifier'))
         if not ultrasound:
             message = 'Please complete ultrasound form first'
             raise ValidationError(message)
