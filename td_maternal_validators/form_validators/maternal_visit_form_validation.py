@@ -37,6 +37,11 @@ class MaternalVisitFormValidator(TDCRFFormValidator,
             self._errors.update(msg)
             raise ValidationError(msg)
 
+        self.required_if_true(
+            reason == MISSED_VISIT,
+            field_required='reason_missed'
+        )
+
         self.validate_last_alive_date()
 
     def validate_death(self):

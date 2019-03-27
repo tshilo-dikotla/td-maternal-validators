@@ -1,9 +1,9 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import OFF_STUDY, ON_STUDY
 from edc_constants.constants import UNKNOWN, DEAD, ALIVE
-from edc_visit_tracking.constants import LOST_VISIT
+from edc_visit_tracking.constants import LOST_VISIT, MISSED_VISIT
 
 from td_maternal_validators.tests.models import (Appointment, SubjectScreening,
                                                  SubjectConsent,
@@ -12,7 +12,6 @@ from td_maternal_validators.tests.models import (Appointment, SubjectScreening,
 from ..form_validators import MaternalVisitFormValidator
 
 
-@tag('mv')
 class TestMaternalVisitFormValidator(TestCase):
 
     def setUp(self):
@@ -122,6 +121,38 @@ class TestMaternalVisitFormValidator(TestCase):
             'reason': LOST_VISIT,
             'last_alive_date': get_utcnow().date(),
             'study_status': OFF_STUDY,
+            'appointment': self.appointment
+        }
+        form_validator = MaternalVisitFormValidator(
+            cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raised. Got{e}')
+
+    def test_reason_missed_invalid(self):
+        cleaned_data = {
+            'report_datetime': get_utcnow(),
+            'survival_status': ALIVE,
+            'reason': MISSED_VISIT,
+            'reason_missed': None,
+            'last_alive_date': get_utcnow().date(),
+            'study_status': ON_STUDY,
+            'appointment': self.appointment
+        }
+        form_validator = MaternalVisitFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('reason_missed', form_validator._errors)
+
+    def test_reason_missed_valid(self):
+        cleaned_data = {
+            'report_datetime': get_utcnow(),
+            'survival_status': ALIVE,
+            'reason': MISSED_VISIT,
+            'reason_missed': 'blahblah',
+            'last_alive_date': get_utcnow().date(),
+            'study_status': ON_STUDY,
             'appointment': self.appointment
         }
         form_validator = MaternalVisitFormValidator(
