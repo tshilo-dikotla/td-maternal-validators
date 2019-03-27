@@ -29,7 +29,7 @@ class TDCRFFormValidator:
         except action_item_model_cls.DoesNotExist:
             try:
                 maternal_offstudy_cls.objects.get(
-                    maternal_visit__subject_identifier=self.subject_identifier)
+                    subject_identifier=self.subject_identifier)
             except maternal_offstudy_cls.DoesNotExist:
                 pass
             else:
