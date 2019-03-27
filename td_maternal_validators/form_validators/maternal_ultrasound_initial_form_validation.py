@@ -1,13 +1,18 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
 from edc_form_validators.form_validator import FormValidator
+from .crf_form_validator import TDCRFFormValidator
 
 
-class MaternalUltrasoundInitialFormValidator(FormValidator):
+class MaternalUltrasoundInitialFormValidator(TDCRFFormValidator, FormValidator):
 
     def clean(self):
 
         cleaned_data = self.cleaned_data
+        self.subject_identifier = cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
+
         if cleaned_data.get('est_edd_ultrasound') and (
                 cleaned_data.get('est_edd_ultrasound') >
                 cleaned_data.get('report_datetime').date() +

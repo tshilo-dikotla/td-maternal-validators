@@ -12,7 +12,8 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
                                  TDFormValidatorMixin, FormValidator):
 
     def clean(self):
-        self.subject_identifier = self.cleaned_data.get('subject_identifier')
+        self.subject_identifier = self.cleaned_data.get(
+            'appointment').subject_identifier
         super().clean()
 
         self.validate_death()
@@ -36,28 +37,6 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
             self._errors.update(msg)
             raise ValidationError(msg)
 
-    def validate_against_consent(self):
-        """Returns an instance of the current maternal consent version form or
-        raises an exception if not found."""
-        try:
-            self.consent_version_cls.objects.get(
-                screening_identifier=self.subject_screening.screening_identifier
-            )
-        except self.consent_version_cls.DoesNotExist:
-            raise ValidationError(
-                'Please complete mother\'s consent version form before proceeding')
-        else:
-            try:
-                latest_consent = self.maternal_consent_cls.objects.get(
-                    subject_identifier=self.cleaned_data.get(
-                        'appointment').subject_identifier)
-            except self.maternal_consent_cls.DoesNotExist:
-                raise ValidationError(
-                    'Please complete Maternal Consent form '
-                    f'before  proceeding.')
-            else:
-                return latest_consent
-
     def validate_last_alive_date(self):
         """Returns an instance of the current maternal consent or
         raises an exception if not found."""
@@ -68,12 +47,3 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
             msg = {'last_alive_date': 'Date cannot be before consent date'}
             self._errors.update(msg)
             raise ValidationError(msg)
-
-    @property
-    def subject_screening(self):
-        cleaned_data = self.cleaned_data
-        try:
-            return self.subject_screening_cls.objects.get(
-                subject_identifier=cleaned_data.get('appointment').subject_identifier)
-        except self.subject_screening_cls.DoesNotExist:
-            return None
