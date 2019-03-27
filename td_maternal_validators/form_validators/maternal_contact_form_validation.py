@@ -3,8 +3,11 @@ from django.core.exceptions import ValidationError
 from edc_constants.constants import YES
 from edc_form_validators import FormValidator
 
+from .crf_form_validator import TDCRFFormValidator
 
-class MaternalContactFormValidator(FormValidator):
+
+class MaternalContactFormValidator(TDCRFFormValidator,
+                                   FormValidator):
 
     maternal_locator_model = 'td_maternal.maternallocator'
 
@@ -14,6 +17,10 @@ class MaternalContactFormValidator(FormValidator):
 
     def clean(self):
         cleaned_data = self.cleaned_data
+        self.subject_identifier = cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
+
         locator = self.maternal_locator
         if self.maternal_locator:
             if cleaned_data.get('contact_type') == 'voice_call' and locator.may_follow_up != YES:

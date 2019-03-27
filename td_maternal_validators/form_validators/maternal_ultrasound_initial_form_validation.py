@@ -56,5 +56,7 @@ class MaternalUltrasoundInitialFormValidator(FormValidator):
                         raise ValidationError(msg)
 
     def validate_edd_report_datetime(self):
-        if self.cleaned_data.get('est_edd_ultrasound') < self.cleaned_data.get('report_datetime').date():
+        if (self.cleaned_data.get('est_edd_ultrasound') and
+                self.cleaned_data.get('est_edd_ultrasound') <
+                self.cleaned_data.get('maternal_visit').report_datetime.date()):
             raise ValidationError('Expected a future date')

@@ -2,8 +2,11 @@ from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_form_validators.form_validator import FormValidator
 
+from .crf_form_validator import TDCRFFormValidator
 
-class MaternalObstericalHistoryFormValidator(FormValidator):
+
+class MaternalObstericalHistoryFormValidator(TDCRFFormValidator,
+                                             FormValidator):
     maternal_ultrasound_init_model = 'td_maternal.maternalultrasoundinitial'
 
     @property
@@ -11,6 +14,10 @@ class MaternalObstericalHistoryFormValidator(FormValidator):
         return django_apps.get_model(self.maternal_ultrasound_init_model)
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
+
         self.validate_ultrasound(cleaned_data=self.cleaned_data)
         self.validate_prev_pregnancies(cleaned_data=self.cleaned_data)
         self.validate_children_deliv(cleaned_data=self.cleaned_data)

@@ -1,17 +1,36 @@
+from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from edc_base.utils import get_utcnow
 from edc_constants.constants import YES
-from .models import ListModel
+
 from ..form_validators import MaternalSrhFormValidator
+from .models import SubjectConsent, MaternalVisit, ListModel, Appointment
 
 
 class TestMaternalSrhForm(TestCase):
+
+    def setUp(self):
+        self.subject_consent = SubjectConsent.objects.create(
+            subject_identifier='11111111',
+            gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
+            consent_datetime=get_utcnow())
+
+        appointment = Appointment.objects.create(
+            subject_identifier=self.subject_consent.subject_identifier,
+            appt_datetime=get_utcnow(),
+            visit_code='1000')
+
+        self.maternal_visit = MaternalVisit.objects.create(
+            appointment=appointment,
+            subject_identifier=self.subject_consent.subject_identifier,)
 
     def test_is_contr_init_YES_contr_list_required(self):
         ListModel.objects.create(name='pills', short_name='Pills')
         ListModel.objects.create(name='iud', short_name='IUD')
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'is_contraceptive_initiated': YES,
             'contr': None
         }
@@ -24,6 +43,7 @@ class TestMaternalSrhForm(TestCase):
         ListModel.objects.create(name='iud', short_name='IUD')
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'is_contraceptive_initiated': YES,
             'contr': ListModel.objects.all()
         }

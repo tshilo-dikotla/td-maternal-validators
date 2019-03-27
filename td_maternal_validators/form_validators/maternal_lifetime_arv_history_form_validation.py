@@ -6,9 +6,11 @@ from edc_constants.constants import YES, NO, RESTARTED, CONTINUOUS, STOPPED, OTH
 from edc_form_validators import FormValidator
 
 from td_maternal.helper_classes import MaternalStatusHelper
+from .crf_form_validator import TDCRFFormValidator
 
 
-class MaternalLifetimeArvHistoryFormValidator(FormValidator):
+class MaternalLifetimeArvHistoryFormValidator(TDCRFFormValidator,
+                                              FormValidator):
     maternal_consent_model = 'td_maternal.subjectconsent'
     ob_history_model = 'td_maternal.maternalobstericalhistory'
     antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
@@ -31,6 +33,9 @@ class MaternalLifetimeArvHistoryFormValidator(FormValidator):
         return django_apps.get_model(self.ob_history_model)
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
 
         self.validate_prior_preg(cleaned_data=self.cleaned_data)
 

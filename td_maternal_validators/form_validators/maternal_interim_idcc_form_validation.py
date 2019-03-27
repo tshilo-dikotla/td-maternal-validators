@@ -2,10 +2,17 @@ from django.core.exceptions import ValidationError
 from edc_constants.constants import YES, NO
 from edc_form_validators import FormValidator
 
+from .crf_form_validator import TDCRFFormValidator
 
-class MaternalIterimIdccFormValidator(FormValidator):
+
+class MaternalIterimIdccFormValidator(TDCRFFormValidator,
+                                      FormValidator):
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
+
         required_fields = ['recent_cd4', 'recent_cd4_date', 'value_vl_size',
                            'value_vl', 'recent_vl_date']
 

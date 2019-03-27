@@ -1,16 +1,16 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
 from edc_constants.constants import (
     RESTARTED, NO, YES, CONTINUOUS, STOPPED, NOT_APPLICABLE, NEG, POS)
 
 from ..form_validators import MaternalLifetimeArvHistoryFormValidator
-from .models import (SubjectConsent, Appointment, MaternalVisit, AntenatalEnrollment,
-                     MaternalObstericalHistory, MaternalMedicalHistory, ListModel)
+from .models import AntenatalEnrollment, MaternalObstericalHistory
+from .models import MaternalMedicalHistory
+from .models import SubjectConsent, Appointment, MaternalVisit
 
 
-@tag('alh')
 class TestMaternalLifetimeArvHistoryForm(TestCase):
 
     def setUp(self):
@@ -23,11 +23,16 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         MaternalLifetimeArvHistoryFormValidator.antenatal_enrollment_model = \
             'td_maternal_validators.antenatalenrollment'
 
+        MaternalLifetimeArvHistoryFormValidator.maternal_consent_model = \
+            'td_maternal_validators.subjectconsent'
+
+        MaternalLifetimeArvHistoryFormValidator.ob_history_model = \
+            'td_maternal_validators.maternalobstericalhistory'
+
         self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
             consent_datetime=get_utcnow())
-        maternal_consent_model = 'td_maternal_validators.subjectconsent'
 
         self.antenatal_enrollment = AntenatalEnrollment.objects.create(
             subject_identifier='11111111',
@@ -35,23 +40,21 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
             rapid_test_result=POS, rapid_test_date=get_utcnow().date(),
             week32_test_date=get_utcnow().date())
 
-        MaternalLifetimeArvHistoryFormValidator.maternal_consent_model = \
-            maternal_consent_model
         appointment = Appointment.objects.create(
             subject_identifier=self.subject_consent.subject_identifier,
             appt_datetime=get_utcnow(),
             visit_code='1000')
+
         self.maternal_visit = MaternalVisit.objects.create(
             appointment=appointment,
             subject_identifier=self.subject_consent.subject_identifier,)
+
         self.medical_history = MaternalMedicalHistory.objects.create(
             maternal_visit=self.maternal_visit,
             date_hiv_diagnosis=get_utcnow().date())
+
         self.ob_history = MaternalObstericalHistory.objects.create(
             maternal_visit=self.maternal_visit, prev_pregnancies=5)
-        ob_history_model = 'td_maternal_validators.maternalobstericalhistory'
-        MaternalLifetimeArvHistoryFormValidator.ob_history_model = \
-            ob_history_model
 
     def test_preg_on_haart_no_preg_prior_invalid(self):
         '''Asserts raises exception if subject was not on triple
@@ -59,6 +62,7 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         pregnancy value is restarted.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'preg_on_haart': NO,
             'prior_preg': RESTARTED, }
         form_validator = MaternalLifetimeArvHistoryFormValidator(
@@ -72,6 +76,7 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         pregnancy value is continuous.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'preg_on_haart': NO,
             'prior_preg': CONTINUOUS}
         form_validator = MaternalLifetimeArvHistoryFormValidator(
@@ -85,6 +90,7 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         pregnancy value is stopped.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'maternal_visit': self.maternal_visit,
             'preg_on_haart': YES,
             'prior_preg': STOPPED,
@@ -185,6 +191,7 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         self.subject_consent.save()
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'haart_start_date': get_utcnow().date(),
             'is_date_estimated': NO,
             'maternal_visit': self.maternal_visit,
@@ -202,6 +209,7 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         the date is estimated or not.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'haart_start_date': get_utcnow().date(),
             'is_date_estimated': NO,
             'maternal_visit': self.maternal_visit,
@@ -216,6 +224,7 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         is less than subject's date of birth.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'haart_start_date': get_utcnow().date() - relativedelta(years=30),
             'is_date_estimated': NO,
             'maternal_visit': self.maternal_visit,
@@ -230,6 +239,7 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         error raised unexpectedly.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'haart_start_date': get_utcnow().date(),
             'is_date_estimated': NO,
             'maternal_visit': self.maternal_visit,

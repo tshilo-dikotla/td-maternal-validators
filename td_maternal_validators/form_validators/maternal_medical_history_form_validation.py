@@ -4,8 +4,11 @@ from edc_constants.constants import YES, NO, NOT_APPLICABLE, NEG, POS, OTHER
 from edc_form_validators import FormValidator
 from td_maternal.helper_classes import MaternalStatusHelper
 
+from .crf_form_validator import TDCRFFormValidator
 
-class MaternalMedicalHistoryFormValidator(FormValidator):
+
+class MaternalMedicalHistoryFormValidator(TDCRFFormValidator,
+                                          FormValidator):
 
     antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
 
@@ -18,6 +21,9 @@ class MaternalMedicalHistoryFormValidator(FormValidator):
         return django_apps.get_model(self.maternal_visit_model)
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
 
         self.validate_chronic_since_who_diagnosis_neg(
             cleaned_data=self.cleaned_data)

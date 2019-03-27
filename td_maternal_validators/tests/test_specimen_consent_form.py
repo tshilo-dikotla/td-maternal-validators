@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import YES, NO
 
@@ -7,7 +7,6 @@ from ..form_validators import SpecimenConsentFormValidator
 from .models import SubjectConsent, TdConsentVersion, SubjectScreening
 
 
-@tag('spc')
 class TestSpecimenConsent(TestCase):
 
     def setUp(self):

@@ -5,8 +5,10 @@ from django.core.exceptions import ValidationError
 from edc_base.utils import relativedelta
 from edc_form_validators import FormValidator
 
+from .crf_form_validator import TDCRFFormValidator
 
-class SubjectConsentFormValidator(FormValidator):
+
+class SubjectConsentFormValidator(TDCRFFormValidator, FormValidator):
 
     screening_model = 'td_maternal.subjectscreening'
 
@@ -22,6 +24,9 @@ class SubjectConsentFormValidator(FormValidator):
 
     def clean(self):
         cleaned_data = self.cleaned_data
+        self.subject_identifier = cleaned_data.get('subject_identifier')
+        super().clean()
+
         try:
             subject_screening = self.subject_screening_cls.objects.get(
                 screening_identifier=cleaned_data.get('screening_identifier'))

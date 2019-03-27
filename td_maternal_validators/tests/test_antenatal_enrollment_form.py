@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from edc_constants.constants import POS, NEG, YES
 
@@ -9,6 +9,7 @@ from .models import (AntenatalEnrollment, SubjectScreening,
                      SubjectConsent, TdConsentVersion)
 
 
+@tag('ae')
 class TestAntenatalEnrollmentForm(TestCase):
 
     def setUp(self):
@@ -36,12 +37,6 @@ class TestAntenatalEnrollmentForm(TestCase):
         self.td_consent_version = TdConsentVersion.objects.create(
             screening_identifier=self.subject_screening.screening_identifier,
             version='3', report_datetime=get_utcnow())
-
-#         self.antenatal_enrollment = AntenatalEnrollment.objects.create(
-#             subject_identifier='11111111',
-#             enrollment_hiv_status=NEG, week32_result=POS,
-#             rapid_test_done=YES,
-#             rapid_test_result=POS, rapid_test_date=get_utcnow().date())
 
     def test_LMP_within_16wks_of_report_datetime_invalid(self):
         '''Asserts if an exception is raised if last period date is within

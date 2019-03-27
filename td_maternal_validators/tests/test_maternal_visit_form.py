@@ -1,8 +1,8 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import OFF_STUDY, ON_STUDY
-from edc_constants.constants import UNKNOWN, DEAD, ALIVE
+from edc_constants.constants import UNKNOWN, DEAD
 
 from td_maternal_validators.tests.models import (Appointment, SubjectScreening,
                                                  SubjectConsent,
@@ -11,7 +11,6 @@ from td_maternal_validators.tests.models import (Appointment, SubjectScreening,
 from ..form_validators import MaternalVisitFormValidator
 
 
-@tag('mv')
 class TestMaternalVisitFormValidator(TestCase):
 
     def setUp(self):

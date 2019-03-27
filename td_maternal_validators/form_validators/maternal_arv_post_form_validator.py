@@ -4,9 +4,11 @@ from edc_constants.constants import NO
 from edc_form_validators import FormValidator
 
 from ..constants import NEVER_STARTED
+from .crf_form_validator import TDCRFFormValidator
 
 
-class MarternalArvPostFormValidator(FormValidator):
+class MarternalArvPostFormValidator(TDCRFFormValidator,
+                                    FormValidator):
 
     maternal_arv_post_adh = 'td_maternal.maternalarvpostadh'
 
@@ -15,6 +17,9 @@ class MarternalArvPostFormValidator(FormValidator):
         return django_apps.get_model(self.maternal_arv_post_adh)
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
 
         condition = (self.cleaned_data.get('on_arv_since') == NO
                      or self.cleaned_data.get('arv_status') == NEVER_STARTED)

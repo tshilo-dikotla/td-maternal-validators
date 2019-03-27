@@ -1,16 +1,18 @@
 from django.core.exceptions import ValidationError
 from edc_constants.constants import OFF_STUDY, DEAD, YES
 from edc_form_validators import FormValidator
-from edc_visit_tracking.form_validators import VisitFormValidator
 from edc_visit_tracking.constants import MISSED_VISIT, LOST_VISIT
+from edc_visit_tracking.form_validators import VisitFormValidator
 
+from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class MaternalVisitFormValidator(TDFormValidatorMixin, VisitFormValidator,
-                                 FormValidator):
+class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
+                                 TDFormValidatorMixin, FormValidator):
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get('subject_identifier')
         super().clean()
 
         self.validate_death()

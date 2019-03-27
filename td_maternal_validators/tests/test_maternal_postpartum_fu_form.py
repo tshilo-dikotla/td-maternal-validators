@@ -1,12 +1,11 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
-from edc_constants.constants import (YES, NO, NOT_APPLICABLE, NEG, POS, FEMALE)
+from edc_constants.constants import YES, NO, NOT_APPLICABLE, NEG, POS
 
 from ..form_validators import MaternalPostPartumFuFormValidator
-from .models import (SubjectConsent, MaternalVisit, ListModel, Appointment,
-                     RegisteredSubject)
+from .models import SubjectConsent, MaternalVisit, ListModel, Appointment
 
 
 class MaternalStatusHelper:
@@ -19,7 +18,6 @@ class MaternalStatusHelper:
         return self.status
 
 
-@tag('p')
 class TestMaternalPostPartumFuForm(TestCase):
 
     def setUp(self):
@@ -34,16 +32,18 @@ class TestMaternalPostPartumFuForm(TestCase):
             visit_code='1000')
 
         self.maternal_visit = MaternalVisit.objects.create(
-            appointment=appointment)
+            appointment=appointment,
+            subject_identifier=self.subject_consent.subject_identifier,)
 
-        self.registered_subject = RegisteredSubject.objects.create(
-            first_name='Ame', last_name='Diphoko', gender=FEMALE)
+        maternal_status = MaternalStatusHelper(status=NEG)
+        MaternalPostPartumFuFormValidator.maternal_status_helper = maternal_status
 
     def test_hospitalized_yes_reason_required(self):
         '''Asserts if an exception is raised if subject has been hospitalized
         but the hospitalization reason is missing.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalized': YES,
             'hospitalization_reason': None,
             'hospitalization_days': 10,
@@ -63,6 +63,7 @@ class TestMaternalPostPartumFuForm(TestCase):
             name=NOT_APPLICABLE, short_name='N/A')
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalized': YES,
             'hospitalization_reason': ListModel.objects.filter(
                 name='hypertension'),
@@ -85,6 +86,7 @@ class TestMaternalPostPartumFuForm(TestCase):
         ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalized': YES,
             'hospitalization_reason': ListModel.objects.all(),
             'hospitalization_days': 10,
@@ -99,6 +101,7 @@ class TestMaternalPostPartumFuForm(TestCase):
         Error is raised unexpectedly.'''
         ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalized': NO,
             'hospitalization_reason': ListModel.objects.all(),
             'hospitalization_days': None,
@@ -122,6 +125,7 @@ class TestMaternalPostPartumFuForm(TestCase):
             name=NOT_APPLICABLE, short_name='N/A')
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalized': NO,
             'hospitalization_reason': ListModel.objects.all(),
             'hospitalization_days': None,
@@ -142,6 +146,7 @@ class TestMaternalPostPartumFuForm(TestCase):
             name=NOT_APPLICABLE, short_name='N/A')
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalized': YES,
             'hospitalization_reason': ListModel.objects.filter(
                 name='hypertension'),
@@ -163,6 +168,7 @@ class TestMaternalPostPartumFuForm(TestCase):
             name=NOT_APPLICABLE, short_name='N/A')
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalized': YES,
             'hospitalization_reason': ListModel.objects.filter(
                 name='hypertension'),
@@ -184,6 +190,7 @@ class TestMaternalPostPartumFuForm(TestCase):
         ListModel.objects.create(
             name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalized': NO,
             'hospitalization_reason': ListModel.objects.all(),
             'hospitalization_days': get_utcnow().date(),
@@ -199,6 +206,7 @@ class TestMaternalPostPartumFuForm(TestCase):
         ListModel.objects.create(
             name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalized': NO,
             'hospitalization_reason': ListModel.objects.all(),
             'hospitalization_days': None,
@@ -217,6 +225,7 @@ class TestMaternalPostPartumFuForm(TestCase):
         is missing.'''
         ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalization_reason': ListModel.objects.all(),
             'diagnoses': None}
         form_validator = MaternalPostPartumFuFormValidator(
@@ -231,6 +240,7 @@ class TestMaternalPostPartumFuForm(TestCase):
         ListModel.objects.create(name='sick', short_name='sick')
         ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalized': YES,
             'hospitalization_reason': ListModel.objects.filter(name='sick'),
             'hospitalization_days': get_utcnow().date(),
@@ -252,6 +262,7 @@ class TestMaternalPostPartumFuForm(TestCase):
         ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         ListModel.objects.create(name='sick', short_name='sick')
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalized': YES,
             'hospitalization_reason': ListModel.objects.filter(name='sick'),
             'hospitalization_days': get_utcnow().date(),
@@ -270,6 +281,7 @@ class TestMaternalPostPartumFuForm(TestCase):
 
         ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalization_reason': ListModel.objects.all(),
             'new_diagnoses': NO,
             'diagnoses': ListModel.objects.all(),
@@ -288,6 +300,7 @@ class TestMaternalPostPartumFuForm(TestCase):
         ListModel.objects.create(name='cancer', short_name='cancer')
         ListModel.objects.create(name=NOT_APPLICABLE, short_name='N/A')
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalization_reason': ListModel.objects.filter(
                 name=NOT_APPLICABLE, short_name='N/A'),
             'new_diagnoses': NO,
@@ -304,6 +317,7 @@ class TestMaternalPostPartumFuForm(TestCase):
         ListModel.objects.create(name='cancer', short_name='cancer')
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'hospitalization_reason': ListModel.objects.create(
                 name=NOT_APPLICABLE, short_name='N/A'),
             'new_diagnoses': NO,

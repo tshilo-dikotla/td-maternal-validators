@@ -2,9 +2,11 @@ from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_constants.constants import YES
 from edc_form_validators import FormValidator
+from .crf_form_validator import TDCRFFormValidator
 
 
-class MaternalArvFormValidator(FormValidator):
+class MaternalArvFormValidator(TDCRFFormValidator,
+                               FormValidator):
 
     arv_history_model = 'td_maternal.maternallifetimearvhistory'
 
@@ -13,6 +15,11 @@ class MaternalArvFormValidator(FormValidator):
         return django_apps.get_model(self.arv_history_model)
 
     def clean(self):
+        cleaned_data = self.cleaned_data
+        self.subject_identifier = cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
+
         self.validate_date(cleaned_data=self.cleaned_data)
         self.validate_took_arv(cleaned_data=self.cleaned_data)
         self.validate_historical_and_present_arv_start_dates(

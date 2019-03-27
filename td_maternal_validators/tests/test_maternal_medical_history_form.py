@@ -56,6 +56,7 @@ class TestMaternalMedicalHistoryForm(TestCase):
         WcsDxAdult.objects.create(name=NOT_APPLICABLE, short_name='N/A')
 
         self.cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'cd4_count': None,
             'cd4_date': None,
             'is_date_estimated': None,

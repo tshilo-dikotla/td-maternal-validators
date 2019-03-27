@@ -4,8 +4,8 @@ from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 
 from ..form_validators import MaternalObstericalHistoryFormValidator
-from .models import (
-    SubjectConsent, Appointment, MaternalVisit, MaternalUltraSoundInitial)
+from .models import MaternalUltraSoundInitial
+from .models import SubjectConsent, Appointment, MaternalVisit
 
 
 @tag('ob')
@@ -27,15 +27,6 @@ class TestMaternalObstericalHistoryForm(TestCase):
         self.maternal_ultrasound_model = 'td_maternal_validators.maternalultrasoundinitial'
         MaternalObstericalHistoryFormValidator.maternal_ultrasound_init_model = \
             self.maternal_ultrasound_model
-
-    def test_ultrasound_blank_invalid(self):
-        '''Asserts raises exception if ultrasound form has been left blank.'''
-        cleaned_data = {
-            'maternal_visit': None}
-        form_validator = MaternalObstericalHistoryFormValidator(
-            cleaned_data=cleaned_data)
-        self.assertRaises(ValidationError, form_validator.validate)
-        self.assertIn('__all__', form_validator._errors)
 
     def test_ultrasound_not_blank_valid(self):
         '''Tests if cleaned data validates or fails tests if exception

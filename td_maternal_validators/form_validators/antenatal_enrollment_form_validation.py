@@ -7,10 +7,12 @@ from edc_form_validators import FormValidator
 
 from td_maternal.helper_classes import EnrollmentHelper
 
+from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class AntenatalEnrollmentFormValidator(TDFormValidatorMixin, FormValidator):
+class AntenatalEnrollmentFormValidator(TDCRFFormValidator, TDFormValidatorMixin,
+                                       FormValidator):
 
     antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
 
@@ -19,6 +21,9 @@ class AntenatalEnrollmentFormValidator(TDFormValidatorMixin, FormValidator):
         return django_apps.get_model(self.antenatal_enrollment_model)
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get('subject_identifier')
+        super().clean()
+
         self.required_if(
             YES,
             field='knows_lmp',

@@ -3,8 +3,10 @@ from django.core.exceptions import ValidationError
 from edc_constants.constants import YES
 from edc_form_validators import FormValidator
 
+from .crf_form_validator import TDCRFFormValidator
 
-class RapidTestResultFormValidator(FormValidator):
+
+class RapidTestResultFormValidator(TDCRFFormValidator, FormValidator):
 
     antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
 
@@ -13,6 +15,9 @@ class RapidTestResultFormValidator(FormValidator):
         return django_apps.get_model(self.antenatal_enrollment_model)
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
 
         self.required_if(
             YES,
@@ -38,17 +43,22 @@ class RapidTestResultFormValidator(FormValidator):
     def validate_enrolment_rapid_test_date(self):
         try:
             antenatal_enrollment = self.antenatal_enrollment_cls.objects.get(
-                subject_identifier=self.cleaned_data.get('maternal_visit').appointment.subject_identifier)
+                subject_identifier=self.cleaned_data.get(
+                    'maternal_visit').appointment.subject_identifier)
         except self.antenatal_enrollment_cls.DoesNotExist:
             message = {'rapid_test_done':
-                       'Antenatal enrollment not found, please complete enrollment form.'}
+                       'Antenatal enrollment not found, please complete '
+                       'enrollment form.'}
             self._errors.update(message)
             raise ValidationError(message)
         else:
             if antenatal_enrollment.rapid_test_date:
-                if self.cleaned_data.get('result_date') < antenatal_enrollment.rapid_test_date:
+                if (self.cleaned_data.get('result_date') and
+                        self.cleaned_data.get('result_date') <
+                        antenatal_enrollment.rapid_test_date):
                     message = {
                         'result_date':
-                        'Rapid test date cannot be before enrollment rapid test date.'}
+                        'Rapid test date cannot be before enrollment rapid '
+                        'test date.'}
                     self._errors.update(message)
                     raise ValidationError(message)

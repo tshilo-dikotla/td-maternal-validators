@@ -3,12 +3,15 @@ from django.core.exceptions import ValidationError
 from edc_base.utils import relativedelta
 from edc_constants.constants import POS, YES, NOT_APPLICABLE, OTHER, NONE
 from edc_form_validators import FormValidator
+
 from td_maternal.helper_classes import MaternalStatusHelper
 
+from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class MaternalLabDelFormValidator(TDFormValidatorMixin, FormValidator):
+class MaternalLabDelFormValidator(TDCRFFormValidator,
+                                  TDFormValidatorMixin, FormValidator):
     maternal_arv_model = 'td_maternal.maternalarv'
     maternal_visit_model = 'td_maternal.maternalvisit'
     maternal_ultrasound_init_model = 'td_maternal.maternalultrasoundinitial'
@@ -26,6 +29,9 @@ class MaternalLabDelFormValidator(TDFormValidatorMixin, FormValidator):
         return django_apps.get_model(self.maternal_arv_model)
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get('subject_identifier')
+        super().clean()
+
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'))
 
@@ -43,7 +49,7 @@ class MaternalLabDelFormValidator(TDFormValidatorMixin, FormValidator):
 
     def validate_ultrasound(self, cleaned_data=None):
         ultrasound = self.maternal_ultrasound_init_cls.objects.filter(
-            maternal_visit__appointment_subject_identifier=cleaned_data.get('subject_identifier'))
+            maternal_visit__appointment__subject_identifier=cleaned_data.get('subject_identifier'))
         if not ultrasound:
             message = 'Please complete ultrasound form first'
             raise ValidationError(message)

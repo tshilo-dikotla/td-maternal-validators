@@ -1,16 +1,36 @@
+from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from edc_base.utils import get_utcnow
 from edc_constants.constants import YES, NO
+
 from ..form_validators import MaternalSubstanceUseDuringPregFormValidator
+from .models import SubjectConsent, MaternalVisit, Appointment
 
 
 class TestMaternalSubstanceDuringPregForm(TestCase):
+
+    def setUp(self):
+        self.subject_consent = SubjectConsent.objects.create(
+            subject_identifier='11111111',
+            gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
+            consent_datetime=get_utcnow())
+
+        appointment = Appointment.objects.create(
+            subject_identifier=self.subject_consent.subject_identifier,
+            appt_datetime=get_utcnow(),
+            visit_code='1000')
+
+        self.maternal_visit = MaternalVisit.objects.create(
+            appointment=appointment,
+            subject_identifier=self.subject_consent.subject_identifier,)
 
     def test_smoked_during_preg_yes_freq_required(self):
         '''Asserts raises exception if subject smoked during pregnancy and
         required smoking frequency value is missing.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'smoked_during_pregnancy': YES,
             'smoking_during_preg_freq': None}
         form_validator = MaternalSubstanceUseDuringPregFormValidator(
@@ -23,6 +43,7 @@ class TestMaternalSubstanceDuringPregForm(TestCase):
         is raised unexpectedly.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'smoked_during_pregnancy': YES,
             'smoking_during_preg_freq': 'daily'}
         form_validator = MaternalSubstanceUseDuringPregFormValidator(
@@ -37,6 +58,7 @@ class TestMaternalSubstanceDuringPregForm(TestCase):
         and smoking frequency value has been provided.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'smoked_during_pregnancy': NO,
             'smoking_during_preg_freq': 'daily'}
         form_validator = MaternalSubstanceUseDuringPregFormValidator(
@@ -49,6 +71,7 @@ class TestMaternalSubstanceDuringPregForm(TestCase):
         is raised unexpectedly.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'smoked_during_pregnancy': NO,
             'smoking_during_preg_freq': None}
         form_validator = MaternalSubstanceUseDuringPregFormValidator(
@@ -63,6 +86,7 @@ class TestMaternalSubstanceDuringPregForm(TestCase):
         and required alcohol drinking frequency value is missing.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'alcohol_during_pregnancy': YES,
             'alcohol_during_preg_freq': None}
         form_validator = MaternalSubstanceUseDuringPregFormValidator(
@@ -75,6 +99,7 @@ class TestMaternalSubstanceDuringPregForm(TestCase):
         is raised unexpectedly.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'alcohol_during_pregnancy': YES,
             'alcohol_during_preg_freq': 'weekly'}
         form_validator = MaternalSubstanceUseDuringPregFormValidator(
@@ -89,6 +114,7 @@ class TestMaternalSubstanceDuringPregForm(TestCase):
         pregnancy and drinking frequency value has been provided.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'alcohol_during_pregnancy': NO,
             'alcohol_during_preg_freq': 'weekly'}
         form_validator = MaternalSubstanceUseDuringPregFormValidator(
@@ -101,6 +127,7 @@ class TestMaternalSubstanceDuringPregForm(TestCase):
         is raised unexpectedly.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'alcohol_during_pregnancy': NO,
             'alcohol_during_preg_freq': None}
         form_validator = MaternalSubstanceUseDuringPregFormValidator(
@@ -115,6 +142,7 @@ class TestMaternalSubstanceDuringPregForm(TestCase):
         and required weed smoking frequency value is missing.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'marijuana_during_preg': YES,
             'marijuana_during_preg_freq': None}
         form_validator = MaternalSubstanceUseDuringPregFormValidator(
@@ -127,6 +155,7 @@ class TestMaternalSubstanceDuringPregForm(TestCase):
         is raised unexpectedly.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'marijuana_during_preg': YES,
             'marijuana_during_preg_freq': 'daily'}
         form_validator = MaternalSubstanceUseDuringPregFormValidator(
@@ -141,6 +170,7 @@ class TestMaternalSubstanceDuringPregForm(TestCase):
         pregnancy and weed smoking frequency value is provided.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'marijuana_during_preg': NO,
             'marijuana_during_preg_freq': 'weekly'}
         form_validator = MaternalSubstanceUseDuringPregFormValidator(
@@ -153,6 +183,7 @@ class TestMaternalSubstanceDuringPregForm(TestCase):
         is raised unexpectedly.'''
 
         cleaned_data = {
+            'maternal_visit': self.maternal_visit,
             'marijuana_during_preg': NO,
             'marijuana_during_preg_freq': None}
         form_validator = MaternalSubstanceUseDuringPregFormValidator(

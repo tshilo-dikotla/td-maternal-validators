@@ -3,8 +3,11 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from edc_constants.constants import POS
 from edc_form_validators import FormValidator
 
+from .crf_form_validator import TDCRFFormValidator
 
-class MaternalRandoFormValidator(FormValidator):
+
+class MaternalRandoFormValidator(TDCRFFormValidator,
+                                 FormValidator):
 
     antenatal_enrollment_model = 'td_maternal.antenatalenrollment'
 
@@ -13,6 +16,10 @@ class MaternalRandoFormValidator(FormValidator):
         return django_apps.get_model(self.antenatal_enrollment_model)
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
+
         self.verify_hiv_status()
 
         self.validate_other_specify(

@@ -4,9 +4,9 @@ from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import YES, NO, POS, NEG, NOT_APPLICABLE
 
 from ..form_validators import MaternalLabDelFormValidator
-from .models import (MaternalArv, MaternalVisit,
-                     SubjectConsent, Appointment, MaternalArvPreg,
-                     SubjectScreening, TdConsentVersion)
+from .models import MaternalArv, MaternalVisit, MaternalUltraSoundInitial
+from .models import SubjectConsent, Appointment, MaternalArvPreg
+from .models import SubjectScreening, TdConsentVersion
 
 
 class MaternalStatusHelper:
@@ -32,6 +32,8 @@ class TestMaternalLabDelForm(TestCase):
             'td_maternal_validators.maternalvisit'
         MaternalLabDelFormValidator.maternal_arv_model = \
             'td_maternal_validators.maternalarv'
+        MaternalLabDelFormValidator.maternal_ultrasound_init_model = \
+            'td_maternal_validators.maternalultrasoundinitial'
 
         self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111', screening_identifier='ABC12345',
@@ -59,6 +61,9 @@ class TestMaternalLabDelForm(TestCase):
         self.td_consent_version = TdConsentVersion.objects.create(
             screening_identifier=self.subjectscreening.screening_identifier,
             version='3', report_datetime=get_utcnow())
+
+        self.maternal_ultrasound = MaternalUltraSoundInitial.objects.create(
+            maternal_visit=maternal_visit, ga_confirmed=20)
 
     def test_arv_init_date_match_start_date(self):
         cleaned_data = {

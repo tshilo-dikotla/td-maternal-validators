@@ -1,15 +1,19 @@
-from django.apps import apps as django_apps
-from django import forms
 from edc_constants.constants import YES
 from edc_form_validators import FormValidator
 
-from .form_validator_mixin import TDFormValidatorMixin
 from td_maternal.models import MaternalArvPreg, MaternalArv
 
+from .crf_form_validator import TDCRFFormValidator
+from .form_validator_mixin import TDFormValidatorMixin
 
-class MaternalArvPregFormValidator(TDFormValidatorMixin, FormValidator):
+
+class MaternalArvPregFormValidator(TDCRFFormValidator,
+                                   TDFormValidatorMixin, FormValidator):
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
 
         self.applicable_if(
             YES,

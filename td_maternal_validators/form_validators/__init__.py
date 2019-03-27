@@ -1,6 +1,7 @@
 from .antenatal_enrollment_form_validation import AntenatalEnrollmentFormValidator
 from .antenatal_visit_membership_form_validation import AntenatalVisitMembershipFormValidator
 from .appointment_form_validator import AppointmentFormValidator
+from .crf_form_validator import TDCRFFormValidator
 from .maternal_arv_form_validation import MaternalArvFormValidator
 from .maternal_arv_post_form_validator import MarternalArvPostFormValidator
 from .maternal_arv_preg_form_validation import MaternalArvPregFormValidator

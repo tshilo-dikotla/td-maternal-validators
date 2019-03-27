@@ -2,10 +2,17 @@ from django.core.exceptions import ValidationError
 from edc_constants.constants import YES, OTHER, NOT_APPLICABLE
 from edc_form_validators import FormValidator
 
+from .crf_form_validator import TDCRFFormValidator
 
-class MaternalContraceptionFormValidator(FormValidator):
+
+class MaternalContraceptionFormValidator(TDCRFFormValidator,
+                                         FormValidator):
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
+
         self.required_if(
             YES,
             field='more_children',

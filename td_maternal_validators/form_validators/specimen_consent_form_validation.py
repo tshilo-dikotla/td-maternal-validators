@@ -2,12 +2,16 @@ from django import forms
 from edc_constants.constants import YES, NO
 from edc_form_validators import FormValidator
 
+from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class SpecimenConsentFormValidator(TDFormValidatorMixin, FormValidator):
+class SpecimenConsentFormValidator(TDCRFFormValidator,
+                                   TDFormValidatorMixin, FormValidator):
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get('subject_identifier')
+        super().clean()
 
         self.required_if(
             NO,
@@ -16,18 +20,6 @@ class SpecimenConsentFormValidator(TDFormValidatorMixin, FormValidator):
             required_msg='You specified that participant is illiterate,'
             ' witness is required'
         )
-
-#         if (self.cleaned_data.get('may_store_samples') == NO and
-#                 self.cleaned_data.get('consent_copy') != NO):
-#             raise forms.ValidationError(
-#                 {'consent_copy':
-#                  'The particpant did not sign speciment consent. Please do not'
-#                  'provide them with a copy of the consent.'})
-#         elif (self.cleaned_data.get('may_store_samples') == YES and
-#                 self.cleaned_data.get('consent_copy') == NO):
-#             raise forms.ValidationError(
-#                 {'consent_copy':
-#                  'Please provide the subject with a copy of the consent.'})
 
         self.validate_against_consent_datetime(
             self.cleaned_data.get('consent_datetime'))
