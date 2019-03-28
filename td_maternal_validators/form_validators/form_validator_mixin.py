@@ -47,7 +47,7 @@ class TDFormValidatorMixin:
         else:
             try:
                 latest_consent = self.maternal_consent_cls.objects.get(
-                    subject_identifier=self.cleaned_data.get('subject_identifier'))
+                    subject_identifier=self.subject_identifier)
             except self.maternal_consent_cls.DoesNotExist:
                 raise ValidationError(
                     'Please complete Maternal Consent form '
@@ -57,9 +57,8 @@ class TDFormValidatorMixin:
 
     @property
     def subject_screening(self):
-        cleaned_data = self.cleaned_data
         try:
             return self.subject_screening_cls.objects.get(
-                subject_identifier=cleaned_data.get('subject_identifier'))
+                subject_identifier=self.subject_identifier)
         except self.subject_screening_cls.DoesNotExist:
             return None

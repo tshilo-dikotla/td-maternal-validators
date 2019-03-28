@@ -12,7 +12,8 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
                                  TDFormValidatorMixin, FormValidator):
 
     def clean(self):
-        self.subject_identifier = self.cleaned_data.get('subject_identifier')
+        self.subject_identifier = self.cleaned_data.get(
+            'appointment').subject_identifier
         super().clean()
 
         self.validate_death()
@@ -24,8 +25,23 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
         reason = self.cleaned_data.get('reason')
         if is_present and is_present == YES:
             if reason in [MISSED_VISIT, LOST_VISIT]:
-                msg = 'if Q9 is present, this field must not be missed visit or lost visits'
+                msg = {'reason': 'If Q9 is present, this field must not be '
+                       'missed visit or lost visits'}
+                self._errors.update(msg)
                 raise ValidationError(msg)
+
+        if (reason == LOST_VISIT and
+                self.cleaned_data.get('study_status') != OFF_STUDY):
+            msg = {'study_status': 'Participant has been lost to follow up, '
+                   'study status should be off study.'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
+
+        self.required_if_true(
+            reason == MISSED_VISIT,
+            field_required='reason_missed'
+        )
+
         self.validate_last_alive_date()
 
     def validate_death(self):
@@ -35,28 +51,6 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
                    'should be off study.'}
             self._errors.update(msg)
             raise ValidationError(msg)
-
-    def validate_against_consent(self):
-        """Returns an instance of the current maternal consent version form or
-        raises an exception if not found."""
-        try:
-            self.consent_version_cls.objects.get(
-                screening_identifier=self.subject_screening.screening_identifier
-            )
-        except self.consent_version_cls.DoesNotExist:
-            raise ValidationError(
-                'Please complete mother\'s consent version form before proceeding')
-        else:
-            try:
-                latest_consent = self.maternal_consent_cls.objects.get(
-                    subject_identifier=self.cleaned_data.get(
-                        'appointment').subject_identifier)
-            except self.maternal_consent_cls.DoesNotExist:
-                raise ValidationError(
-                    'Please complete Maternal Consent form '
-                    f'before  proceeding.')
-            else:
-                return latest_consent
 
     def validate_last_alive_date(self):
         """Returns an instance of the current maternal consent or
@@ -68,12 +62,3 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
             msg = {'last_alive_date': 'Date cannot be before consent date'}
             self._errors.update(msg)
             raise ValidationError(msg)
-
-    @property
-    def subject_screening(self):
-        cleaned_data = self.cleaned_data
-        try:
-            return self.subject_screening_cls.objects.get(
-                subject_identifier=cleaned_data.get('appointment').subject_identifier)
-        except self.subject_screening_cls.DoesNotExist:
-            return None
