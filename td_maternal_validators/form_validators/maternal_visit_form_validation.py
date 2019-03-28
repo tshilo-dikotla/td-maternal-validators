@@ -8,7 +8,7 @@ from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class MaternalVisitFormValidator(TDCRFFormValidator,
+class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
                                  TDFormValidatorMixin, FormValidator):
 
     def clean(self):
