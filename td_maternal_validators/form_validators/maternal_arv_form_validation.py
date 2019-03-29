@@ -17,7 +17,7 @@ class MaternalArvFormValidator(TDCRFFormValidator,
     def clean(self):
         cleaned_data = self.cleaned_data
         self.subject_identifier = cleaned_data.get(
-            'maternal_visit').subject_identifier
+            'maternal_arv_preg').maternal_visit.subject_identifier
         super().clean()
 
         self.validate_date(cleaned_data=self.cleaned_data)
