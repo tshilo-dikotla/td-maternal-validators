@@ -38,5 +38,5 @@ class TDCRFFormValidator:
                     'new data.')
         else:
             raise forms.ValidationError(
-                'Participant has been taken offstudy. Cannot capture any '
-                'new data.')
+                'Participant is scheduled to be taken offstudy. Cannot capture '
+                'any new data.')

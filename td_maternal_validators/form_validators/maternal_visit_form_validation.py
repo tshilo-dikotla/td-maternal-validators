@@ -1,8 +1,15 @@
+from django import forms
+from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_constants.constants import OFF_STUDY, DEAD, YES
+from edc_action_item.site_action_items import site_action_items
+from edc_constants.constants import NEW
+from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY
 from edc_form_validators import FormValidator
 from edc_visit_tracking.constants import MISSED_VISIT, LOST_VISIT
 from edc_visit_tracking.form_validators import VisitFormValidator
+
+from td_maternal.action_items import MATERNALOFF_STUDY_ACTION
+from td_maternal.action_items import MATERNAL_DEATH_REPORT_ACTION
 
 from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
@@ -15,6 +22,8 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
         self.subject_identifier = self.cleaned_data.get(
             'appointment').subject_identifier
         super().clean()
+
+        self.validate_study_status()
 
         self.validate_death()
 
@@ -62,3 +71,32 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
             msg = {'last_alive_date': 'Date cannot be before consent date'}
             self._errors.update(msg)
             raise ValidationError(msg)
+
+    def validate_study_status(self):
+        maternal_offstudy_cls = django_apps.get_model(
+            'td_maternal.maternaloffstudy')
+        action_cls = site_action_items.get(
+            maternal_offstudy_cls.action_name)
+        action_item_model_cls = action_cls.action_item_model_cls()
+
+        try:
+            action_item_model_cls.objects.get(
+                subject_identifier=self.subject_identifier,
+                action_type__name=MATERNALOFF_STUDY_ACTION,
+                status=NEW)
+        except action_item_model_cls.DoesNotExist:
+            try:
+                maternal_offstudy_cls.objects.get(
+                    subject_identifier=self.subject_identifier)
+            except maternal_offstudy_cls.DoesNotExist:
+                pass
+            else:
+                if self.cleaned_data.get('study_status') == ON_STUDY:
+                    raise forms.ValidationError(
+                        {'study_status': 'Participant has been taken offstudy.'
+                         ' Cannot be indicated as on study.'})
+        else:
+            if self.cleaned_data.get('study_status') == ON_STUDY:
+                raise forms.ValidationError(
+                    {'study_status': 'Participant is scheduled to go offstudy.'
+                     ' Cannot be indicated as on study.'})
