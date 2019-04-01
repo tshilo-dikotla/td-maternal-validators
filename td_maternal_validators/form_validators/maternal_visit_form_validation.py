@@ -24,12 +24,12 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
             'appointment').subject_identifier
         super().clean()
 
+        self.validate_against_consent_datetime(
+            self.cleaned_data.get('report_datetime'))
+
         self.validate_study_status()
 
         self.validate_death()
-
-        self.validate_against_consent_datetime(
-            self.cleaned_data.get('report_datetime'))
 
         self.validate_reason()
 
@@ -102,7 +102,6 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
                         {'study_status': 'Participant has been taken offstudy.'
                          ' Cannot be indicated as on study.'})
         else:
-            if self.cleaned_data.get('study_status') == ON_STUDY:
-                raise forms.ValidationError(
-                    {'study_status': 'Participant is scheduled to go offstudy.'
-                     ' Cannot be indicated as on study.'})
+            raise forms.ValidationError(
+                {'study_status': 'Participant is scheduled to go offstudy.'
+                 ' Cannot edit visit until offstudy form is completed.'})
