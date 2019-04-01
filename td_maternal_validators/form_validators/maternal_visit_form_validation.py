@@ -2,11 +2,10 @@ from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_action_item.site_action_items import site_action_items
-from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY, NO, NEW
+from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY, NEW
+from edc_constants.constants import PARTICIPANT, ALIVE
 from edc_form_validators import FormValidator
-from edc_metadata.constants import NOT_REQUIRED
-from edc_metadata.models import CrfMetadata
-from edc_visit_tracking.constants import MISSED_VISIT, LOST_VISIT
+from edc_visit_tracking.constants import LOST_VISIT
 from edc_visit_tracking.form_validators import VisitFormValidator
 
 from td_maternal.action_items import MATERNALOFF_STUDY_ACTION
@@ -31,21 +30,13 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
 
         self.validate_death()
 
-        self.validate_reason()
+        self.validate_is_present()
 
         self.validate_last_alive_date()
 
-    def validate_reason(self):
+    def validate_is_present(self):
 
-        is_present = self.cleaned_data.get('is_present')
         reason = self.cleaned_data.get('reason')
-
-        if is_present and is_present == YES:
-            if reason in [MISSED_VISIT, LOST_VISIT]:
-                msg = {'reason': 'If Q9 is present, this field must not be '
-                       'missed visit or lost visits'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
 
         if (reason == LOST_VISIT and
                 self.cleaned_data.get('study_status') != OFF_STUDY):
@@ -54,10 +45,11 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
             self._errors.update(msg)
             raise ValidationError(msg)
 
-        self.required_if_true(
-            reason == MISSED_VISIT,
-            field_required='reason_missed'
-        )
+        if self.cleaned_data.get('is_present') == YES:
+            if self.cleaned_data.get('info_source') != PARTICIPANT:
+                raise forms.ValidationError(
+                    {'info_source': 'Source of information must be from '
+                     'participant if participant is present.'})
 
     def validate_death(self):
         if (self.cleaned_data.get('survival_status') == DEAD
@@ -66,6 +58,14 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
                    'should be off study.'}
             self._errors.update(msg)
             raise ValidationError(msg)
+        if self.cleaned_data.get('survival_status') != ALIVE:
+            if (self.cleaned_data.get('is_present') == YES
+                    or self.cleaned_data.get('info_source') == PARTICIPANT):
+                msg = {'survival_status': 'Participant cannot be present or '
+                       'source of information if their survival status is not'
+                       'alive.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
 
     def validate_last_alive_date(self):
         """Returns an instance of the current maternal consent or
