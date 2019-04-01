@@ -86,7 +86,7 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
         action_item_model_cls = action_cls.action_item_model_cls()
 
         try:
-            action_item_model_cls.objects.get(
+            action_item = action_item_model_cls.objects.get(
                 subject_identifier=self.subject_identifier,
                 action_type__name=MATERNALOFF_STUDY_ACTION,
                 status=NEW)
@@ -102,6 +102,9 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
                         {'study_status': 'Participant has been taken offstudy.'
                          ' Cannot be indicated as on study.'})
         else:
-            raise forms.ValidationError(
-                {'study_status': 'Participant is scheduled to go offstudy.'
-                 ' Cannot edit visit until offstudy form is completed.'})
+            if (action_item.parent_reference_model_obj and
+                self.cleaned_data.get('visit_code') !=
+                    action_item.parent_reference_model_obj.visit_code):
+                raise forms.ValidationError(
+                    'Participant is scheduled to go offstudy.'
+                    ' Cannot edit visit until offstudy form is completed.')
