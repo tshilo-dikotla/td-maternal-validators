@@ -2,9 +2,10 @@ from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_action_item.site_action_items import site_action_items
-from edc_constants.constants import NEW
-from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY
+from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY, NO, NEW
 from edc_form_validators import FormValidator
+from edc_metadata.constants import NOT_REQUIRED
+from edc_metadata.models import CrfMetadata
 from edc_visit_tracking.constants import MISSED_VISIT, LOST_VISIT
 from edc_visit_tracking.form_validators import VisitFormValidator
 
@@ -30,8 +31,15 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'))
 
+        self.validate_reason()
+
+        self.validate_last_alive_date()
+
+    def validate_reason(self):
+
         is_present = self.cleaned_data.get('is_present')
         reason = self.cleaned_data.get('reason')
+
         if is_present and is_present == YES:
             if reason in [MISSED_VISIT, LOST_VISIT]:
                 msg = {'reason': 'If Q9 is present, this field must not be '
@@ -50,8 +58,6 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
             reason == MISSED_VISIT,
             field_required='reason_missed'
         )
-
-        self.validate_last_alive_date()
 
     def validate_death(self):
         if (self.cleaned_data.get('survival_status') == DEAD
