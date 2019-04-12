@@ -31,6 +31,11 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
             other_specify_field='reason_unseen_clinic_other',
             other_stored_value=OTHER)
 
+        self.validate_other_specify(
+            field='reason_not_initiated',
+            other_specify_field='reason_not_initiated_other',
+            other_stored_value=OTHER)
+
         self.required_if(
             YES,
             field='seen_at_clinic',

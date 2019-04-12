@@ -39,12 +39,22 @@ class TestMaternalSrhForm(TestCase):
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('is_contraceptive_initiated', form_validator._errors)
 
-    def test_other_field_not_required(self):
+    def test_other_reason_unseen_clinic_required(self):
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
             'seen_at_clinic': NO,
             'reason_unseen_clinic': OTHER,
             'reason_unseen_clinic_other': None
+        }
+        form_validator = MaternalSrhFormValidator(cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+
+    def test_reason_not_initiated_other_required(self):
+        cleaned_data = {
+            'maternal_visit': self.maternal_visit,
+            'seen_at_clinic': YES,
+            'reason_not_initiated': OTHER,
+            'reason_not_initiated_other': None
         }
         form_validator = MaternalSrhFormValidator(cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
