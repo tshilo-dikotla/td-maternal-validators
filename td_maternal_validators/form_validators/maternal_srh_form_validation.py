@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from edc_constants.constants import NO, YES, DWTA
+from edc_constants.constants import NO, YES, DWTA, OTHER
 from edc_form_validators import FormValidator
 
 from .crf_form_validator import TDCRFFormValidator
@@ -26,8 +26,18 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
                           'your last visit with us, why not?')
         )
 
-        self.not_required_if(
+        self.validate_other_specify(
+            field='reason_unseen_clinic',
+            other_specify_field='reason_unseen_clinic_other',
+            other_stored_value=OTHER)
+
+        self.required_if(
             YES,
+            field='seen_at_clinic',
+            field_required='is_contraceptive_initiated')
+
+        self.not_required_if(
+            NO,
             field='is_contraceptive_initiated',
             field_required='reason_not_initiated',
             required_msg=('If you have not initiated contraceptive method, '
