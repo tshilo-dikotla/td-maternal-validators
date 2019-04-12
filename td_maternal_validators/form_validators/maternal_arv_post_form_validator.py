@@ -1,6 +1,6 @@
 from django.apps import apps as django_apps
 from django.forms import forms
-from edc_constants.constants import NO
+from edc_constants.constants import NO, YES
 from edc_form_validators import FormValidator
 
 from ..constants import NEVER_STARTED
@@ -43,4 +43,10 @@ class MarternalArvPostFormValidator(TDCRFFormValidator,
         self.validate_other_specify(
             field='on_arv_reason',
             other_specify_field='on_arv_reason_other',
+        )
+
+        self.applicable_if(
+            YES,
+            field='on_arv_since',
+            field_applicable='arv_status'
         )

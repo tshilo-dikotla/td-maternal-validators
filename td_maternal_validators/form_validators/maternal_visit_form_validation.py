@@ -1,7 +1,13 @@
+from td_maternal.action_items import MATERNALOFF_STUDY_ACTION
+
+from django import forms
+from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_constants.constants import OFF_STUDY, DEAD, YES
+from edc_action_item.site_action_items import site_action_items
+from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY, NEW
+from edc_constants.constants import PARTICIPANT, ALIVE, NO
 from edc_form_validators import FormValidator
-from edc_visit_tracking.constants import MISSED_VISIT, LOST_VISIT
+from edc_visit_tracking.constants import LOST_VISIT, SCHEDULED, MISSED_VISIT
 from edc_visit_tracking.form_validators import VisitFormValidator
 
 from .crf_form_validator import TDCRFFormValidator
@@ -16,19 +22,29 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
             'appointment').subject_identifier
         super().clean()
 
-        self.validate_death()
-
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'))
 
-        is_present = self.cleaned_data.get('is_present')
+        self.validate_study_status()
+
+        self.validate_death()
+
+        self.validate_is_present()
+
+        self.validate_last_alive_date()
+
+    def validate_data_collection(self):
+        if (self.cleaned_data.get('reason') == SCHEDULED
+                and self.cleaned_data.get('study_status') == ON_STUDY
+                and self.cleaned_data.get('require_crfs') == NO):
+            msg = {'require_crfs': 'This field must be yes if participant'
+                   'is on study and present.'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
+
+    def validate_is_present(self):
+
         reason = self.cleaned_data.get('reason')
-        if is_present and is_present == YES:
-            if reason in [MISSED_VISIT, LOST_VISIT]:
-                msg = {'reason': 'If Q9 is present, this field must not be '
-                       'missed visit or lost visits'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
 
         if (reason == LOST_VISIT and
                 self.cleaned_data.get('study_status') != OFF_STUDY):
@@ -37,12 +53,11 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
             self._errors.update(msg)
             raise ValidationError(msg)
 
-        self.required_if_true(
-            reason == MISSED_VISIT,
-            field_required='reason_missed'
-        )
-
-        self.validate_last_alive_date()
+        if self.cleaned_data.get('is_present') == YES:
+            if self.cleaned_data.get('info_source') != PARTICIPANT:
+                raise forms.ValidationError(
+                    {'info_source': 'Source of information must be from '
+                     'participant if participant is present.'})
 
     def validate_death(self):
         if (self.cleaned_data.get('survival_status') == DEAD
@@ -51,6 +66,14 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
                    'should be off study.'}
             self._errors.update(msg)
             raise ValidationError(msg)
+        if self.cleaned_data.get('survival_status') != ALIVE:
+            if (self.cleaned_data.get('is_present') == YES
+                    or self.cleaned_data.get('info_source') == PARTICIPANT):
+                msg = {'survival_status': 'Participant cannot be present or '
+                       'source of information if their survival status is not'
+                       'alive.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
 
     def validate_last_alive_date(self):
         """Returns an instance of the current maternal consent or
@@ -62,3 +85,37 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
             msg = {'last_alive_date': 'Date cannot be before consent date'}
             self._errors.update(msg)
             raise ValidationError(msg)
+
+    def validate_reason_and_info_source(self):
+        pass
+
+    def validate_study_status(self):
+        maternal_offstudy_cls = django_apps.get_model(
+            'td_maternal.maternaloffstudy')
+        action_cls = site_action_items.get(
+            maternal_offstudy_cls.action_name)
+        action_item_model_cls = action_cls.action_item_model_cls()
+
+        try:
+            action_item = action_item_model_cls.objects.get(
+                subject_identifier=self.subject_identifier,
+                action_type__name=MATERNALOFF_STUDY_ACTION,
+                status=NEW)
+        except action_item_model_cls.DoesNotExist:
+            try:
+                maternal_offstudy_cls.objects.get(
+                    subject_identifier=self.subject_identifier)
+            except maternal_offstudy_cls.DoesNotExist:
+                pass
+            else:
+                if self.cleaned_data.get('study_status') == ON_STUDY:
+                    raise forms.ValidationError(
+                        {'study_status': 'Participant has been taken offstudy.'
+                         ' Cannot be indicated as on study.'})
+        else:
+            if (action_item.parent_reference_model_obj and
+                self.cleaned_data.get('visit_code') !=
+                    action_item.parent_reference_model_obj.visit_code):
+                raise forms.ValidationError(
+                    'Participant is scheduled to go offstudy.'
+                    ' Cannot edit visit until offstudy form is completed.')
