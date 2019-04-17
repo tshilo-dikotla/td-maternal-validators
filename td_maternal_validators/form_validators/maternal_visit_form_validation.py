@@ -7,7 +7,7 @@ from edc_action_item.site_action_items import site_action_items
 from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY, NEW
 from edc_constants.constants import PARTICIPANT, ALIVE, NO
 from edc_form_validators import FormValidator
-from edc_visit_tracking.constants import LOST_VISIT, SCHEDULED, MISSED_VISIT
+from edc_visit_tracking.constants import LOST_VISIT, SCHEDULED
 from edc_visit_tracking.form_validators import VisitFormValidator
 
 from .crf_form_validator import TDCRFFormValidator

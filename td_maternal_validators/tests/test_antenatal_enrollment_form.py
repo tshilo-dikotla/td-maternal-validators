@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
 from edc_constants.constants import POS, NEG, YES
 
@@ -9,7 +9,6 @@ from .models import (AntenatalEnrollment, SubjectScreening,
                      SubjectConsent, TdConsentVersion)
 
 
-@tag('ae')
 class TestAntenatalEnrollmentForm(TestCase):
 
     def setUp(self):
@@ -19,8 +18,6 @@ class TestAntenatalEnrollmentForm(TestCase):
             'td_maternal_validators.tdconsentversion'
         AntenatalEnrollmentFormValidator.subject_screening_model = \
             'td_maternal_validators.subjectscreening'
-        AntenatalEnrollmentFormValidator.antenatal_enrollment_model = \
-            'td_maternal_validators.antenatalenrollment'
 
         self.subject_identifier = '11111111'
 
@@ -136,7 +133,8 @@ class TestAntenatalEnrollmentForm(TestCase):
             'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_identifier,
             'rapid_test_done': YES,
-            'rapid_test_date': get_utcnow()
+            'rapid_test_date': get_utcnow(),
+            'rapid_test_result': NEG
         }
         form_validator = AntenatalEnrollmentFormValidator(
             cleaned_data=cleaned_data)
@@ -161,3 +159,35 @@ class TestAntenatalEnrollmentForm(TestCase):
             form_validator.validate()
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
+
+    def test_rapid_test_date_invalid(self):
+        '''Tests if last period date > 16 weeks before report date time validates
+        or fails the tests if Validation Error is raised unexpectedly.'''
+
+        cleaned_data = {
+            'report_datetime': get_utcnow(),
+            'subject_identifier': self.subject_identifier,
+            'rapid_test_done': YES,
+            'rapid_test_date': None,
+            'rapid_test_result': NEG
+        }
+        form_validator = AntenatalEnrollmentFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('rapid_test_date', form_validator._errors)
+
+    def test_rapid_test_result_invalid(self):
+        '''Tests if last period date > 16 weeks before report date time validates
+        or fails the tests if Validation Error is raised unexpectedly.'''
+
+        cleaned_data = {
+            'report_datetime': get_utcnow(),
+            'subject_identifier': self.subject_identifier,
+            'rapid_test_done': YES,
+            'rapid_test_date': get_utcnow(),
+            'rapid_test_result': None
+        }
+        form_validator = AntenatalEnrollmentFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('rapid_test_result', form_validator._errors)
