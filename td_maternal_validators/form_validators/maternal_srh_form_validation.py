@@ -25,7 +25,7 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
             other_specify_field='reason_unseen_clinic_other',
             other_stored_value=OTHER)
 
-        condition = not(self.cleaned_data.get('reason_unseen_clinic') == None)
+        condition = self.cleaned_data.get('reason_unseen_clinic') == OTHER
         self.required_if_true(
             condition,
             field_required='reason_unseen_clinic_other'
