@@ -13,42 +13,48 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
             'maternal_visit').subject_identifier
         super().clean()
 
-        self.m2m_required_if(
+        self.not_required_if(
             YES,
-            field='is_contraceptive_initiated',
-            m2m_field='contr')
-
-        self.required_if(
-            NO,
             field='seen_at_clinic',
             field_required='reason_unseen_clinic',
             required_msg=('If you have not been seen in that clinic since '
                           'your last visit with us, why not?')
         )
-
         self.validate_other_specify(
             field='reason_unseen_clinic',
             other_specify_field='reason_unseen_clinic_other',
             other_stored_value=OTHER)
 
-        self.validate_other_specify(
-            field='reason_not_initiated',
-            other_specify_field='reason_not_initiated_other',
-            other_stored_value=OTHER)
+        condition = self.cleaned_data.get('reason_unseen_clinic') == OTHER
+        self.required_if_true(
+            condition,
+            field_required='reason_unseen_clinic_other'
+        )
 
         self.required_if(
             YES,
             field='seen_at_clinic',
             field_required='is_contraceptive_initiated')
 
-        self.not_required_if(
-            NO,
+        self.m2m_required_if(
+            YES,
             field='is_contraceptive_initiated',
-            field_required='reason_not_initiated',
-            required_msg=('If you have not initiated contraceptive method, '
-                          'please provide reason.'),
-            not_required_msg=('You indicated that contraceptives were initiated,'
-                              ' please do not give reason not initiated.'))
+            m2m_field='contr')
+
+        self.m2m_other_specify(
+            m2m_field='contr',
+            field_other='contr_other'
+        )
+        self.required_if(
+            YES,
+            field='is_contraceptive_initiated',
+            field_required='reason_not_initiated'
+        )
+
+        self.validate_other_specify(
+            field='reason_not_initiated',
+            other_specify_field='reason_not_initiated_other',
+            other_stored_value=OTHER)
 
         self.validate_seen_at_clinic_DWTA(cleaned_data=self.cleaned_data)
         self.validate_not_tried(cleaned_data=self.cleaned_data)
