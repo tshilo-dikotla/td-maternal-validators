@@ -2,9 +2,8 @@ from td_maternal.helper_classes import EnrollmentHelper
 
 from dateutil.relativedelta import relativedelta
 from django import forms
-from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_constants.constants import YES
+from edc_constants.constants import YES, POS, NEG, IND, NO, DWTA
 from edc_form_validators import FormValidator
 
 from .crf_form_validator import TDCRFFormValidator
@@ -39,12 +38,49 @@ class AntenatalEnrollmentFormValidator(TDCRFFormValidator, TDFormValidatorMixin,
         self.validate_last_period_date(cleaned_data=self.cleaned_data)
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'))
+        self.validate_current_hiv_status()
+        self.validate_week32_result()
 
         enrollment_helper = EnrollmentHelper(
             instance_antenatal=self.antenatal_enrollment_cls(
                 **self.cleaned_data),
             exception_cls=forms.ValidationError)
+
+        try:
+            enrollment_helper.enrollment_hiv_status
+        except ValidationError:
+            raise forms.ValidationError(
+                'Unable to determine maternal hiv status at enrollment.')
+
         enrollment_helper.raise_validation_error_for_rapidtest()
+
+    def validate_week32_result(self):
+        if (self.cleaned_data.get('week32_test') == YES and
+                self.cleaned_data.get('current_hiv_status') != IND):
+            if (self.cleaned_data.get('current_hiv_status') !=
+                    self.cleaned_data.get('week32_result')):
+                message = {'current_hiv_status':
+                           'Current HIV status must match HIV test result. Please'
+                           ' correct.'}
+                self._errors.update(message)
+                raise ValidationError(message)
+
+    def validate_current_hiv_status(self):
+        if (self.cleaned_data.get('week32_test') == NO and
+                self.cleaned_data.get('current_hiv_status') in [POS, NEG, IND]):
+            message = {'current_hiv_status':
+                       'Participant has never tested for HIV. Current HIV '
+                       'status is unknown.'}
+            self._errors.update(message)
+            raise ValidationError(message)
+        elif (self.cleaned_data.get('week32_test') == YES and
+              self.cleaned_data.get('current_hiv_status') not in
+              [POS, NEG, IND, DWTA]):
+            message = {'current_hiv_status':
+                       'Participant has previously tested for HIV. Current '
+                       'HIV status cannot be unknown or never tested.'}
+            self._errors.update(message)
+            raise ValidationError(message)
 
     def validate_last_period_date(self, cleaned_data=None):
         last_period_date = cleaned_data.get('last_period_date')
