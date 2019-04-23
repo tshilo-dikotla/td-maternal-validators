@@ -91,7 +91,7 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
 
     def validate_study_status(self):
         maternal_offstudy_cls = django_apps.get_model(
-            'td_prn.maternaloffstudy')
+            'td_maternal.maternaloffstudy')
         action_cls = site_action_items.get(
             maternal_offstudy_cls.action_name)
         action_item_model_cls = action_cls.action_item_model_cls()
@@ -114,7 +114,7 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
                          ' Cannot be indicated as on study.'})
         else:
             if (action_item.parent_reference_model_obj and
-                self.cleaned_data.get('visit_code') != 
+                self.cleaned_data.get('visit_code') !=
                     action_item.parent_reference_model_obj.visit_code):
                 raise forms.ValidationError(
                     'Participant is scheduled to go offstudy.'
