@@ -46,7 +46,7 @@ class TestAntenatalEnrollmentForm(TestCase):
             'last_period_date': get_utcnow().date() - relativedelta(weeks=2),
             'rapid_test_done': YES,
             'rapid_test_result': NEG,
-            'rapid_test_date': get_utcnow()
+            'rapid_test_date': get_utcnow().date()
         }
         form_validator = AntenatalEnrollmentFormValidator(
             cleaned_data=cleaned_data)
@@ -63,7 +63,8 @@ class TestAntenatalEnrollmentForm(TestCase):
             'last_period_date': get_utcnow().date() - relativedelta(weeks=16),
             'rapid_test_done': YES,
             'rapid_test_result': NEG,
-            'rapid_test_date': get_utcnow()
+            'week32_test_date': get_utcnow().date(),
+            'rapid_test_date': get_utcnow().date()
         }
         form_validator = AntenatalEnrollmentFormValidator(
             cleaned_data=cleaned_data)
@@ -82,7 +83,7 @@ class TestAntenatalEnrollmentForm(TestCase):
             'last_period_date': get_utcnow().date() - relativedelta(weeks=37),
             'rapid_test_done': YES,
             'rapid_test_result': NEG,
-            'rapid_test_date': get_utcnow()
+            'rapid_test_date': get_utcnow().date()
         }
         form_validator = AntenatalEnrollmentFormValidator(
             cleaned_data=cleaned_data)
@@ -100,7 +101,8 @@ class TestAntenatalEnrollmentForm(TestCase):
             'last_period_date': get_utcnow().date() - relativedelta(weeks=20),
             'rapid_test_done': YES,
             'rapid_test_result': NEG,
-            'rapid_test_date': get_utcnow()
+            'rapid_test_date': get_utcnow().date(),
+            'week32_test_date': get_utcnow().date()
         }
         form_validator = AntenatalEnrollmentFormValidator(
             cleaned_data=cleaned_data)
@@ -121,6 +123,7 @@ class TestAntenatalEnrollmentForm(TestCase):
             'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_identifier,
             'rapid_test_date': get_utcnow().date() - relativedelta(days=5),
+            'week32_test_date': get_utcnow().date() - relativedelta(days=5)
         }
         form_validator = AntenatalEnrollmentFormValidator(
             cleaned_data=cleaned_data)
@@ -134,8 +137,9 @@ class TestAntenatalEnrollmentForm(TestCase):
             'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_identifier,
             'rapid_test_done': YES,
-            'rapid_test_date': get_utcnow(),
-            'rapid_test_result': NEG
+            'rapid_test_date': get_utcnow().date(),
+            'rapid_test_result': NEG,
+            'week32_test_date': get_utcnow().date()
         }
         form_validator = AntenatalEnrollmentFormValidator(
             cleaned_data=cleaned_data)
@@ -153,7 +157,8 @@ class TestAntenatalEnrollmentForm(TestCase):
             'subject_identifier': self.subject_identifier,
             'rapid_test_date': get_utcnow().date() - relativedelta(days=3),
             'rapid_test_done': YES,
-            'rapid_test_result': NEG}
+            'rapid_test_result': NEG,
+            'week32_test_date': get_utcnow().date() - relativedelta(days=3)}
         form_validator = AntenatalEnrollmentFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -219,7 +224,7 @@ class TestAntenatalEnrollmentForm(TestCase):
             'report_datetime': get_utcnow(),
             'subject_identifier': self.subject_identifier,
             'rapid_test_done': YES,
-            'rapid_test_date': get_utcnow(),
+            'rapid_test_date': get_utcnow().date(),
             'rapid_test_result': None
         }
         form_validator = AntenatalEnrollmentFormValidator(
