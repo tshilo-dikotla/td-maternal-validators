@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from edc_constants.constants import NO, YES, DWTA, OTHER
+from edc_constants.constants import NO, YES, DWTA, OTHER, NOT_APPLICABLE
 from edc_form_validators import FormValidator
 
 from .crf_form_validator import TDCRFFormValidator
@@ -45,7 +45,7 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
             m2m_field='contr',
             field_other='contr_other'
         )
-        self.required_if(
+        self.not_required_if(
             YES,
             field='is_contraceptive_initiated',
             field_required='reason_not_initiated'
@@ -56,8 +56,14 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
             other_specify_field='reason_not_initiated_other',
             other_stored_value=OTHER)
 
+        self.m2m_required_if(
+            YES,
+            field='is_contraceptive_initiated',
+            m2m_field='contr')
+
         self.validate_seen_at_clinic_DWTA(cleaned_data=self.cleaned_data)
         self.validate_not_tried(cleaned_data=self.cleaned_data)
+        self.validate_m2m_required()
 
     def validate_seen_at_clinic_DWTA(self, cleaned_data=None):
         if cleaned_data.get('seen_at_clinic') == DWTA:
@@ -80,3 +86,16 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
                        'must be None or Blank.'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
+
+    def validate_m2m_required(self):
+
+        qs = self.cleaned_data.get('contr')
+        if qs and qs.count() >= 1:
+            selected = {obj.short_name: obj.name for obj in qs}
+            print(selected)
+            if (self.cleaned_data.get('is_contraceptive_initiated') == YES and
+                    NOT_APPLICABLE in selected):
+                message = {
+                    'contr':
+                    'This field is applicable.'}
+                raise ValidationError(message)
