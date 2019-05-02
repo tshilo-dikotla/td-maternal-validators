@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
-from setuptools import setup
+
 from setuptools import find_packages
+from setuptools import setup
+
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
@@ -10,7 +12,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='tshilo-dikotla maternal validators',
+    name='td maternal validators',
     version='0.1.0',
     author=u'Software Engineering & Data Management',
     author_email='se-dmc@bhp.org.bw',
