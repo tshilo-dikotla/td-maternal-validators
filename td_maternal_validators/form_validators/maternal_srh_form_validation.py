@@ -36,17 +36,13 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
             field='seen_at_clinic',
             field_required='is_contraceptive_initiated')
 
-        self.m2m_required_if(
-            YES,
-            field='is_contraceptive_initiated',
-            m2m_field='contr')
-
         self.m2m_other_specify(
+            OTHER,
             m2m_field='contr',
             field_other='contr_other'
         )
-        self.not_required_if(
-            YES,
+        self.required_if(
+            NO,
             field='is_contraceptive_initiated',
             field_required='reason_not_initiated'
         )
@@ -56,14 +52,10 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
             other_specify_field='reason_not_initiated_other',
             other_stored_value=OTHER)
 
-        self.m2m_required_if(
-            YES,
-            field='is_contraceptive_initiated',
-            m2m_field='contr')
-
         self.validate_seen_at_clinic_DWTA(cleaned_data=self.cleaned_data)
         self.validate_not_tried(cleaned_data=self.cleaned_data)
         self.validate_m2m_required()
+        self.validate_m2m_required_()
 
     def validate_seen_at_clinic_DWTA(self, cleaned_data=None):
         if cleaned_data.get('seen_at_clinic') == DWTA:
@@ -72,7 +64,8 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
                 cleaned_data.get('contr') or
                     cleaned_data.get('reason_not_initiated')):
                 msg = {'reason_not_initiated':
-                       'If participant does not want to answer, the questionnaire is complete.'}
+                       'If participant does not want to answer,'
+                       ' the questionnaire is complete.'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
 
@@ -88,14 +81,39 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
                 raise ValidationError(msg)
 
     def validate_m2m_required(self):
-
         qs = self.cleaned_data.get('contr')
         if qs and qs.count() >= 1:
             selected = {obj.short_name: obj.name for obj in qs}
-            print(selected)
             if (self.cleaned_data.get('is_contraceptive_initiated') == YES and
                     NOT_APPLICABLE in selected):
                 message = {
                     'contr':
                     'This field is applicable.'}
+                raise ValidationError(message)
+
+    def validate_m2m_required_(self):
+        is_contraceptive_initiated = self.cleaned_data.get('is_contraceptive_initiated')
+        qs = self.cleaned_data.get('contr')
+
+        if qs and qs.count() >= 1:
+            selected = {obj.short_name: obj.name for obj in qs}
+            if not is_contraceptive_initiated == YES \
+                    and (NOT_APPLICABLE not in selected):
+                        message = {
+                            'contr':
+                            'Answer should be Not Applicable for this field'
+                        }
+                        raise ValidationError(message)
+
+            if (is_contraceptive_initiated == YES and \
+                    NOT_APPLICABLE in selected):
+                        message = {
+                            'contr':
+                            'This field cannot be Not Applicable.'}
+                        raise ValidationError(message)
+        elif qs.count() < 1:
+                message = {
+                    'contr':
+                    'This field is required.'
+                }
                 raise ValidationError(message)
