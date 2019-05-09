@@ -53,7 +53,6 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
             other_stored_value=OTHER)
 
         self.validate_seen_at_clinic_DWTA(cleaned_data=self.cleaned_data)
-        self.validate_not_tried(cleaned_data=self.cleaned_data)
         self.validate_m2m_required()
         self.validate_m2m_required_()
 
@@ -69,17 +68,6 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
                 self._errors.update(msg)
                 raise ValidationError(msg)
 
-    def validate_not_tried(self, cleaned_data=None):
-        if cleaned_data.get('reason_unseen_clinic') == 'not_tried':
-            if (cleaned_data.get('is_contraceptive_initiated') or
-                cleaned_data.get('contr') or
-                    cleaned_data.get('reason_not_initiated')):
-                msg = {'reason_unseen_clinic':
-                       'If Q3 is \'No\' all Questions after Question 4 '
-                       'must be None or Blank.'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
-
     def validate_m2m_required(self):
         qs = self.cleaned_data.get('contr')
         if qs and qs.count() >= 1:
@@ -92,28 +80,29 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
                 raise ValidationError(message)
 
     def validate_m2m_required_(self):
-        is_contraceptive_initiated = self.cleaned_data.get('is_contraceptive_initiated')
+        is_contraceptive_initiated = self.cleaned_data.get(
+            'is_contraceptive_initiated')
         qs = self.cleaned_data.get('contr')
 
         if qs and qs.count() >= 1:
             selected = {obj.short_name: obj.name for obj in qs}
             if not is_contraceptive_initiated == YES \
                     and (NOT_APPLICABLE not in selected):
-                        message = {
-                            'contr':
-                            'Answer should be Not Applicable for this field'
-                        }
-                        raise ValidationError(message)
-
-            if (is_contraceptive_initiated == YES and \
-                    NOT_APPLICABLE in selected):
-                        message = {
-                            'contr':
-                            'This field cannot be Not Applicable.'}
-                        raise ValidationError(message)
-        elif qs.count() < 1:
                 message = {
                     'contr':
-                    'This field is required.'
+                    'Answer should be Not Applicable for this field'
                 }
                 raise ValidationError(message)
+
+            if (is_contraceptive_initiated == YES and
+                    NOT_APPLICABLE in selected):
+                message = {
+                    'contr':
+                    'This field cannot be Not Applicable.'}
+                raise ValidationError(message)
+        elif qs.count() < 1:
+            message = {
+                'contr':
+                'This field is required.'
+            }
+            raise ValidationError(message)
