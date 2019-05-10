@@ -80,28 +80,29 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
                 raise ValidationError(message)
 
     def validate_m2m_required_(self):
-        is_contraceptive_initiated = self.cleaned_data.get('is_contraceptive_initiated')
+        is_contraceptive_initiated = self.cleaned_data.get(
+            'is_contraceptive_initiated')
         qs = self.cleaned_data.get('contr')
 
         if qs and qs.count() >= 1:
             selected = {obj.short_name: obj.name for obj in qs}
             if not is_contraceptive_initiated == YES \
                     and (NOT_APPLICABLE not in selected):
-                        message = {
-                            'contr':
-                            'Answer should be Not Applicable for this field'
-                        }
-                        raise ValidationError(message)
-
-            if (is_contraceptive_initiated == YES and \
-                    NOT_APPLICABLE in selected):
-                        message = {
-                            'contr':
-                            'This field cannot be Not Applicable.'}
-                        raise ValidationError(message)
-        elif qs.count() < 1:
                 message = {
                     'contr':
-                    'This field is required.'
+                    'Answer should be Not Applicable for this field'
                 }
                 raise ValidationError(message)
+
+            if (is_contraceptive_initiated == YES and
+                    NOT_APPLICABLE in selected):
+                message = {
+                    'contr':
+                    'This field cannot be Not Applicable.'}
+                raise ValidationError(message)
+        elif qs.count() < 1:
+            message = {
+                'contr':
+                'This field is required.'
+            }
+            raise ValidationError(message)
