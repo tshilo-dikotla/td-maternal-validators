@@ -53,7 +53,6 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
             other_stored_value=OTHER)
 
         self.validate_seen_at_clinic_DWTA(cleaned_data=self.cleaned_data)
-        self.validate_not_tried(cleaned_data=self.cleaned_data)
         self.validate_m2m_required()
         self.validate_m2m_required_()
 
@@ -66,17 +65,6 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
                 msg = {'reason_not_initiated':
                        'If participant does not want to answer,'
                        ' the questionnaire is complete.'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
-
-    def validate_not_tried(self, cleaned_data=None):
-        if cleaned_data.get('reason_unseen_clinic') == 'not_tried':
-            if (cleaned_data.get('is_contraceptive_initiated') or
-                cleaned_data.get('contr') or
-                    cleaned_data.get('reason_not_initiated')):
-                msg = {'reason_unseen_clinic':
-                       'If Q3 is \'No\' all Questions after Question 4 '
-                       'must be None or Blank.'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
 
