@@ -16,7 +16,7 @@ class TDCRFFormValidator:
 
     def validate_offstudy_model(self):
         maternal_offstudy_cls = django_apps.get_model(
-            'td_maternal.maternaloffstudy')
+            'td_prn.maternaloffstudy')
         action_cls = site_action_items.get(
             maternal_offstudy_cls.action_name)
         action_item_model_cls = action_cls.action_item_model_cls()

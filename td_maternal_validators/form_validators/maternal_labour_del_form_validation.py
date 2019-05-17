@@ -86,7 +86,7 @@ class MaternalLabDelFormValidator(TDCRFFormValidator,
                 'please give a valid arv initiation date.'
             )
             if (cleaned_data.get('valid_regiment_duration') == YES and
-                (cleaned_data.get('delivery_datetime').date() - relativedelta(weeks=4) <
+                (cleaned_data.get('delivery_datetime').date() - relativedelta(weeks=4) < 
                  cleaned_data.get('arv_initiation_date'))):
                 message = {'delivery_datetime':
                            'You indicated that the mother was on REGIMEN for a '
