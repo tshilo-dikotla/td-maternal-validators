@@ -1,5 +1,3 @@
-from td_maternal.action_items import MATERNALOFF_STUDY_ACTION
-
 from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
@@ -9,6 +7,8 @@ from edc_constants.constants import PARTICIPANT, ALIVE, NO
 from edc_form_validators import FormValidator
 from edc_visit_tracking.constants import LOST_VISIT, SCHEDULED
 from edc_visit_tracking.form_validators import VisitFormValidator
+
+from td_prn.action_items import MATERNALOFF_STUDY_ACTION
 
 from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
@@ -113,9 +113,9 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
                         {'study_status': 'Participant has been taken offstudy.'
                          ' Cannot be indicated as on study.'})
         else:
-            if (action_item.parent_reference_model_obj and
-                self.cleaned_data.get('visit_code') !=
-                    action_item.parent_reference_model_obj.visit_code):
+            if (action_item.parent_reference_model_obj
+                and self.cleaned_data.get(
+                    'report_datetime') >= action_item.parent_reference_model_obj.report_datetime):
                 raise forms.ValidationError(
                     'Participant is scheduled to go offstudy.'
                     ' Cannot edit visit until offstudy form is completed.')
