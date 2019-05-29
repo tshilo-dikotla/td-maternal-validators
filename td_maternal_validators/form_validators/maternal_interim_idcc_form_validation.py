@@ -75,6 +75,6 @@ class MaternalIterimIdccFormValidator(TDCRFFormValidator,
                     and cleaned_data.get('value_vl_size') == 'equal'):
                 msg = {'value_vl': 'You indicated that the value of the '
                        f'most recent VL is equal to a {vl_value}, therefore the value of VL '
-                       'should be between 400 and 750000 (inclusive of 400 and 10,000,000)'}
+                       'should be between 400 and 10,000,000 (inclusive of 400 and 10,000,000)'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
