@@ -24,11 +24,12 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
 
     def clean(self):
         cleaned_data = self.cleaned_data
-        self.subject_identifier = cleaned_data.get('subject_identifier')
+        self.maternal_identifier = cleaned_data.get('subject_identifier')
+        self.subject_identifier = self.maternal_identifier + '-10'
         super().clean()
 
         self.validate_against_screening_date(
-            subject_identifier=self.subject_identifier,
+            subject_identifier=self.maternal_identifier,
             report_datetime=cleaned_data.get('report_datetime'))
 
         self.required_if(
