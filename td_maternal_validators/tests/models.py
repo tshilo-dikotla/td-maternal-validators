@@ -1,4 +1,3 @@
-from django.apps import apps as django_apps
 from django.db import models
 from django.db.models.deletion import PROTECT
 from django_crypto_fields.fields import FirstnameField, LastnameField
@@ -38,6 +37,8 @@ class SubjectConsent(UpdatesOrCreatesRegistrationModelMixin, BaseUuidModel):
 
 
 class RegisteredSubject(BaseUuidModel):
+
+    subject_identifier = models.CharField(max_length=25)
 
     first_name = FirstnameField(null=True)
 

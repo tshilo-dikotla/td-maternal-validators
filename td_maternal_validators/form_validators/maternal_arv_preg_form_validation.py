@@ -1,8 +1,5 @@
 from edc_constants.constants import YES
 from edc_form_validators import FormValidator
-
-from td_maternal.models import MaternalArvPreg, MaternalArv
-
 from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 

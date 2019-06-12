@@ -4,12 +4,33 @@ from django.core.exceptions import ValidationError
 from edc_constants.constants import NO, YES
 from edc_form_validators import FormValidator
 
+from .crf_form_validator import TDCRFFormValidator
 
-class KaraboSubjectConsentFormValidator(FormValidator):
+
+class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
+                                        FormValidator):
 
     maternal_subject_consent = 'td_maternal.subjectconsent'
 
+    karabo_screening_model = 'td_maternal.karabosubjectscreening'
+
+    @property
+    def maternal_consent_cls(self):
+        return django_apps.get_model(self.maternal_subject_consent)
+
+    @property
+    def karabo_screening_cls(self):
+        return django_apps.get_model(self.karabo_screening_model)
+
     def clean(self):
+        cleaned_data = self.cleaned_data
+        self.maternal_identifier = cleaned_data.get('subject_identifier')
+        self.subject_identifier = self.maternal_identifier + '-10'
+        super().clean()
+
+        self.validate_against_screening_date(
+            subject_identifier=self.maternal_identifier,
+            report_datetime=cleaned_data.get('report_datetime'))
 
         self.required_if(
             NO,
@@ -26,9 +47,22 @@ class KaraboSubjectConsentFormValidator(FormValidator):
         self.clean_consent_copy()
         self.clean_consent_signature()
 
-    @property
-    def maternal_consent_cls(self):
-        return django_apps.get_model(self.maternal_subject_consent)
+    def validate_against_screening_date(self, subject_identifier=None,
+                                        report_datetime=None):
+
+        try:
+            karabo_screening = self.karabo_screening_cls.objects.get(
+                subject_identifier=subject_identifier)
+        except self.karabo_screening_cls.DoesNotExist:
+            raise ValidationError(
+                'Please complete Karabo Screening form '
+                f'before  proceeding.')
+        else:
+            if report_datetime and report_datetime < karabo_screening.report_datetime:
+                raise forms.ValidationError(
+                    "Report datetime cannot be before Karabo Screening datetime.")
+            else:
+                return karabo_screening
 
     def validate_maternal_name(self):
         '''Validates maternal name from Tshilo dikotla and Karabo Study

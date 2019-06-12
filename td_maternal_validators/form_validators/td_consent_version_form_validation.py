@@ -20,7 +20,8 @@ class TDConsentVersionFormValidator(TDCRFFormValidator,
         """Returns an instance of the current maternal consent or
         raises an exception if not found."""
 
-        if report_datetime < self.subject_screening.report_datetime:
+        if (report_datetime 
+            and report_datetime < self.subject_screening.report_datetime):
             raise forms.ValidationError(
                 "Report datetime cannot be before screening datetime")
 
