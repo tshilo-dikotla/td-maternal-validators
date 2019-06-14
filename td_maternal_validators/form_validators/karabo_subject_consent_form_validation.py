@@ -42,11 +42,11 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
         self.validate_maternal_initials()
         self.validate_maternal_dob()
         self.validate_maternal_omang()
-        self.clean_review_questions(self, 'consent_reviewed', YES)
-        self.clean_review_questions(self, 'study_questions', YES)
-        self.clean_review_questions(self, 'assessment_score', YES)
-        self.clean_review_questions(self, 'consent_copy', NO)
-        self.clean_review_questions(self, 'consent_signature', YES)
+        self.clean_review_questions('consent_reviewed', YES)
+        self.clean_review_questions('study_questions', YES)
+        self.clean_review_questions('assessment_score', YES)
+        self.clean_review_questions('consent_copy', NO)
+        self.clean_review_questions('consent_signature', YES)
 
     def validate_against_screening_date(self, subject_identifier=None,
                                         report_datetime=None):
