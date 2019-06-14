@@ -159,8 +159,8 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
                      ' similar to Tshilo Dikotla'})
 
     def clean_review_questions(self, field, response):
-        field = self.cleaned_data.get(field)
-        if field != response:
+        cleaned_field = self.cleaned_data.get(field)
+        if cleaned_field != response:
             raise forms.ValidationError({
                 field:
                 'Complete this part of the informed consent process '
