@@ -34,8 +34,8 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
 
         self.required_if(
             NO,
-            field='literacy',
-            field_required='witness_name'
+            field='is_literate',
+            field_required='guardian_name'
         )
         self.validate_maternal_name()
         self.validate_maternal_surname()
