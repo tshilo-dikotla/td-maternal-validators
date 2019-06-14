@@ -40,6 +40,7 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
         self.validate_maternal_name()
         self.validate_maternal_surname()
         self.validate_maternal_initials()
+        self.validate_maternal_dob()
         self.validate_maternal_omang()
         self.clean_consent_reviewed()
         self.clean_study_questions()
@@ -117,6 +118,25 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
             if not self.cleaned_data['initials'] == maternal_consent.initials:
                 raise ValidationError(
                     {'initials': 'Please Enter Maternal Initials'
+                     ' similar to Tshilo Dikotla'})
+
+    def validate_maternal_dob(self):
+        '''Validates maternal name from Tshilo dikotla and Karabo Study
+        '''
+        subject_identifier = self.cleaned_data.get('subject_identifier')
+        try:
+            maternal_consent = self.maternal_consent_cls.objects.get(
+                subject_identifier=subject_identifier)
+
+        except self.maternal_consent_cls.DoesNotExist:
+            raise ValidationError(
+                {'subject_identifier': 'Subject Identifier doesn\'t'
+                 ' exists in Tshilo Dikotla'})
+
+        else:
+            if not self.cleaned_data['dob'] == maternal_consent.dob:
+                raise ValidationError(
+                    {'dob': 'Please Enter Maternal Date of Birth'
                      ' similar to Tshilo Dikotla'})
 
     def validate_maternal_omang(self):
