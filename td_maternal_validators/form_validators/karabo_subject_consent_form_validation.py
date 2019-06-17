@@ -26,7 +26,6 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
         cleaned_data = self.cleaned_data
         self.maternal_identifier = cleaned_data.get('subject_identifier')
         self.subject_identifier = self.maternal_identifier + '-10'
-        super().clean()
 
         self.validate_against_screening_date(
             subject_identifier=self.maternal_identifier,
@@ -35,7 +34,7 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
         self.required_if(
             NO,
             field='literacy',
-            field_required='witness_name'
+            field_required='guardian_name'
         )
         self.validate_maternal_name()
         self.validate_maternal_surname()
@@ -46,6 +45,7 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
         self.clean_study_questions()
         self.clean_consent_copy()
         self.clean_consent_signature()
+        super().clean()
 
     def validate_against_screening_date(self, subject_identifier=None,
                                         report_datetime=None):
