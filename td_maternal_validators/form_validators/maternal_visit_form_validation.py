@@ -1,13 +1,13 @@
 from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_action_item.site_action_items import site_action_items
 from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY, NEW
 from edc_constants.constants import PARTICIPANT, ALIVE, NO
 from edc_form_validators import FormValidator
 from edc_visit_tracking.constants import LOST_VISIT, SCHEDULED
 from edc_visit_tracking.form_validators import VisitFormValidator
 
+from edc_action_item.site_action_items import site_action_items
 from td_prn.action_items import MATERNALOFF_STUDY_ACTION
 
 from .crf_form_validator import TDCRFFormValidator
@@ -119,3 +119,12 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
                 raise forms.ValidationError(
                     'Participant is scheduled to go offstudy.'
                     ' Cannot edit visit until offstudy form is completed.')
+
+    @property
+    def subject_screening(self):
+        try:
+            return self.subject_screening_cls.objects.get(
+                subject_identifier=self.cleaned_data.get(
+                    'appointment').subject_identifier)
+        except self.subject_screening_cls.DoesNotExist:
+            return None
