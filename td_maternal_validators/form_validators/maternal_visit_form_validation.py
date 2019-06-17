@@ -119,12 +119,3 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
                 raise forms.ValidationError(
                     'Participant is scheduled to go offstudy.'
                     ' Cannot edit visit until offstudy form is completed.')
-
-    @property
-    def subject_screening(self):
-        try:
-            return self.subject_screening_cls.objects.get(
-                subject_identifier=self.cleaned_data.get(
-                    'appointment').subject_identifier)
-        except self.subject_screening_cls.DoesNotExist:
-            return None
