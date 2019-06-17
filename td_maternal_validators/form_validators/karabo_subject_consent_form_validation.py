@@ -33,7 +33,7 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
 
         self.required_if(
             NO,
-            field='literacy',
+            field='is_literate',
             field_required='guardian_name'
         )
         self.validate_maternal_name()
@@ -41,11 +41,11 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
         self.validate_maternal_initials()
         self.validate_maternal_dob()
         self.validate_maternal_omang()
-        self.clean_consent_reviewed()
-        self.clean_study_questions()
-        self.clean_consent_copy()
-        self.clean_consent_signature()
-        super().clean()
+        self.clean_review_questions('consent_reviewed', NO)
+        self.clean_review_questions('study_questions', NO)
+        self.clean_review_questions('assessment_score', NO)
+        self.clean_review_questions('consent_copy', NO)
+        self.clean_review_questions('consent_signature', NO)
 
     def validate_against_screening_date(self, subject_identifier=None,
                                         report_datetime=None):
@@ -157,34 +157,10 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
                     {'identity': 'Please Enter Maternal identity'
                      ' similar to Tshilo Dikotla'})
 
-    def clean_consent_reviewed(self):
-        consent_reviewed = self.cleaned_data.get('consent_reviewed')
-        if consent_reviewed != YES:
+    def clean_review_questions(self, field, response):
+        cleaned_field = self.cleaned_data.get(field)
+        if cleaned_field == response:
             raise forms.ValidationError({
-                'consent_reviewed':
+                field:
                 'Complete this part of the informed consent process '
                 'before continuing.'})
-
-    def clean_study_questions(self):
-        study_questions = self.cleaned_data.get('study_questions')
-        if study_questions != YES:
-            raise forms.ValidationError({
-                'study_questions':
-                'Complete this part of the informed consent process'
-                ' before continuing.'})
-
-    def clean_consent_copy(self):
-        consent_copy = self.cleaned_data.get('consent_copy')
-        if consent_copy == NO:
-            raise forms.ValidationError({
-                'consent_copy':
-                'Complete this part of the informed consent process'
-                ' before continuing.'})
-
-    def clean_consent_signature(self):
-        consent_signature = self.cleaned_data.get('consent_signature')
-        if consent_signature != YES:
-            raise forms.ValidationError({
-                'consent_signature':
-                'Complete this part of the informed consent process'
-                ' before continuing.'})
