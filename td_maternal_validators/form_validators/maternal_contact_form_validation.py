@@ -35,7 +35,8 @@ class MaternalContactFormValidator(TDCRFFormValidator,
                 self._errors.update(msg)
                 raise ValidationError(msg)
         else:
-            msg = {'Maternal Locator not found, please add Locator before proceeding.'}
+            msg = {'__all__': 'Maternal Locator not found, please add '
+                   'Locator before proceeding.'}
             self._errors.update(msg)
             raise ValidationError(msg)
 
