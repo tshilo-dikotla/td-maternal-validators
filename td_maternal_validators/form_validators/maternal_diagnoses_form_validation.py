@@ -1,9 +1,8 @@
+from td_maternal.helper_classes import MaternalStatusHelper
+
 from django.core.exceptions import ValidationError
 from edc_constants.constants import YES, NOT_APPLICABLE, OTHER, POS
 from edc_form_validators.form_validator import FormValidator
-from td_maternal.helper_classes import MaternalStatusHelper
-
-from .crf_form_validator import TDCRFFormValidator
 
 
 class MaternalDiagnosesFormValidator(FormValidator):
