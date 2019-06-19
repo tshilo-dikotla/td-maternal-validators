@@ -4,8 +4,7 @@ from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class MaternalArvPregFormValidator(TDCRFFormValidator,
-                                   TDFormValidatorMixin, FormValidator):
+class MaternalArvPregFormValidator(TDCRFFormValidator, FormValidator):
 
     def clean(self):
         self.subject_identifier = self.cleaned_data.get(

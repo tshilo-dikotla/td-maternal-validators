@@ -11,7 +11,8 @@ class TDConsentVersionFormValidator(TDCRFFormValidator,
 
     def clean(self):
         self.subject_identifier = self.cleaned_data.get('subject_identifier')
-        super().clean()
+        if self.instance and not self.instance.id:
+            self.validate_offstudy_model()
 
         self.validate_against_screening_datetime(
             self.cleaned_data.get('report_datetime'))
@@ -20,8 +21,8 @@ class TDConsentVersionFormValidator(TDCRFFormValidator,
         """Returns an instance of the current maternal consent or
         raises an exception if not found."""
 
-        if (report_datetime 
-            and report_datetime < self.subject_screening.report_datetime):
+        if (report_datetime and report_datetime <
+                self.subject_screening.report_datetime):
             raise forms.ValidationError(
                 "Report datetime cannot be before screening datetime")
 

@@ -1,10 +1,10 @@
+from td_maternal.helper_classes import MaternalStatusHelper
+
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_base.utils import relativedelta
 from edc_constants.constants import POS, YES, NOT_APPLICABLE, OTHER, NONE
 from edc_form_validators import FormValidator
-
-from td_maternal.helper_classes import MaternalStatusHelper
 
 from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
@@ -30,7 +30,8 @@ class MaternalLabDelFormValidator(TDCRFFormValidator,
 
     def clean(self):
         self.subject_identifier = self.cleaned_data.get('subject_identifier')
-        super().clean()
+        if self.instance and not self.instance.id:
+            self.validate_offstudy_model()
 
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'))
@@ -86,7 +87,7 @@ class MaternalLabDelFormValidator(TDCRFFormValidator,
                 'please give a valid arv initiation date.'
             )
             if (cleaned_data.get('valid_regiment_duration') == YES and
-                (cleaned_data.get('delivery_datetime').date() - relativedelta(weeks=4) < 
+                (cleaned_data.get('delivery_datetime').date() - relativedelta(weeks=4) <
                  cleaned_data.get('arv_initiation_date'))):
                 message = {'delivery_datetime':
                            'You indicated that the mother was on REGIMEN for a '

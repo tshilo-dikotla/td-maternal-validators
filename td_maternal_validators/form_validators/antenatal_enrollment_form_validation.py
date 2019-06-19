@@ -10,12 +10,14 @@ from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class AntenatalEnrollmentFormValidator(TDCRFFormValidator, TDFormValidatorMixin,
+class AntenatalEnrollmentFormValidator(TDCRFFormValidator,
+                                       TDFormValidatorMixin,
                                        FormValidator):
 
     def clean(self):
         self.subject_identifier = self.cleaned_data.get('subject_identifier')
-        super().clean()
+        if self.instance and not self.instance.id:
+            self.validate_offstudy_model()
 
         self.required_if(
             YES,

@@ -20,7 +20,8 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
     def clean(self):
         self.subject_identifier = self.cleaned_data.get(
             'appointment').subject_identifier
-        super().clean()
+        if self.instance and not self.instance.id:
+            self.validate_offstudy_model()
 
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'))

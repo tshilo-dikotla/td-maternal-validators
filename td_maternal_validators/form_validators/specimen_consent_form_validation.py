@@ -11,7 +11,8 @@ class SpecimenConsentFormValidator(TDCRFFormValidator,
 
     def clean(self):
         self.subject_identifier = self.cleaned_data.get('subject_identifier')
-        super().clean()
+        if self.instance and not self.instance.id:
+            self.validate_offstudy_model()
 
         self.required_if(
             NO,
