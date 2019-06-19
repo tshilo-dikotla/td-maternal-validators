@@ -4,7 +4,6 @@ from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from edc_constants.constants import YES, NO, NOT_APPLICABLE
 from ..form_validators import MaternalArvPregFormValidator
-from td_maternal.forms import MaternalArvPregForm
 from .models import MaternalVisit, Appointment, MaternalArvPreg
 from .models import SubjectScreening, SubjectConsent, TdConsentVersion
 

@@ -6,7 +6,7 @@ from edc_constants.constants import YES, NO
 
 from ..form_validators import MaternalContactFormValidator
 from .models import MaternalLocator, SubjectConsent, SubjectScreening
-from .models import MaternalVisit, Appointment
+from .models import MaternalVisit, Appointment, TdConsentVersion
 
 
 @tag('mcon')
@@ -28,6 +28,10 @@ class TestMaternalContactForm(TestCase):
             subject_identifier='11111111',
             screening_identifier='ABC12345',
             age_in_years=22)
+
+        self.consent_version = TdConsentVersion.objects.create(
+            screening_identifier='ABC12345',
+            version='3')
 
         self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111', screening_identifier='ABC12345',

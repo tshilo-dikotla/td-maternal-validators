@@ -30,8 +30,10 @@ class TestMaternalArvForm(TestCase):
     def test_stop_date_invalid(self):
         '''Assert Raises if start_date is > stop_date.
         '''
+        maternal_arv_preg = MaternalArvPreg.objects.create(
+            maternal_visit=self.maternal_visit)
         cleaned_data = {
-            'maternal_visit': self.maternal_visit,
+            'maternal_arv_preg': maternal_arv_preg,
             'stop_date': get_utcnow().date(),
             'start_date': get_utcnow().date() + timedelta(days=30),
         }
@@ -51,7 +53,6 @@ class TestMaternalArvForm(TestCase):
         MaternalArv.objects.create(maternal_arv_preg=maternal_arv_preg)
 
         cleaned_data = {
-            'maternal_visit': self.maternal_visit,
             'maternal_arv_preg': maternal_arv_preg,
             'start_date': get_utcnow().date() + timedelta(days=30),
             'stop_date': get_utcnow().date() + timedelta(days=30),
@@ -77,7 +78,6 @@ class TestMaternalArvForm(TestCase):
         MaternalArv.objects.create(maternal_arv_preg=maternal_arv_preg)
 
         cleaned_data = {
-            'maternal_visit': self.maternal_visit,
             'maternal_arv_preg': maternal_arv_preg,
             'stop_date': get_utcnow().date() + timedelta(days=33),
             'start_date': get_utcnow().date() + timedelta(days=30),
@@ -102,7 +102,6 @@ class TestMaternalArvForm(TestCase):
         MaternalArv.objects.create(maternal_arv_preg=maternal_arv_preg)
 
         cleaned_data = {
-            'maternal_visit': self.maternal_visit,
             'maternal_arv_preg': maternal_arv_preg,
             'start_date': get_utcnow().date() + timedelta(days=31),
             'stop_date': get_utcnow().date() + timedelta(days=32),
@@ -124,7 +123,6 @@ class TestMaternalArvForm(TestCase):
         MaternalArv.objects.create(maternal_arv_preg=maternal_arv_preg)
 
         cleaned_data = {
-            'maternal_visit': self.maternal_visit,
             'maternal_arv_preg': maternal_arv_preg,
             'stop_date': get_utcnow().date(),
             'start_date': get_utcnow().date(),
@@ -146,7 +144,6 @@ class TestMaternalArvForm(TestCase):
         MaternalArv.objects.create(maternal_arv_preg=maternal_arv_preg)
 
         cleaned_data = {
-            'maternal_visit': self.maternal_visit,
             'maternal_arv_preg': maternal_arv_preg,
             'start_date': get_utcnow().date() + timedelta(days=31),
             'stop_date': get_utcnow().date() + timedelta(days=32),
@@ -171,7 +168,6 @@ class TestMaternalArvForm(TestCase):
             took_arv=NO, maternal_visit=self.maternal_visit)
 
         cleaned_data = {
-            'maternal_visit': self.maternal_visit,
             'maternal_arv_preg': maternal_arv_preg,
             'arv_history': MaternalLifetimeArvHistory.objects.get(
                 maternal_visit=maternal_arv_preg.maternal_visit),
@@ -193,7 +189,6 @@ class TestMaternalArvForm(TestCase):
             took_arv=NO, maternal_visit=self.maternal_visit)
 
         cleaned_data = {
-            'maternal_visit': self.maternal_visit,
             'maternal_arv_preg': maternal_arv_preg,
             'arv_history': MaternalLifetimeArvHistory.objects.get(
                 maternal_visit=maternal_arv_preg.maternal_visit),
@@ -217,7 +212,6 @@ class TestMaternalArvForm(TestCase):
             took_arv=NO, maternal_visit=self.maternal_visit)
 
         cleaned_data = {
-            'maternal_visit': self.maternal_visit,
             'maternal_arv_preg': maternal_arv_preg,
             'arv_history': MaternalLifetimeArvHistory.objects.get(
                 maternal_visit=maternal_arv_preg.maternal_visit),
@@ -242,7 +236,6 @@ class TestMaternalArvForm(TestCase):
             took_arv=NO, maternal_visit=self.maternal_visit)
 
         cleaned_data = {
-            'maternal_visit': self.maternal_visit,
             'maternal_arv_preg': maternal_arv_preg,
             'arv_history': MaternalLifetimeArvHistory.objects.get(
                 maternal_visit=maternal_arv_preg.maternal_visit),

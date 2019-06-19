@@ -208,6 +208,7 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         a prior pregnancy and date first started given but does not state if
         the date is estimated or not.'''
 
+        self.maternal_visit.report_datetime = get_utcnow() - relativedelta(days=30)
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
             'haart_start_date': get_utcnow().date(),

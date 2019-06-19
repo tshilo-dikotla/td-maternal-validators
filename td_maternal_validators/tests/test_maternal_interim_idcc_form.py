@@ -249,7 +249,7 @@ class TestMaternalInterimIdccFormValidator(TestCase):
         cleaned_data = {
             'maternal_visit': self.maternal_visit,
             'info_since_lastvisit': YES,
-            'value_vl': 750000,
+            'value_vl': 10000000,
             'recent_vl_date': get_utcnow(),
             'value_vl_size': 'greater_than'
         }

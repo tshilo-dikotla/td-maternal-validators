@@ -86,7 +86,7 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
 
         if qs and qs.count() >= 1:
             selected = {obj.short_name: obj.name for obj in qs}
-            if not is_contraceptive_initiated == YES \
+            if is_contraceptive_initiated != YES \
                     and (NOT_APPLICABLE not in selected):
                 message = {
                     'contr':
@@ -100,7 +100,7 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
                     'contr':
                     'This field cannot be Not Applicable.'}
                 raise ValidationError(message)
-        elif qs.count() < 1:
+        else:
             message = {
                 'contr':
                 'This field is required.'
