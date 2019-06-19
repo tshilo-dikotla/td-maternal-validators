@@ -2,11 +2,15 @@ from django.core.exceptions import ValidationError
 from edc_constants.constants import YES, POS, NOT_APPLICABLE, NO, OTHER
 from edc_form_validators import FormValidator
 from td_maternal.helper_classes import MaternalStatusHelper
+from ..form_validators import TDCRFFormValidator
 
 
-class MaternalPostPartumFuFormValidator(FormValidator):
+class MaternalPostPartumFuFormValidator(TDCRFFormValidator, FormValidator):
 
     def clean(self):
+        self.subject_identifier = self.cleaned_data.get(
+            'maternal_visit').subject_identifier
+        super().clean()
         required_fields = ('hospitalization_reason', 'diagnoses')
         for required_field in required_fields:
             self.m2m_required(
