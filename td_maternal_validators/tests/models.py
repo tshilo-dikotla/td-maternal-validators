@@ -224,3 +224,19 @@ class TdConsentVersion(BaseUuidModel):
     report_datetime = models.DateTimeField(
         null=True,
         blank=True)
+
+
+class MaternalLocator(BaseUuidModel):
+
+    subject_identifier = models.CharField(
+        max_length=50)
+
+    report_datetime = models.DateTimeField(
+        null=True,
+        blank=True)
+
+    may_sms = models.CharField(
+        max_length=3)
+
+    may_call = models.CharField(
+        max_length=3)
