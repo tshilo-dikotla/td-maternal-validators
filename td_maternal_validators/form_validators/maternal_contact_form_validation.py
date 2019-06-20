@@ -55,6 +55,7 @@ class MaternalContactFormValidator(TDCRFFormValidator,
 
         self.required_if(
             YES,
+            inverse=False,
             field='contact_success',
             field_required='contact_comment')
 

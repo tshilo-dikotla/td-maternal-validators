@@ -113,25 +113,8 @@ class TestMaternalContactForm(TestCase):
         cleaned_data = {
             'subject_identifier': '11111111',
             'contact_type': 'text_message',
-            'contact_success': NO,
-            'contact_comment': None
-
-        }
-        form_validator = MaternalContactFormValidator(
-            cleaned_data=cleaned_data)
-        try:
-            form_validator.validate()
-        except ValidationError as e:
-            self.fail(f'ValidationError unexpectedly raised. Got{e}')
-
-    def test_contact_success_valid2(self):
-        '''Assert form saves without error.
-        '''
-        cleaned_data = {
-            'subject_identifier': '11111111',
-            'contact_type': 'text_message',
-            'contact_success': NO,
-            'contact_comment': None
+            'contact_success': YES,
+            'contact_comment': 'blahblah'
 
         }
         form_validator = MaternalContactFormValidator(
