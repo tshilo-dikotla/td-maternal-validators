@@ -20,7 +20,8 @@ class KaraboSubjectScreeningFormValidator(TDCRFFormValidator, FormValidator):
         self.validate_against_birth_date(
             infant_identifier=self.subject_identifier,
             report_datetime=cleaned_data.get('report_datetime'))
-        super().clean()
+        if self.instance and not self.instance.id:
+            self.validate_offstudy_model()
 
     def validate_against_birth_date(self, infant_identifier=None,
                                     report_datetime=None):
