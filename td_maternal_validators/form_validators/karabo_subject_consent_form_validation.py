@@ -70,8 +70,9 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
         subject_identifier = self.cleaned_data.get('subject_identifier')
 
         try:
-            maternal_consent = self.maternal_consent_cls.objects.get(
-                subject_identifier=subject_identifier)
+            maternal_consent = self.maternal_consent_cls.objects.filter(
+                subject_identifier=subject_identifier).order_by(
+                    'consent_datetime').last()
         except self.maternal_consent_cls.DoesNotExist:
             raise ValidationError({
                 'subject_identifier': 'Subject Identifier doesn\'t'
@@ -87,8 +88,9 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
         '''
         subject_identifier = self.cleaned_data.get('subject_identifier')
         try:
-            maternal_consent = self.maternal_consent_cls.objects.get(
-                subject_identifier=subject_identifier)
+            maternal_consent = self.maternal_consent_cls.objects.filter(
+                subject_identifier=subject_identifier).order_by(
+                    'consent_datetime').last()
 
         except self.maternal_consent_cls.DoesNotExist:
             raise ValidationError(
@@ -107,8 +109,9 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
         subject_identifier = self.cleaned_data.get('subject_identifier')
 
         try:
-            maternal_consent = self.maternal_consent_cls.objects.get(
-                subject_identifier=subject_identifier)
+            maternal_consent = self.maternal_consent_cls.objects.filter(
+                subject_identifier=subject_identifier).order_by(
+                    'consent_datetime').last()
 
         except self.maternal_consent_cls.DoesNotExist:
             raise ValidationError(
@@ -125,8 +128,9 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
         '''
         subject_identifier = self.cleaned_data.get('subject_identifier')
         try:
-            maternal_consent = self.maternal_consent_cls.objects.get(
-                subject_identifier=subject_identifier)
+            maternal_consent = self.maternal_consent_cls.objects.filter(
+                subject_identifier=subject_identifier).order_by(
+                    'consent_datetime').last()
 
         except self.maternal_consent_cls.DoesNotExist:
             raise ValidationError(
@@ -145,8 +149,9 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
         subject_identifier = self.cleaned_data.get('subject_identifier')
 
         try:
-            maternal_consent = self.maternal_consent_cls.objects.get(
-                subject_identifier=subject_identifier)
+            maternal_consent = self.maternal_consent_cls.objects.filter(
+                subject_identifier=subject_identifier).order_by(
+                    'consent_datetime').last()
         except self.maternal_consent_cls.DoesNotExist:
             raise ValidationError(
                 {'subject_identifier': 'Subject Identifier doesn\'t'
