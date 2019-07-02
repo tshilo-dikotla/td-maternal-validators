@@ -1,7 +1,7 @@
 import re
 from django import forms
 from django.apps import apps as django_apps
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, MultipleObjectsReturned
 from edc_base.utils import relativedelta
 from edc_form_validators import FormValidator
 
@@ -50,6 +50,31 @@ class SubjectConsentFormValidator(TDCRFFormValidator, FormValidator):
         self.validate_recruit_source()
         self.validate_recruitment_clinic()
         self.validate_td_consent(model_obj=subject_screening)
+        self.validate_reconsent()
+
+    def validate_reconsent(self):
+        if self.instance:
+            consent_cls = self.instance.__class__
+            try:
+                consent_obj = consent_cls.objects.get(
+                    subject_identifier=self.cleaned_data.get('subject_identifier'),
+                    version='1')
+            except consent_cls.DoesNotExist:
+                pass
+            else:
+                consent_dict = consent_obj.__dict__
+                consent_fields = [
+                    'first_name', 'last_name', 'dob', 'recruit_source',
+                    'recruit_source_other', 'recruitment_clinic',
+                    'recruitment_clinic_other', 'is_literate', 'identity',
+                    'identity_type']
+                for field in consent_fields:
+                    if self.cleaned_data.get(field) != consent_dict[field]:
+                        message = {field:
+                                   f'{field} was previously reported as, '
+                                   f'{consent_dict[field]}, please correct.'}
+                        self._errors.update(message)
+                        raise ValidationError(message)
 
     def clean_full_name_syntax(self):
         cleaned_data = self.cleaned_data

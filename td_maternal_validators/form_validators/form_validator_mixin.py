@@ -45,10 +45,10 @@ class TDFormValidatorMixin:
             raise ValidationError(
                 'Please complete mother\'s consent version form before proceeding')
         else:
-            try:
-                latest_consent = self.maternal_consent_cls.objects.get(
-                    subject_identifier=self.subject_identifier)
-            except self.maternal_consent_cls.DoesNotExist:
+            latest_consent = self.maternal_consent_cls.objects.filter(
+                subject_identifier=self.subject_identifier).order_by(
+                    '-consent_datetime').first()
+            if not latest_consent:
                 raise ValidationError(
                     'Please complete Maternal Consent form '
                     f'before  proceeding.')
