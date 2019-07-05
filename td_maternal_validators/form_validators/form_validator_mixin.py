@@ -47,7 +47,7 @@ class TDFormValidatorMixin:
         else:
             latest_consent = self.maternal_consent_cls.objects.filter(
                 subject_identifier=self.subject_identifier,
-                version=consent_version).order_by(
+                version=consent_version.version).order_by(
                     '-consent_datetime').first()
             if not latest_consent:
                 raise ValidationError(
