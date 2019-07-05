@@ -50,14 +50,3 @@ class TDCRFFormValidator:
                 raise forms.ValidationError(
                     'Participant is scheduled to be taken offstudy without '
                     'any new data collection. Cannot capture any new data.')
-
-    def validate_karabo_eligibility(self):
-        karabo_screening_cls = django_apps.get_model(
-            'td_maternal.karaboscreening')
-        karabo_consent_cls = django_apps.get_model(
-            'td_maternal.karaboconsent')
-        try:
-            karabo_screening_cls.objects.get(
-                subject_identifier=self.subject_identifier)
-        except Exception:
-            pass
