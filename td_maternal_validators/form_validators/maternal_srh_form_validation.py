@@ -37,14 +37,21 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
             field_required='is_contraceptive_initiated')
 
         self.m2m_other_specify(
-            OTHER,
+            'Other, specify',
             m2m_field='contr',
             field_other='contr_other'
         )
+        
+        self.required_if(
+            YES,
+            field='is_contraceptive_initiated',
+            field_required='contr'
+        )
+        
         self.required_if(
             NO,
             field='is_contraceptive_initiated',
-            field_required='reason_not_initiated'
+            field_required='reason_not_initiated',
         )
 
         self.validate_other_specify(
@@ -100,9 +107,3 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
                     'contr':
                     'This field cannot be Not Applicable.'}
                 raise ValidationError(message)
-        else:
-            message = {
-                'contr':
-                'This field is required.'
-            }
-            raise ValidationError(message)
