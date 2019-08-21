@@ -4,17 +4,17 @@ from django.core.exceptions import ValidationError
 from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY, NEW
 from edc_constants.constants import PARTICIPANT, ALIVE, NO
 from edc_form_validators import FormValidator
-from edc_visit_tracking.constants import LOST_VISIT, SCHEDULED
-from edc_visit_tracking.form_validators import VisitFormValidator
 
 from edc_action_item.site_action_items import site_action_items
+from edc_visit_tracking.constants import LOST_VISIT, SCHEDULED
+from edc_visit_tracking.form_validators import VisitFormValidator
 from td_prn.action_items import MATERNALOFF_STUDY_ACTION
 
 from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
+class MaternalVisitFormValidator(TDCRFFormValidator,
                                  TDFormValidatorMixin, FormValidator):
 
     def clean(self):
@@ -33,6 +33,31 @@ class MaternalVisitFormValidator(VisitFormValidator, TDCRFFormValidator,
         self.validate_is_present()
 
         self.validate_last_alive_date()
+
+        self.validate_is_karabo_eligible()
+
+    def validate_is_karabo_eligible(self):
+        karabo_consent_model_cls = django_apps.get_model(
+            'td_maternal.karabosubjectconsent')
+
+        karabo_screening_model_cls = django_apps.get_model(
+            'td_maternal.karabosubjectscreening')
+        try:
+            karabo_screening = karabo_screening_model_cls.objects.get(
+                subject_identifier=self.subject_identifier)
+        except karabo_screening_model_cls.DoesNotExist:
+                pass
+        else:
+            if karabo_screening.is_eligible:
+                try:
+                    karabo_consent_model_cls.objects.get(
+                        subject_identifier=self.subject_identifier)
+                except karabo_consent_model_cls.DoesNotExist:
+                    msg = {'__all__': 'Participant is eligible for Karabo '
+                           'sub-study, please complete Karabo subject consent'
+                           'first.'}
+                    self._errors.update(msg)
+                    raise ValidationError(msg)
 
     def validate_data_collection(self):
         if (self.cleaned_data.get('reason') == SCHEDULED
