@@ -36,14 +36,6 @@ class MaternalContactFormValidator(TDCRFFormValidator,
                        'permission.'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
-            if (cleaned_data.get('contact_type') == 'text_message'
-                    and locator.may_sms != YES):
-                msg = {'contact_type':
-                       f'Maternal Locator says may_sms: {locator.may_sms}, '
-                       'you cannot sms participant if they did not give '
-                       'permission.'}
-                self._errors.update(msg)
-                raise ValidationError(msg)
         else:
             msg = {'__all__': 'Maternal Locator not found, please add '
                    'Locator before proceeding.'}
