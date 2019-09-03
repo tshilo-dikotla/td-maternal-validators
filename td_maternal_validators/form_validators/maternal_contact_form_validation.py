@@ -3,12 +3,10 @@ from django.core.exceptions import ValidationError
 from edc_constants.constants import YES
 from edc_form_validators import FormValidator
 
-from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class MaternalContactFormValidator(TDCRFFormValidator,
-                                   TDFormValidatorMixin,
+class MaternalContactFormValidator(TDFormValidatorMixin,
                                    FormValidator):
 
     maternal_locator_model = 'td_maternal.maternallocator'
