@@ -1,20 +1,20 @@
 from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY, NEW
+from edc_action_item.site_action_items import site_action_items
+from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY, NEW, OTHER
 from edc_constants.constants import PARTICIPANT, ALIVE, NO
 from edc_form_validators import FormValidator
-
-from edc_action_item.site_action_items import site_action_items
-from edc_visit_tracking.constants import LOST_VISIT, SCHEDULED
+from edc_visit_tracking.constants import LOST_VISIT, SCHEDULED, MISSED_VISIT
 from edc_visit_tracking.form_validators import VisitFormValidator
+
 from td_prn.action_items import MATERNALOFF_STUDY_ACTION
 
 from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class MaternalVisitFormValidator(TDCRFFormValidator,
+class MaternalVisitFormValidator(TDCRFFormValidator, VisitFormValidator,
                                  TDFormValidatorMixin, FormValidator):
 
     def clean(self):
@@ -46,7 +46,7 @@ class MaternalVisitFormValidator(TDCRFFormValidator,
             karabo_screening = karabo_screening_model_cls.objects.get(
                 subject_identifier=self.subject_identifier)
         except karabo_screening_model_cls.DoesNotExist:
-                pass
+            pass
         else:
             if karabo_screening.is_eligible:
                 try:
@@ -145,3 +145,15 @@ class MaternalVisitFormValidator(TDCRFFormValidator,
                 raise forms.ValidationError(
                     'Participant is scheduled to go offstudy.'
                     ' Cannot edit visit until offstudy form is completed.')
+
+    def validate_required_fields(self):
+
+        self.required_if(
+            MISSED_VISIT,
+            field='reason',
+            field_required='reason_missed')
+
+        self.required_if(
+            OTHER,
+            field='info_source',
+            field_required='info_source_other')
