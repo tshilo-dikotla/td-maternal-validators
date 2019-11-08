@@ -1,3 +1,5 @@
+from td_prn.action_items import MATERNALOFF_STUDY_ACTION
+
 from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
@@ -5,10 +7,10 @@ from edc_action_item.site_action_items import site_action_items
 from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY, NEW, OTHER
 from edc_constants.constants import PARTICIPANT, ALIVE, NO
 from edc_form_validators import FormValidator
+
+from edc_visit_tracking.constants import COMPLETED_PROTOCOL_VISIT
 from edc_visit_tracking.constants import LOST_VISIT, SCHEDULED, MISSED_VISIT
 from edc_visit_tracking.form_validators import VisitFormValidator
-
-from td_prn.action_items import MATERNALOFF_STUDY_ACTION
 
 from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
@@ -75,6 +77,13 @@ class MaternalVisitFormValidator(TDCRFFormValidator, VisitFormValidator,
         if (reason == LOST_VISIT and
                 self.cleaned_data.get('study_status') != OFF_STUDY):
             msg = {'study_status': 'Participant has been lost to follow up, '
+                   'study status should be off study.'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
+
+        if (reason == COMPLETED_PROTOCOL_VISIT and
+                self.cleaned_data.get('study_status') != OFF_STUDY):
+            msg = {'study_status': 'Participant is completing protocol, '
                    'study status should be off study.'}
             self._errors.update(msg)
             raise ValidationError(msg)
