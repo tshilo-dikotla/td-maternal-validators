@@ -1,10 +1,9 @@
-from td_maternal.helper_classes import EnrollmentHelper
-
 from dateutil.relativedelta import relativedelta
 from django import forms
 from django.core.exceptions import ValidationError
 from edc_constants.constants import YES, POS, NEG, IND, NO, DWTA
 from edc_form_validators import FormValidator
+from td_maternal.helper_classes import EnrollmentHelper
 
 from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
@@ -38,8 +37,13 @@ class AntenatalEnrollmentFormValidator(TDCRFFormValidator,
         )
 
         self.validate_last_period_date(cleaned_data=self.cleaned_data)
+
+        id = self.instance.id or None
+
         self.validate_against_consent_datetime(
-            self.cleaned_data.get('report_datetime'))
+            self.cleaned_data.get('report_datetime'),
+            id=id)
+
         self.validate_current_hiv_status()
         self.validate_week32_date()
         self.validate_week32_result()

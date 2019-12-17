@@ -1,10 +1,9 @@
-from td_maternal.helper_classes import MaternalStatusHelper
-
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_base.utils import relativedelta
 from edc_constants.constants import POS, YES, NOT_APPLICABLE, OTHER, NONE
 from edc_form_validators import FormValidator
+from td_maternal.helper_classes import MaternalStatusHelper
 
 from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
@@ -33,8 +32,11 @@ class MaternalLabDelFormValidator(TDCRFFormValidator,
         if self.instance and not self.instance.id:
             self.validate_offstudy_model()
 
+        id = self.instance.id or None
+
         self.validate_against_consent_datetime(
-            self.cleaned_data.get('report_datetime'))
+            self.cleaned_data.get('report_datetime'),
+            id=id)
 
         condition = self.cleaned_data.get(
             'mode_delivery') and 'c-section' in self.cleaned_data.get('mode_delivery')

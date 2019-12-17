@@ -19,8 +19,11 @@ class MaternalContactFormValidator(TDFormValidatorMixin,
         cleaned_data = self.cleaned_data
         self.subject_identifier = self.cleaned_data.get('subject_identifier')
 
+        id = self.instance.id or None
+
         self.validate_against_consent_datetime(
-            self.cleaned_data.get('report_datetime'))
+            self.cleaned_data.get('report_datetime'),
+            id=id)
 
         locator = self.maternal_locator
         if self.maternal_locator:
