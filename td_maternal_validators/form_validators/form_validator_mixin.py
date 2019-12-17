@@ -26,16 +26,17 @@ class TDFormValidatorMixin:
     def subject_screening_cls(self):
         return django_apps.get_model(self.subject_screening_model)
 
-    def validate_against_consent_datetime(self, report_datetime):
+    def validate_against_consent_datetime(self, report_datetime, id=None):
         """Returns an instance of the current maternal consent or
         raises an exception if not found."""
 
-        latest_consent = self.validate_against_consent()
-        if report_datetime and report_datetime < latest_consent.consent_datetime:
+        consent = self.validate_against_consent(id=id)
+
+        if report_datetime and report_datetime < consent.consent_datetime:
             raise forms.ValidationError(
                 "Report datetime cannot be before consent datetime")
 
-    def validate_against_consent(self):
+    def validate_against_consent(self, id=None):
         """Returns an instance of the current maternal consent version form or
         raises an exception if not found."""
         try:
@@ -45,16 +46,21 @@ class TDFormValidatorMixin:
             raise ValidationError(
                 'Please complete mother\'s consent version form before proceeding')
         else:
-            latest_consent = self.maternal_consent_cls.objects.filter(
-                subject_identifier=self.subject_identifier,
-                version=consent_version.version).order_by(
-                    '-consent_datetime').first()
-            if not latest_consent:
+            if not id:
+                consent = self.maternal_consent_cls.objects.filter(
+                    subject_identifier=self.subject_identifier,
+                    version=consent_version.version).order_by(
+                        '-consent_datetime').first()
+            else:
+                consent = self.maternal_consent_cls.objects.filter(
+                    subject_identifier=self.subject_identifier).order_by(
+                        'consent_datetime').first()
+            if not consent:
                 raise ValidationError(
                     'Please complete Maternal Consent form '
                     f'before  proceeding.')
             else:
-                return latest_consent
+                return consent
 
     @property
     def subject_screening(self):
