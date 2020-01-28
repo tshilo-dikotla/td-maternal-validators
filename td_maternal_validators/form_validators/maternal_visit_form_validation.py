@@ -115,9 +115,12 @@ class MaternalVisitFormValidator(TDCRFFormValidator, VisitFormValidator,
         """Returns an instance of the current maternal consent or
         raises an exception if not found."""
 
-        latest_consent = self.validate_against_consent()
+        id = self.instance.id or None
+
+        latest_consent = self.validate_against_consent(id=id)
         last_alive_date = self.cleaned_data.get('last_alive_date')
-        if last_alive_date and last_alive_date < latest_consent.consent_datetime.date():
+        if (last_alive_date
+                and last_alive_date < latest_consent.consent_datetime.date()):
             msg = {'last_alive_date': 'Date cannot be before consent date'}
             self._errors.update(msg)
             raise ValidationError(msg)
