@@ -157,7 +157,7 @@ class KaraboSubjectConsentFormValidator(TDCRFFormValidator,
                 {'subject_identifier': 'Subject Identifier doesn\'t'
                  ' exists in Tshilo Dikotla'})
         else:
-            if not self.cleaned_data['identity'] == maternal_consent.identity:
+            if self.cleaned_data.get('identity') != maternal_consent.identity:
                 raise ValidationError(
                     {'identity': 'Please Enter Maternal identity'
                      ' similar to Tshilo Dikotla'})
