@@ -7,9 +7,11 @@ from edc_form_validators import FormValidator
 
 from td_maternal.helper_classes import MaternalStatusHelper
 from .crf_form_validator import TDCRFFormValidator
+from .form_validator_mixin import TDFormValidatorMixin
 
 
 class MaternalLifetimeArvHistoryFormValidator(TDCRFFormValidator,
+                                              TDFormValidatorMixin,
                                               FormValidator):
     maternal_consent_model = 'td_maternal.subjectconsent'
     ob_history_model = 'td_maternal.maternalobstericalhistory'
@@ -90,10 +92,9 @@ class MaternalLifetimeArvHistoryFormValidator(TDCRFFormValidator,
 
     def validate_maternal_consent(self, cleaned_data=None):
         if cleaned_data.get('haart_start_date'):
+            id = self.instance.id or None
             try:
-                maternal_consent = self.maternal_consent_model_cls.objects.get(
-                    subject_identifier=cleaned_data.get(
-                        'maternal_visit').subject_identifier)
+                maternal_consent = self.validate_against_consent(id=id)
                 if cleaned_data.get('report_datetime') < maternal_consent.consent_datetime:
                     msg = {'report_datetime': 'Report datetime CANNOT be '
                                               'before consent datetime'}
