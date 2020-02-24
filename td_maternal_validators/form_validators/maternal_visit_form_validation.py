@@ -14,10 +14,12 @@ from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
-class MaternalVisitFormValidator(TDCRFFormValidator, VisitFormValidator,
+class MaternalVisitFormValidator(VisitFormValidator,
                                  TDFormValidatorMixin, FormValidator):
 
     def clean(self):
+        super().clean()
+
         self.subject_identifier = self.cleaned_data.get(
             'appointment').subject_identifier
         if self.instance and not self.instance.id:
@@ -70,6 +72,35 @@ class MaternalVisitFormValidator(TDCRFFormValidator, VisitFormValidator,
                    'is on study and present.'}
             self._errors.update(msg)
             raise ValidationError(msg)
+
+    def validate_offstudy_model(self):
+        maternal_offstudy_cls = django_apps.get_model(
+            'td_prn.maternaloffstudy')
+        action_cls = site_action_items.get(
+            maternal_offstudy_cls.action_name)
+        action_item_model_cls = action_cls.action_item_model_cls()
+
+        try:
+            action_item_model_cls.objects.get(
+                subject_identifier=self.subject_identifier,
+                action_type__name=MATERNALOFF_STUDY_ACTION,
+                status=NEW)
+        except action_item_model_cls.DoesNotExist:
+            try:
+                maternal_offstudy_cls.objects.get(
+                    subject_identifier=self.subject_identifier)
+            except maternal_offstudy_cls.DoesNotExist:
+                pass
+            else:
+                raise forms.ValidationError(
+                    'Participant has been taken offstudy. Cannot capture any '
+                    'new data.')
+        else:
+            self.maternal_visit = self.cleaned_data.get('maternal_visit') or None
+            if not self.maternal_visit or self.maternal_visit.require_crfs == NO:
+                raise forms.ValidationError(
+                    'Participant is scheduled to be taken offstudy without '
+                    'any new data collection. Cannot capture any new data.')
 
     def validate_is_present(self):
 
@@ -160,6 +191,7 @@ class MaternalVisitFormValidator(TDCRFFormValidator, VisitFormValidator,
                     ' Cannot edit visit until offstudy form is completed.')
 
     def validate_required_fields(self):
+        print("Over HERE!!!!!!!!!!!!!!!!!!!!!!!!")
 
         self.required_if(
             MISSED_VISIT,
