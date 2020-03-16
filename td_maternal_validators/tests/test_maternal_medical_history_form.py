@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
 from edc_constants.constants import POS, NOT_APPLICABLE, MALE, YES, NO, NEG
 
@@ -22,7 +22,6 @@ class MaternalStatusHelper:
         return self.status
 
 
-@tag('hist')
 class TestMaternalMedicalHistoryForm(TestCase):
 
     def setUp(self):
@@ -119,7 +118,7 @@ class TestMaternalMedicalHistoryForm(TestCase):
          who_diagnosis is not applicable.
         '''
         maternal_status = MaternalStatusHelper(status=POS)
-        MaternalMedicalHistoryFormValidator.maternal_status_helper =\
+        MaternalMedicalHistoryFormValidator.maternal_status_helper = \
             maternal_status
         self.cleaned_data.update(
             chronic_since=YES,

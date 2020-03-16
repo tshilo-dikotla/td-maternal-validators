@@ -7,7 +7,7 @@ from edc_constants.constants import (
 
 from ..form_validators import MaternalLifetimeArvHistoryFormValidator
 from .models import AntenatalEnrollment, MaternalObstericalHistory
-from .models import MaternalMedicalHistory
+from .models import MaternalMedicalHistory, SubjectScreening, TdConsentVersion
 from .models import SubjectConsent, Appointment, MaternalVisit
 
 
@@ -26,13 +26,28 @@ class TestMaternalLifetimeArvHistoryForm(TestCase):
         MaternalLifetimeArvHistoryFormValidator.maternal_consent_model = \
             'td_maternal_validators.subjectconsent'
 
+        MaternalLifetimeArvHistoryFormValidator.consent_version_model = \
+            'td_maternal_validators.tdconsentversion'
+
+        MaternalLifetimeArvHistoryFormValidator.subject_screening_model = \
+            'td_maternal_validators.subjectscreening'
+
         MaternalLifetimeArvHistoryFormValidator.ob_history_model = \
             'td_maternal_validators.maternalobstericalhistory'
+
+        self.subject_screening = SubjectScreening.objects.create(
+            subject_identifier='11111111',
+            screening_identifier='12345',
+            age_in_years=25)
 
         self.subject_consent = SubjectConsent.objects.create(
             subject_identifier='11111111',
             gender='M', dob=(get_utcnow() - relativedelta(years=25)).date(),
             consent_datetime=get_utcnow())
+
+        self.td_consent_version = TdConsentVersion.objects.create(
+            screening_identifier=self.subject_screening.screening_identifier,
+            report_datetime=get_utcnow())
 
         self.antenatal_enrollment = AntenatalEnrollment.objects.create(
             subject_identifier='11111111',

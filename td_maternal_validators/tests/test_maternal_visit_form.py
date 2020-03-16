@@ -4,10 +4,12 @@ from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import OFF_STUDY, ON_STUDY
 from edc_constants.constants import UNKNOWN, DEAD, ALIVE, YES, PARTICIPANT, NO
 from edc_visit_tracking.constants import LOST_VISIT
-
-from td_maternal_validators.tests.models import (Appointment, SubjectScreening,
-                                                 SubjectConsent,
-                                                 TdConsentVersion)
+from td_maternal_validators.tests.models import (TdConsentVersion,
+                                                 KaraboSubjectScreening,
+                                                 KaraboSubjectConsent)
+from td_maternal_validators.tests.models import Appointment, SubjectScreening
+from td_maternal_validators.tests.models import SubjectConsent, MaternalLabourDel
+import uuid
 
 from ..form_validators import MaternalVisitFormValidator
 
@@ -23,6 +25,12 @@ class TestMaternalVisitFormValidator(TestCase):
             'td_maternal_validators.subjectscreening'
         MaternalVisitFormValidator.antenatal_enrollment_model = \
             'td_maternal_validators.antenatalenrollment'
+        MaternalVisitFormValidator.maternal_labour_del_model = \
+            'td_maternal_validators.maternallabourdel'
+        MaternalVisitFormValidator.karabo_subject_screening_model = \
+            'td_maternal_validators.karabosubjectscreening'
+        MaternalVisitFormValidator.karabo_subject_consent_model = \
+            'td_maternal_validators.karabosubjectconsent'
 
         self.subject_identifier = '11111111'
         self.subject_screening = SubjectScreening.objects.create(
@@ -42,10 +50,25 @@ class TestMaternalVisitFormValidator(TestCase):
         self.appointment = Appointment.objects.create(
             subject_identifier=self.subject_consent.subject_identifier,
             appt_datetime=get_utcnow(),
-            visit_code='1000')
+            visit_code='1000M')
+
+        self.appointment1 = Appointment.objects.create(
+            subject_identifier=self.subject_consent.subject_identifier,
+            appt_datetime=get_utcnow(),
+            visit_code='1010M')
+
+        self.appointment2 = Appointment.objects.create(
+            subject_identifier=self.subject_consent.subject_identifier,
+            appt_datetime=get_utcnow(),
+            visit_code='1020M')
+
+        self.appointment3 = Appointment.objects.create(
+            subject_identifier=self.subject_consent.subject_identifier,
+            appt_datetime=get_utcnow(),
+            visit_code='2000M')
 
     def test_study_status_on_dead_valid(self):
-        self.subject_consent = None
+
         cleaned_data = {
             'report_datetime': get_utcnow(),
             'survival_status': ALIVE,
@@ -53,6 +76,7 @@ class TestMaternalVisitFormValidator(TestCase):
             'study_status': ON_STUDY,
             'appointment': self.appointment
         }
+
         form_validator = MaternalVisitFormValidator(
             cleaned_data=cleaned_data)
         try:
@@ -201,6 +225,90 @@ class TestMaternalVisitFormValidator(TestCase):
             'survival_status': ALIVE,
             'is_present': YES,
             'info_source': PARTICIPANT,
+            'last_alive_date': get_utcnow().date(),
+            'study_status': ON_STUDY,
+            'appointment': self.appointment
+        }
+        form_validator = MaternalVisitFormValidator(
+            cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raised. Got{e}')
+
+    def test_karabo_screening_invalid(self):
+        MaternalLabourDel.objects.create(
+            subject_identifier=self.appointment.subject_identifier,
+            delivery_datetime=get_utcnow() - relativedelta(months=18))
+        cleaned_data = {
+            'report_datetime': get_utcnow(),
+            'survival_status': ALIVE,
+            'last_alive_date': get_utcnow().date(),
+            'study_status': ON_STUDY,
+            'appointment': self.appointment
+        }
+        form_validator = MaternalVisitFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('__all__', form_validator._errors)
+
+    def test_karabo_screening_ineligile(self):
+        MaternalLabourDel.objects.create(
+            subject_identifier=self.appointment.subject_identifier,
+            delivery_datetime=get_utcnow() - relativedelta(months=18))
+
+        KaraboSubjectScreening.objects.create(
+            subject_identifier=self.appointment.subject_identifier,
+            is_eligible=False)
+
+        cleaned_data = {
+            'report_datetime': get_utcnow(),
+            'survival_status': ALIVE,
+            'last_alive_date': get_utcnow().date(),
+            'study_status': ON_STUDY,
+            'appointment': self.appointment
+        }
+        form_validator = MaternalVisitFormValidator(
+            cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raised. Got{e}')
+
+    def test_karabo_consent_invalid(self):
+        MaternalLabourDel.objects.create(
+            subject_identifier=self.appointment.subject_identifier,
+            delivery_datetime=get_utcnow() - relativedelta(months=18))
+
+        KaraboSubjectScreening.objects.create(
+            subject_identifier=self.appointment.subject_identifier,
+            is_eligible=True)
+
+        cleaned_data = {
+            'report_datetime': get_utcnow(),
+            'survival_status': ALIVE,
+            'last_alive_date': get_utcnow().date(),
+            'study_status': ON_STUDY,
+            'appointment': self.appointment
+        }
+        form_validator = MaternalVisitFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('__all__', form_validator._errors)
+
+    def test_karabo_screening_valid(self):
+
+        KaraboSubjectScreening.objects.create(
+            subject_identifier=self.appointment.subject_identifier,
+            is_eligible=True)
+
+        KaraboSubjectConsent.objects.create(
+            subject_identifier=self.appointment.subject_identifier,
+            consent_datetime=get_utcnow())
+
+        cleaned_data = {
+            'report_datetime': get_utcnow(),
+            'survival_status': ALIVE,
             'last_alive_date': get_utcnow().date(),
             'study_status': ON_STUDY,
             'appointment': self.appointment

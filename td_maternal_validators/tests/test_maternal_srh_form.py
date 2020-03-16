@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
 from edc_constants.constants import YES, NO, OTHER
 
@@ -8,7 +8,6 @@ from ..form_validators import MaternalSrhFormValidator
 from .models import SubjectConsent, MaternalVisit, ListModel, Appointment
 
 
-@tag('srh')
 class TestMaternalSrhForm(TestCase):
 
     def setUp(self):

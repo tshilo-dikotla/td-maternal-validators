@@ -1,3 +1,4 @@
+from django.apps import apps as django_apps
 from django.db import models
 from django.db.models.deletion import PROTECT
 from django_crypto_fields.fields import FirstnameField, LastnameField
@@ -127,6 +128,13 @@ class MaternalArv(models.Model):
         blank=True)
 
 
+class MaternalLabourDel(BaseUuidModel):
+
+    subject_identifier = models.CharField(max_length=25)
+
+    delivery_datetime = models.DateTimeField()
+
+
 class MaternalLifetimeArvHistory(models.Model):
 
     maternal_visit = models.ForeignKey(MaternalVisit, on_delete=PROTECT)
@@ -240,3 +248,31 @@ class MaternalLocator(BaseUuidModel):
 
     may_call = models.CharField(
         max_length=3)
+
+
+class KaraboSubjectScreening(BaseUuidModel):
+
+    subject_identifier = models.CharField(
+        max_length=50)
+
+    report_datetime = models.DateTimeField(
+        null=True,
+        blank=True)
+
+    screening_identifier = models.CharField(
+        max_length=36,
+        unique=True,
+        editable=False)
+
+    is_eligible = models.BooleanField(
+        default=False,
+        editable=False)
+
+
+class KaraboSubjectConsent(UpdatesOrCreatesRegistrationModelMixin, BaseUuidModel):
+
+    subject_identifier = models.CharField(max_length=25)
+
+    screening_identifier = models.CharField(max_length=50)
+
+    consent_datetime = models.DateTimeField()

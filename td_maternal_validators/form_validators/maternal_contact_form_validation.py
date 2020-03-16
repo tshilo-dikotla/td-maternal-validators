@@ -19,7 +19,9 @@ class MaternalContactFormValidator(TDFormValidatorMixin,
         cleaned_data = self.cleaned_data
         self.subject_identifier = self.cleaned_data.get('subject_identifier')
 
-        id = self.instance.id or None
+        id = None
+        if self.instance:
+            id = self.instance.id
 
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'),
@@ -32,6 +34,14 @@ class MaternalContactFormValidator(TDFormValidatorMixin,
                 msg = {'contact_type':
                        f'Maternal Locator says may_call: {locator.may_call}, '
                        'you cannot call participant if they did not give '
+                       'permission.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
+            if (cleaned_data.get('contact_type') == 'text_message'
+                    and locator.may_sms != YES):
+                msg = {'contact_type':
+                       f'Maternal Locator says may_sms: {locator.may_sms}, '
+                       'you cannot sms participant if they did not give '
                        'permission.'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
