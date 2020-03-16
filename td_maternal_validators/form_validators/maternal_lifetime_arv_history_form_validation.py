@@ -92,7 +92,9 @@ class MaternalLifetimeArvHistoryFormValidator(TDCRFFormValidator,
 
     def validate_maternal_consent(self, cleaned_data=None):
         if cleaned_data.get('haart_start_date'):
-            id = self.instance.id or None
+            id = None
+            if self.instance:
+                id = self.instance.id
             try:
                 maternal_consent = self.validate_against_consent(id=id)
                 if cleaned_data.get('report_datetime') < maternal_consent.consent_datetime:
@@ -154,3 +156,12 @@ class MaternalLifetimeArvHistoryFormValidator(TDCRFFormValidator,
                        'Haart start date cannot be before date of HIV test.'}
                 self._errors.update(msg)
                 raise ValidationError(msg)
+
+    @property
+    def subject_screening(self):
+        try:
+            return self.subject_screening_cls.objects.get(
+                subject_identifier=self.cleaned_data.get(
+                    'maternal_visit').appointment.subject_identifier)
+        except self.subject_screening_cls.DoesNotExist:
+            return None

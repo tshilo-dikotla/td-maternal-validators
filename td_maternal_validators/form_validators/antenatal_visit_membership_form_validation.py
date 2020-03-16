@@ -12,7 +12,9 @@ class AntenatalVisitMembershipFormValidator(TDCRFFormValidator,
         if self.instance and not self.instance.id:
             self.validate_offstudy_model()
 
-        id = self.instance.id or None
+        id = None
+        if self.instance:
+            id = self.instance.id
 
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'),
