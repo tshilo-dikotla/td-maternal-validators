@@ -22,7 +22,9 @@ class SpecimenConsentFormValidator(TDCRFFormValidator,
             ' witness is required'
         )
 
-        id = self.instance.id or None
+        id = None
+        if self.instance:
+            id = self.instance.id
 
         self.validate_against_consent_datetime(
             self.cleaned_data.get('consent_datetime'),

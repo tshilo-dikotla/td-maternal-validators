@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
 
 from ..form_validators import MaternalObstericalHistoryFormValidator
@@ -8,7 +8,6 @@ from .models import MaternalUltraSoundInitial
 from .models import SubjectConsent, Appointment, MaternalVisit
 
 
-@tag('ob')
 class TestMaternalObstericalHistoryForm(TestCase):
 
     def setUp(self):
@@ -208,7 +207,6 @@ class TestMaternalObstericalHistoryForm(TestCase):
         except ValidationError as e:
             self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
-    @tag('ob1')
     def test_sum_deliv_37wks_valid_1(self):
         '''Tests if cleaned data validates or fails tests if exception
         is raised unexpectedly.'''

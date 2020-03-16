@@ -1,7 +1,9 @@
+from dateutil import relativedelta
 from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from edc_action_item.site_action_items import site_action_items
+from edc_base.utils import get_utcnow
 from edc_constants.constants import OFF_STUDY, DEAD, YES, ON_STUDY, NEW, OTHER
 from edc_constants.constants import PARTICIPANT, ALIVE, NO
 from edc_form_validators import FormValidator
@@ -10,22 +12,38 @@ from edc_visit_tracking.constants import LOST_VISIT, SCHEDULED, MISSED_VISIT
 from edc_visit_tracking.form_validators import VisitFormValidator
 from td_prn.action_items import MATERNALOFF_STUDY_ACTION
 
-from .crf_form_validator import TDCRFFormValidator
 from .form_validator_mixin import TDFormValidatorMixin
 
 
 class MaternalVisitFormValidator(VisitFormValidator,
                                  TDFormValidatorMixin, FormValidator):
 
+    maternal_labour_del_model = 'td_maternal.maternallabourdel'
+    karabo_subject_consent_model = 'td_maternal.karabosubjectconsent'
+    karabo_subject_screening_model = 'td_maternal.karabosubjectscreening'
+
+    @property
+    def maternal_labour_del_cls(self):
+        return django_apps.get_model(self.maternal_labour_del_model)
+
+    @property
+    def karabo_consent_model_cls(self):
+        return django_apps.get_model(self.karabo_subject_consent_model)
+
+    @property
+    def karabo_screening_model_cls(self):
+        return django_apps.get_model(self.karabo_subject_screening_model)
+
     def clean(self):
         super().clean()
 
         self.subject_identifier = self.cleaned_data.get(
             'appointment').subject_identifier
-        if self.instance and not self.instance.id:
-            self.validate_offstudy_model()
-
-        id = self.instance.id or None
+        id = None
+        if self.instance:
+            id = self.instance.id
+            if not id:
+                self.validate_offstudy_model()
 
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'),
@@ -37,32 +55,55 @@ class MaternalVisitFormValidator(VisitFormValidator,
 
         self.validate_is_present()
 
-        self.validate_last_alive_date()
+        self.validate_last_alive_date(id=id)
 
-        self.validate_is_karabo_eligible()
+        self.validate_is_karabo_eligible(id=id)
 
-    def validate_is_karabo_eligible(self):
-        karabo_consent_model_cls = django_apps.get_model(
-            'td_maternal.karabosubjectconsent')
-
-        karabo_screening_model_cls = django_apps.get_model(
-            'td_maternal.karabosubjectscreening')
+    def validate_is_karabo_eligible(self, id=None):
         try:
-            karabo_screening = karabo_screening_model_cls.objects.get(
+            karabo_screening = self.karabo_screening_model_cls.objects.get(
                 subject_identifier=self.subject_identifier)
-        except karabo_screening_model_cls.DoesNotExist:
-            pass
+
+        except self.karabo_screening_model_cls.DoesNotExist:
+            if self.infant_age_valid() and not id:
+                msg = {'__all__': 'Participant has not been screened for '
+                       'Karabo. Please fill in the Karabo screening form '
+                       'first.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
         else:
             if karabo_screening.is_eligible:
                 try:
-                    karabo_consent_model_cls.objects.get(
+                    self.karabo_consent_model_cls.objects.get(
                         subject_identifier=self.subject_identifier)
-                except karabo_consent_model_cls.DoesNotExist:
+                except self.karabo_consent_model_cls.DoesNotExist:
                     msg = {'__all__': 'Participant is eligible for Karabo '
                            'sub-study, please complete Karabo subject consent'
                            'first.'}
                     self._errors.update(msg)
                     raise ValidationError(msg)
+
+    def infant_age_valid(self):
+        if self.maternal_labour_del():
+            birth_datetime = self.maternal_labour_del().delivery_datetime
+            difference = relativedelta.relativedelta(
+                get_utcnow(), birth_datetime)
+            months = 0
+            if difference.years > 0:
+                months = difference.years * 12
+            return (months + difference.months) < 21
+        return False
+
+    def maternal_labour_del(self):
+        subject_identifier = self.cleaned_data.get('appointment').subject_identifier
+
+        try:
+            maternal_labour_del = self.maternal_labour_del_cls.objects.get(
+                subject_identifier=subject_identifier)
+        except self.maternal_labour_del_cls.DoesNotExist:
+            return None
+        else:
+            return maternal_labour_del
 
     def validate_data_collection(self):
         if (self.cleaned_data.get('reason') == SCHEDULED
@@ -142,11 +183,9 @@ class MaternalVisitFormValidator(VisitFormValidator,
                 self._errors.update(msg)
                 raise ValidationError(msg)
 
-    def validate_last_alive_date(self):
+    def validate_last_alive_date(self, id=None):
         """Returns an instance of the current maternal consent or
         raises an exception if not found."""
-
-        id = self.instance.id or None
 
         latest_consent = self.validate_against_consent(id=id)
         last_alive_date = self.cleaned_data.get('last_alive_date')
@@ -191,7 +230,6 @@ class MaternalVisitFormValidator(VisitFormValidator,
                     ' Cannot edit visit until offstudy form is completed.')
 
     def validate_required_fields(self):
-        print("Over HERE!!!!!!!!!!!!!!!!!!!!!!!!")
 
         self.required_if(
             MISSED_VISIT,

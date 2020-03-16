@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
 from edc_constants.constants import YES, NO
 
@@ -9,7 +9,6 @@ from .models import MaternalLocator, SubjectConsent, SubjectScreening
 from .models import MaternalVisit, Appointment, TdConsentVersion
 
 
-@tag('mcon')
 class TestMaternalContactForm(TestCase):
 
     def setUp(self):

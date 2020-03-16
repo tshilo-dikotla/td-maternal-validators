@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from edc_base.utils import get_utcnow
 from edc_constants.constants import YES, NO, NOT_APPLICABLE
 from ..form_validators import MaternalArvPregFormValidator
@@ -8,7 +8,6 @@ from .models import MaternalVisit, Appointment, MaternalArvPreg
 from .models import SubjectScreening, SubjectConsent, TdConsentVersion
 
 
-@tag('map')
 class TestMaternalArvPregForm(TestCase):
 
     def setUp(self):
@@ -77,7 +76,6 @@ class TestMaternalArvPregForm(TestCase):
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('interrupt', form_validator._errors)
 
-    @tag('mp2')
     def test_medication_interrupted_valid(self):
         '''True if arvs was not interrupted and no
         interrupt reason was provided.
