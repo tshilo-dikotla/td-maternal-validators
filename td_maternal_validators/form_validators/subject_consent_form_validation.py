@@ -14,6 +14,8 @@ class SubjectConsentFormValidator(TDCRFFormValidator, FormValidator):
 
     td_consent_version_model = 'td_maternal.tdconsentversion'
 
+    subject_consent_model = 'td_maternal.subjectconsent'
+
     @property
     def subject_screening_cls(self):
         return django_apps.get_model(self.screening_model)
@@ -21,6 +23,10 @@ class SubjectConsentFormValidator(TDCRFFormValidator, FormValidator):
     @property
     def td_consent_version_cls(self):
         return django_apps.get_model(self.td_consent_version_model)
+
+    @property
+    def subject_consent_cls(self):
+        return django_apps.get_model(self.subject_consent_model)
 
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -53,28 +59,26 @@ class SubjectConsentFormValidator(TDCRFFormValidator, FormValidator):
         self.validate_reconsent()
 
     def validate_reconsent(self):
-        if self.instance:
-            consent_cls = self.instance.__class__
-            try:
-                consent_obj = consent_cls.objects.get(
-                    subject_identifier=self.cleaned_data.get('subject_identifier'),
-                    version='1')
-            except consent_cls.DoesNotExist:
-                pass
-            else:
-                consent_dict = consent_obj.__dict__
-                consent_fields = [
-                    'first_name', 'last_name', 'dob', 'recruit_source',
-                    'recruit_source_other', 'recruitment_clinic',
-                    'recruitment_clinic_other', 'is_literate', 'identity',
-                    'identity_type']
-                for field in consent_fields:
-                    if self.cleaned_data.get(field) != consent_dict[field]:
-                        message = {field:
-                                   f'{field} was previously reported as, '
-                                   f'{consent_dict[field]}, please correct.'}
-                        self._errors.update(message)
-                        raise ValidationError(message)
+        try:
+            consent_obj = self.subject_consent_cls.objects.get(
+                subject_identifier=self.cleaned_data.get('subject_identifier'),
+                version='1')
+        except self.subject_consent_cls.DoesNotExist:
+            pass
+        else:
+            consent_dict = consent_obj.__dict__
+            consent_fields = [
+                'first_name', 'last_name', 'dob', 'recruit_source',
+                'recruit_source_other', 'recruitment_clinic',
+                'recruitment_clinic_other', 'is_literate', 'identity',
+                'identity_type']
+            for field in consent_fields:
+                if self.cleaned_data.get(field) != consent_dict[field]:
+                    message = {field:
+                               f'{field} was previously reported as, '
+                               f'{consent_dict[field]}, please correct.'}
+                    self._errors.update(message)
+                    raise ValidationError(message)
 
     def clean_full_name_syntax(self):
         cleaned_data = self.cleaned_data
@@ -151,17 +155,35 @@ class SubjectConsentFormValidator(TDCRFFormValidator, FormValidator):
                 raise ValidationError(msg)
 
     def validate_dob(self, cleaned_data=None, model_obj=None):
-        consent_datetime = cleaned_data.get(
-            'consent_datetime') or self.instance.consent_datetime
+
+        consent_datetime = cleaned_data.get('consent_datetime')
         consent_age = relativedelta(
             consent_datetime.date(), cleaned_data.get('dob')).years
-        if consent_age != model_obj.age_in_years:
-            message = {'dob':
-                       'In Subject Screening you indicated the participant is {}, '
-                       'but age derived from the DOB is {}.'.format(
-                           model_obj.age_in_years, consent_age)}
-            self._errors.update(message)
-            raise ValidationError(message)
+        age_in_years = None
+
+        try:
+            consent_obj = self.subject_consent_cls.objects.get(
+                screening_identifier=self.cleaned_data.get('screening_identifier'),
+                version='1')
+        except self.subject_consent_cls.DoesNotExist:
+            age_in_years = model_obj.age_in_years
+            if consent_age != age_in_years:
+                message = {'dob':
+                           'In Subject Screening you indicated the '
+                           'participant is {age_in_years}, but age derived '
+                           f'from the DOB is {consent_age}.'}
+                self._errors.update(message)
+                raise ValidationError(message)
+        else:
+            age_in_years = relativedelta(
+                consent_datetime.date(), consent_obj.dob).years
+            if consent_age != age_in_years:
+                message = {'dob':
+                           'In previous consent the derived age of the '
+                           f'participant is {age_in_years}, but age derived '
+                           f'from the DOB is {consent_age}.'}
+                self._errors.update(message)
+                raise ValidationError(message)
 
     def validate_recruit_source(self):
         self.validate_other_specify(
