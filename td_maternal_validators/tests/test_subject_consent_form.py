@@ -4,23 +4,29 @@ from edc_base.utils import get_utcnow, relativedelta
 from edc_constants.constants import YES, NO, OTHER
 
 from ..form_validators import SubjectConsentFormValidator
-from .models import SubjectScreening, TdConsentVersion
+from .models import SubjectScreening, TdConsentVersion, SubjectConsent
 
 
 class TestSubjectConsentForm(TestCase):
 
     def setUp(self):
+        subject_screening_model = 'td_maternal_validators.subjectscreening'
+        SubjectConsentFormValidator.screening_model = subject_screening_model
+
+        subject_consent_model = 'td_maternal_validators.subjectconsent'
+        SubjectConsentFormValidator.subject_consent_model = subject_consent_model
+
+        td_consent_version_model = 'td_maternal_validators.tdconsentversion'
+        SubjectConsentFormValidator.td_consent_version_model = \
+            td_consent_version_model
+
         self.screening_identifier = 'ABC12345'
         self.subjectscreening = SubjectScreening.objects.create(
             screening_identifier=self.screening_identifier, has_omang=YES,
             age_in_years=22)
-        subject_screening_model = 'td_maternal_validators.subjectscreening'
-        SubjectConsentFormValidator.screening_model = subject_screening_model
+
         self.td_consent_version = TdConsentVersion.objects.create(
             screening_identifier=self.screening_identifier, version='1')
-        td_consent_version_model = 'td_maternal_validators.tdconsentversion'
-        SubjectConsentFormValidator.td_consent_version_model =\
-            td_consent_version_model
 
     def test_citizen_matches_has_omang(self):
         # N.B : has_omang in subject screening is set to YES
@@ -53,6 +59,50 @@ class TestSubjectConsentForm(TestCase):
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('citizen', form_validator._errors)
+
+    def test_consent_dob_mismatch_consent_dob_years(self):
+        SubjectConsent.objects.create(
+            subject_identifier='11111111',
+            screening_identifier=self.screening_identifier,
+            consent_datetime=get_utcnow() - relativedelta(years=2),
+            dob=get_utcnow() - relativedelta(years=20),
+            version='1'
+        )
+        cleaned_data = {
+            'screening_identifier': self.screening_identifier,
+            'consent_datetime': get_utcnow(),
+            'dob': (get_utcnow() - relativedelta(years=22)).date(),
+            'first_name': 'TEST ONE',
+            'last_name': 'TEST',
+            'initials': 'TOT',
+            'citizen': YES}
+        form_validator = SubjectConsentFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('dob', form_validator._errors)
+
+    def test_consent_dob_match_consent_dob_years(self):
+        SubjectConsent.objects.create(
+            subject_identifier='11111111',
+            screening_identifier=self.screening_identifier,
+            consent_datetime=get_utcnow() - relativedelta(years=2),
+            dob=get_utcnow() - relativedelta(years=20),
+            version='1'
+        )
+        cleaned_data = {
+            'screening_identifier': self.screening_identifier,
+            'consent_datetime': get_utcnow(),
+            'dob': (get_utcnow() - relativedelta(years=20)).date(),
+            'first_name': 'TEST ONE',
+            'last_name': 'TEST',
+            'initials': 'TOT',
+            'citizen': YES}
+        form_validator = SubjectConsentFormValidator(
+            cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raised. Got{e}')
 
     def test_screening_age_mismatch_consent_dob_years(self):
         cleaned_data = {
