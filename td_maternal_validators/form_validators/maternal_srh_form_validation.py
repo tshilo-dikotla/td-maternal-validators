@@ -41,13 +41,13 @@ class MaternalSrhFormValidator(TDCRFFormValidator,
             m2m_field='contr',
             field_other='contr_other'
         )
-        
+
         self.required_if(
             YES,
             field='is_contraceptive_initiated',
             field_required='contr'
         )
-        
+
         self.required_if(
             NO,
             field='is_contraceptive_initiated',
