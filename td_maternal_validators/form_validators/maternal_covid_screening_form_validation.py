@@ -1,6 +1,6 @@
 import datetime
 from django.core.exceptions import ValidationError
-from edc_constants.constants import YES
+from edc_constants.constants import YES, NOT_APPLICABLE
 from edc_form_validators import FormValidator
 
 from .crf_form_validator import TDCRFFormValidator
@@ -35,6 +35,10 @@ class MaternalCovidScreeningFormValidator(TDCRFFormValidator,
                 field_required=value)
 
         self.validate_covid_test_date('household_test_date')
+
+        self.m2m_single_selection_if(
+            NOT_APPLICABLE,
+            m2m_field='covid_symptoms')
 
         super().clean()
 
