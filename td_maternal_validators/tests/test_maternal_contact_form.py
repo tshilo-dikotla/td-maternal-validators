@@ -78,6 +78,20 @@ class TestMaternalContactForm(TestCase):
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('contact_type', form_validator._errors)
 
+    def test_contact_form_visit_invalid(self):
+        '''Assert form saves without error.
+        '''
+        self.maternal_locator.may_visit_home = NO
+        self.maternal_locator.save()
+        cleaned_data = {
+            'subject_identifier': '11111111',
+            'contact_type': 'in_person'
+        }
+        form_validator = MaternalContactFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('contact_type', form_validator._errors)
+
     def test_contact_form_text_invalid(self):
         '''Assert form saves without error.
         '''
