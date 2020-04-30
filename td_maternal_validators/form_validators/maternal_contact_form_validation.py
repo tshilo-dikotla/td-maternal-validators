@@ -1,6 +1,6 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from edc_constants.constants import YES
+from edc_constants.constants import YES, NO
 from edc_form_validators import FormValidator
 
 from .form_validator_mixin import TDFormValidatorMixin
@@ -29,8 +29,16 @@ class MaternalContactFormValidator(TDFormValidatorMixin,
 
         locator = self.maternal_locator
         if self.maternal_locator:
+            if (cleaned_data.get('contact_type') == 'in_person'
+                    and locator.may_visit_home == NO):
+                msg = {'contact_type':
+                       'Maternal Locator says may_visit_home: '
+                       f'{locator.may_visit_home}, you cannot call '
+                       'participant if they did not give permission.'}
+                self._errors.update(msg)
+                raise ValidationError(msg)
             if (cleaned_data.get('contact_type') == 'voice_call'
-                    and locator.may_call != YES):
+                    and locator.may_call == NO):
                 msg = {'contact_type':
                        f'Maternal Locator says may_call: {locator.may_call}, '
                        'you cannot call participant if they did not give '
@@ -38,7 +46,7 @@ class MaternalContactFormValidator(TDFormValidatorMixin,
                 self._errors.update(msg)
                 raise ValidationError(msg)
             if (cleaned_data.get('contact_type') == 'text_message'
-                    and locator.may_sms != YES):
+                    and locator.may_sms == NO):
                 msg = {'contact_type':
                        f'Maternal Locator says may_sms: {locator.may_sms}, '
                        'you cannot sms participant if they did not give '

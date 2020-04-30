@@ -249,6 +249,9 @@ class MaternalLocator(BaseUuidModel):
     may_call = models.CharField(
         max_length=3)
 
+    may_visit_home = models.CharField(
+        max_length=3)
+
 
 class KaraboSubjectScreening(BaseUuidModel):
 
