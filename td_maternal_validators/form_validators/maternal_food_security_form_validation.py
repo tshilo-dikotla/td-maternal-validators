@@ -4,7 +4,7 @@ from edc_form_validators.form_validator import FormValidator
 from .crf_form_validator import TDCRFFormValidator
 
 
-class MaternalFoodSeccurityFormValidator(TDCRFFormValidator, FormValidator):
+class MaternalFoodSecurityFormValidator(TDCRFFormValidator, FormValidator):
 
     def clean(self):
 
