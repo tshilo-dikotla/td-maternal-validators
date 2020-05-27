@@ -4,7 +4,7 @@ from django.test import TestCase, tag
 from edc_base.utils import get_utcnow
 from edc_constants.constants import YES
 
-from ..form_validators import MaternalFoodSeccurityFormValidator
+from ..form_validators import MaternalFoodSecurityFormValidator
 from .models import SubjectConsent, MaternalVisit, Appointment
 
 
@@ -33,7 +33,7 @@ class TestMaternalFoodSecurityForm(TestCase):
             'skip_meals': YES,
             'skip_meals_frequency': 'blah'
         }
-        form_validator = MaternalFoodSeccurityFormValidator(
+        form_validator = MaternalFoodSecurityFormValidator(
             cleaned_data=cleaned_data)
         try:
             form_validator.validate()
@@ -46,7 +46,7 @@ class TestMaternalFoodSecurityForm(TestCase):
             'skip_meals': YES,
             'skip_meals_frequency': None
         }
-        form_validator = MaternalFoodSeccurityFormValidator(
+        form_validator = MaternalFoodSecurityFormValidator(
             cleaned_data=cleaned_data)
         self.assertRaises(ValidationError, form_validator.validate)
         self.assertIn('skip_meals_frequency', form_validator._errors)
