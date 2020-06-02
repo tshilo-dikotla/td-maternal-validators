@@ -1,3 +1,5 @@
+from td_prn.action_items import MATERNALOFF_STUDY_ACTION
+
 from dateutil import relativedelta
 from django import forms
 from django.apps import apps as django_apps
@@ -10,7 +12,6 @@ from edc_form_validators import FormValidator
 from edc_visit_tracking.constants import COMPLETED_PROTOCOL_VISIT
 from edc_visit_tracking.constants import LOST_VISIT, SCHEDULED, MISSED_VISIT
 from edc_visit_tracking.form_validators import VisitFormValidator
-from td_prn.action_items import MATERNALOFF_STUDY_ACTION
 
 from .form_validator_mixin import TDFormValidatorMixin
 
@@ -44,12 +45,11 @@ class MaternalVisitFormValidator(VisitFormValidator,
             id = self.instance.id
             if not id:
                 self.validate_offstudy_model()
+                self.validate_study_status()
 
         self.validate_against_consent_datetime(
             self.cleaned_data.get('report_datetime'),
             id=id)
-
-        self.validate_study_status()
 
         self.validate_death()
 
