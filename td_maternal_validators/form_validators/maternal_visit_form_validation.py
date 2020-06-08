@@ -49,6 +49,8 @@ class MaternalVisitFormValidator(VisitFormValidator,
             self.cleaned_data.get('report_datetime'),
             id=id)
 
+        self.validate_covid_visit_not_present()
+
         self.validate_study_status()
 
         self.validate_death()
@@ -58,6 +60,15 @@ class MaternalVisitFormValidator(VisitFormValidator,
         self.validate_last_alive_date(id=id)
 
         self.validate_is_karabo_eligible(id=id)
+
+    def validate_covid_visit_not_present(self):
+        if (self.cleaned_data.get('covid_visit') == YES
+                and self.cleaned_data.get('is_present') == YES):
+            msg = {'is_present': 'This visit is indicated as a telephonic '
+                   'visit occurring during COVID-19. The participant cannot '
+                   'be present.'}
+            self._errors.update(msg)
+            raise ValidationError(msg)
 
     def validate_is_karabo_eligible(self, id=None):
         try:
