@@ -93,7 +93,6 @@ class MaternalContraceptionFormValidator(TDCRFFormValidator,
 
         m2m_fields = {'contr': 'contr_other',
                       'contraceptive_relative': 'contraceptive_relative_other'}
-
         for m2m_field, field in m2m_fields.items():
             self.m2m_other_specify(
                 'Other, specify',

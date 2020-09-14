@@ -56,13 +56,7 @@ class TestMaternalLabDelForm(TestCase):
         self.maternal_arv_preg = MaternalArvPreg.objects.create(
             took_arv=YES, maternal_visit=maternal_visit)
         self.maternal_arv = MaternalArv.objects.create(
-            maternal_arv_preg=self.maternal_arv_preg,
-            arv_code='Tenoforvir',
-            start_date=get_utcnow().date())
-        MaternalArv.objects.create(
-            maternal_arv_preg=self.maternal_arv_preg,
-            arv_code='Lamivudine',
-            start_date=(get_utcnow() - relativedelta(days=2)).date())
+            maternal_arv_preg=self.maternal_arv_preg, start_date=get_utcnow().date())
 
         self.td_consent_version = TdConsentVersion.objects.create(
             screening_identifier=self.subjectscreening.screening_identifier,
