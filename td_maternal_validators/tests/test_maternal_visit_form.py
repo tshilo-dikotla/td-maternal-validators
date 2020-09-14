@@ -9,7 +9,6 @@ from td_maternal_validators.tests.models import (TdConsentVersion,
                                                  KaraboSubjectConsent)
 from td_maternal_validators.tests.models import Appointment, SubjectScreening
 from td_maternal_validators.tests.models import SubjectConsent, MaternalLabourDel
-import uuid
 
 from ..form_validators import MaternalVisitFormValidator
 
@@ -66,6 +65,42 @@ class TestMaternalVisitFormValidator(TestCase):
             subject_identifier=self.subject_consent.subject_identifier,
             appt_datetime=get_utcnow(),
             visit_code='2000M')
+
+    def test_study_covid_visit_valid(self):
+
+        cleaned_data = {
+            'report_datetime': get_utcnow(),
+            'survival_status': ALIVE,
+            'last_alive_date': get_utcnow().date(),
+            'study_status': ON_STUDY,
+            'appointment': self.appointment,
+            'covid_visit': YES,
+            'is_present': NO
+        }
+
+        form_validator = MaternalVisitFormValidator(
+            cleaned_data=cleaned_data)
+        try:
+            form_validator.validate()
+        except ValidationError as e:
+            self.fail(f'ValidationError unexpectedly raised. Got{e}')
+
+    def test_study_covid_visit_invalid(self):
+
+        cleaned_data = {
+            'report_datetime': get_utcnow(),
+            'survival_status': ALIVE,
+            'last_alive_date': get_utcnow().date(),
+            'study_status': ON_STUDY,
+            'appointment': self.appointment,
+            'covid_visit': YES,
+            'is_present': YES
+        }
+
+        form_validator = MaternalVisitFormValidator(
+            cleaned_data=cleaned_data)
+        self.assertRaises(ValidationError, form_validator.validate)
+        self.assertIn('is_present', form_validator._errors)
 
     def test_study_status_on_dead_valid(self):
 

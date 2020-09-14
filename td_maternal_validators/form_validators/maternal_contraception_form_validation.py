@@ -96,7 +96,7 @@ class MaternalContraceptionFormValidator(TDCRFFormValidator,
 
         for m2m_field, field in m2m_fields.items():
             self.m2m_other_specify(
-                OTHER,
+                'Other, specify',
                 m2m_field=m2m_field,
                 field_other=field)
 
