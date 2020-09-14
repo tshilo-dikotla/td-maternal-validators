@@ -64,6 +64,7 @@ class MaternalLabDelFormValidator(TDCRFFormValidator,
         subject_identifier = cleaned_data.get('subject_identifier')
         maternal_arv = self.maternal_arv_cls.objects.filter(
             maternal_arv_preg__maternal_visit__appointment__subject_identifier=subject_identifier,
+            arv_code='Tenoforvir',
             stop_date__isnull=True).order_by('-start_date').first()
         if maternal_arv:
             initiation_date = cleaned_data.get('arv_initiation_date')
