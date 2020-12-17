@@ -144,7 +144,7 @@ class MaternalLabDelFormValidator(TDCRFFormValidator,
             *selections,
             m2m_field='delivery_complications')
         self.m2m_other_specify(
-            OTHER,
+            'Other',
             m2m_field='delivery_complications',
             field_other='delivery_complications_other')
 
